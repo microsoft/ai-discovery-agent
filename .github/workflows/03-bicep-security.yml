@@ -1,0 +1,88 @@
+name: Azure Bicep Template Analysis
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    branches: [main]
+    paths:
+      - "infra/**"
+      - ".github/workflows/03-bicep-security.yml"
+  push:
+    branches: [release/*]
+    paths:
+      - "infra/**"
+      - ".github/workflows/03-bicep-security.yml"
+
+jobs:
+  checkov-scan:
+    runs-on: ubuntu-latest
+    name: Checkov Bicep Analysis
+    permissions:
+      contents: read # Allows actions/checkout to fetch the code
+      security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
+      checks: write
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+      # only needed for private repository
+      issues: read
+      # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
+      actions: read
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v5
+
+      - name: Run Checkov Action
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: infra/
+          quiet: true # Display only failed checks
+          # soft_fail: true # Do not return an error code if there are failed checks
+          framework: bicep # Specify to run checks only on Azure Bicep templates
+          output_format: junitxml # Set output format to JUnit XML for test result publishing
+          output_file_path: bicep_results.xml # Specify the file path for the JUnit XML output
+          # output_format: sarif # Set output format to SARIF for integration with GitHub security tab
+          # output_file_path: bicep_results.sarif # Specify the file path for the SARIF output
+          download_external_modules: true # Enable downloading external modules
+
+      # need code scanning activated to upload SARIF results to security tab
+      # - name: Upload SARIF Results to GitHub
+      #   if: always() # Ensure this step runs regardless of previous steps' success or failure
+      #   uses: github/codeql-action/upload-sarif@v3
+      #   with:
+      #     sarif_file: bicep_results.sarif
+      - name: Upload Test Results
+        if: (!cancelled())
+        uses: actions/upload-artifact@v4
+        with:
+          name: Bicep Test Results
+          path: bicep_results.xml
+
+  publish-infra-test-results:
+    name: "Publish Infra Tests Results"
+    needs: checkov-scan
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+
+      # only needed for private repository
+      contents: read
+
+      # only needed for private repository
+      issues: read
+    if: (!cancelled())
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+
+      - name: Publish Infra Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "artifacts/**/*.xml"

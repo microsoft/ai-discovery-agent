@@ -1,0 +1,154 @@
+# yaml-language-server: $schema=./pages.v0.2.schema.json
+# Pages configuration for AI Discovery Workshop Agent
+# This file defines all available pages in the application
+#
+# Structure:
+# - sections: Top-level sections in the navigation
+# - pages: Individual pages within each section
+#   - type: Type of page ("agent", etc.)
+#   - persona: Path to the persona prompt file (for agent type)
+#   - document: Path to the content document file (for agent type)
+#   - documents: List of document files (optional)
+#   - title: Page title displayed in the navigation
+#   - icon: Emoji icon for the page
+#   - url_path: URL path segment for the page
+#   - header: Header title displayed at the top of the page
+#   - subtitle: Subtitle displayed below the header
+
+agents:
+  facilitator:
+    persona: prompts/facilitator_persona.md
+    model: gpt-4o
+    temperature: 1
+  zermatt_national_bank:
+    persona: prompts/contoso_zermatt_national_bank_persona.md
+    document: prompts/contoso_zermatt_national_bank.md
+    temperature: 0.5
+    model: gpt-4o
+  andermatt_works:
+    persona: prompts/contoso_andermatt_works_persona.md
+    document: prompts/contoso_andermatt_works.md
+    temperature: 0.5
+    model: gpt-4o
+  design_thinking_expert:
+    persona: prompts/design_thinking_persona.md
+    document: prompts/design_thinking.md
+    model: o4-mini
+    temperature: 1
+  document_generator_expert:
+    persona: prompts/document_generator_persona.md
+    document: prompts/document_generator_example.md
+    model: o4-mini
+    temperature: 1
+  medical_specialist_clinic:
+    persona: prompts/medical_specialist_clinic_persona.md
+    document: prompts/medical_specialist_clinic_use_case.md
+    temperature: 0.5
+    model: gpt-4o
+  hr_manager_talent_acquisition:
+    persona: prompts/hr_manager_talent_acquisition_persona.md
+    document: prompts/hr_manager_talent_acquisition_use_case.md
+    temperature: 0.5
+    model: gpt-4o
+  auto_claims_customer:
+    persona: prompts/auto_claims_customer_persona.md
+    document: prompts/auto_claims_damage_report_use_case.md
+    temperature: 0.5
+    model: gpt-4o
+  multi_agent:
+    condition: |
+      You are a routing agent. Your task is to analyze the user conversation history and return the most appropriate expert to handle the next message.
+
+      The conversation history is delimited by dashes:
+      ----------------------
+      {input}
+      ----------------------
+
+      Choose **only one** of the following outputs:
+      - facilitator
+      - design_thinking_expert
+      - document_generator_expert
+
+      Apply the following rules in order:
+
+      1. If the conversation is in the **first four steps** of the workshop, return: facilitator.
+      2. If the conversation involves **design thinking methods** (e.g., brainstorming, reverse brainstorming, customer journey mapping), return: design_thinking_expert.
+      3. If the conversation is about **running a design thinking session**, return: design_thinking_expert.
+      4. If the conversation is about generating or taking notes from the workshop, return: document_generator_expert.
+      5. If the user or AI explicitly asks for a **specific expert**, return the expert that best matches the request.
+      6. If the conversation is about the **workshop process or logistics**, return: facilitator.
+      7. If the conversation is about how to apply a specific **AI Discovery Card** return: facilitator.
+      8. By the end of the process suggest to the user to switch to the document generator expert: document_generator_expert
+      9. In all other cases, return: facilitator.
+
+      Only respond with one of the following words:
+      facilitator / design_thinking_expert / document_generator_expert
+    model: gpt-4.1-nano
+    agents:
+      - condition: design_thinking_expert
+        agent: design_thinking_expert
+      - condition: facilitator
+        agent: facilitator
+      - condition: document_generator_expert
+        agent: document_generator_expert
+
+sections:
+  Coach:
+    - type: agent
+      default: true
+      agent: multi_agent
+      title: AI Discovery Workshop Facilitator
+      icon: 🧑‍🏫
+      url_path: MultiAgent
+      header: 🧑‍🏫 AI Discovery Workshop Facilitator
+      subtitle: |
+        I'm a multi-expert Agent that can help you as a facilitator and have access to the:
+        - 💡Design Thinking expert
+        - 📄Document generation expert
+        - 🧑‍🏫 AI Discovery expert
+      admin_only: true # Only visible to admins
+    - type: agent
+      agent: document_generator_expert
+      title: Document Generator Expert
+      icon: 📄
+      url_path: DocumentGeneratorExpert
+      header: 📄 Document Generator Expert
+      subtitle: I'm your AI Document Generator Expert and can assist you in creating comprehensive workshop reports.
+      admin_only: true # Only visible to admins
+  Customers:
+    - type: agent
+      agent: zermatt_national_bank
+      title: Zermatt National Bank
+      icon: 🏦
+      url_path: ZermattNationalBank
+      header: 🏦 Contoso Zermatt National Bank Representative
+      subtitle: Ask me anything about our bank, internal processes and our day-to-day jobs.
+    - type: agent
+      agent: andermatt_works
+      title: Andermatt Works
+      icon: 🏗️
+      url_path: AndermattWorks
+      header: 🏗️ Contoso Andermatt Works Representative
+      subtitle: Ask me anything about our construction company, internal processes and our day-to-day jobs.
+    - type: agent
+      agent: medical_specialist_clinic
+      title: Medical Specialist Clinic
+      icon: 🏥
+      url_path: MedicalSpecialistClinic
+      header: 🏥 Medical Specialist Clinic Use Case
+      subtitle: I'm Emily, a busy marketing professional. I want to use AI tools during my medical check-ups to save time and get clear, concise information about my health.
+    - type: agent
+      agent: hr_manager_talent_acquisition
+      title: HR Manager Talent Acquisition
+      icon: 👩‍💼
+      url_path: HRManagerTalentAcquisition
+      header: 👩‍💼 HR Manager Talent Acquisition Use Case
+      subtitle: I'm Alex, an HR manager focused on talent acquisition. I want to leverage AI
+        to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
+    - type: agent
+      agent: auto_claims_customer
+      title: Auto Claims Customer
+      icon: 🚗
+      url_path: AutoClaimsCustomer
+      header: 🚗 Auto Claims Customer Use Case
+      subtitle: I'm John, a customer who recently had a car accident. I want to use AI tools to quickly and efficiently file my insurance claim and get my car repaired.

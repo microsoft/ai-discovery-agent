@@ -205,3 +205,20 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# local azd files
+.azure
+# auth config contains passwords
+src/**/auth-config.yaml
+# local chainlit db stuff
+src/.chainlit/.langchain.db
+**/.files/**/*
+
+# Ignore the compiled requirements file, using uv
+src/requirements.txt
+# Ignore local environment variables file, which may contain secrets
+src/.azure.env
+
+# Ignore Azurite files
+__azurite*
+__blob*

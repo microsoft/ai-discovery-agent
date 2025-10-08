@@ -1,0 +1,5 @@
+{
+    "formatting": {
+        "width": 512 // Set to 512 to prevent Bicep function line splitting which causes Checkov parsing issues.
+    }
+}

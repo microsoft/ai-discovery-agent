@@ -1,0 +1,23 @@
+{
+  "[python]": {
+    "editor.defaultFormatter": "ms-python.black-formatter",
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "always"
+    }
+  },
+  "isort.args": [
+    "--profile",
+    "black"
+  ],
+  "python.analysis.typeCheckingMode": "standard",
+  "python.testing.cwd": "${workspaceFolder}/src",
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "python.defaultInterpreterPath": "${workspaceFolder}/src/.venv/bin/python",
+  "files.exclude": {
+    "__azurite_db*__.json": true,
+    "__blobstorage__": true,
+    "__queuestorage__": true
+  }
+}

@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-discovery-agent"
+version = "0.6.1"
+description = "AI Discovery Agent"
+authors = [{ name = "jmservera" }]
+readme = "README.md"
+requires-python = ">=3.12"
+license-files = ["LICEN[CS]E*"]
+urls = { "homepage" = "https://github.com/jmservera/ai-discovery-agent", "repository" = "https://github.com/jmservera/ai-discovery-agent", "documentation" = "https://github.com/jmservera/ai-discovery-agent/blob/main/README.md" }
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+dependencies = [
+    "chainlit>=2.8.0",
+    "bcrypt>=4.3.0",
+    "python-dotenv>=1.1.0",
+    "openai>=1.104.2",
+    "azure-identity>=1.23.0",
+    "tiktoken>=0.9.0",
+    "langgraph>=0.6.7",
+    "langchain>=0.3.27",
+    "langchain-community>=0.3.27",
+    "langchain-openai>=0.3.33",
+    "PyYAML>=6.0.2",
+    "azure-storage-blob>=12.26.0",
+    "azure-data-tables>=12.7.0",
+    "azure-monitor-opentelemetry>=1.8.1",
+    "opentelemetry-instrumentation-fastapi>=0.58b0",
+]
+
+[dependency-groups]
+# Development / tooling dependencies (not included in runtime requirements compilation)
+dev = [
+    "black==25.9.0",
+    "pre-commit>=3.8.0",
+    "ruff>=0.7.0",
+    "pytest>=8.0.0",
+    "pytest-mock>=3.12.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.0.0",
+    "bandit>=1.8.6",
+    "checkov>=3.2.473",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+skip-string-normalization = false
+
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "F",  # pyflakes
+    "I",  # import sorting
+    "B",  # flake8-bugbear
+    "W",  # warnings
+    "UP", # pyupgrade
+]
+ignore = [
+    "E203",  # handled by Black
+    "E501",  # line length enforced by Black
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["agents", "config", "prompts", "public"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --disable-warnings"
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+filterwarnings = [
+    "ignore::DeprecationWarning",
+    "ignore::PendingDeprecationWarning",
+]

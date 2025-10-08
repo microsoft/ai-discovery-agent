@@ -1,0 +1,83 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start_azurite",
+      "command": "${command:azurite.start_blob}",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "stop_azurite",
+      "command": "${command:azurite.close_blob}",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "lint",
+      "type": "shell",
+      "command": "cd src && uv run pre-commit run --all-files",
+      "group": "build"
+    },
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "uv build --directory src",
+      "group": "build",
+      "problemMatcher": "$python",
+      "dependsOn": [
+        "lint"
+      ]
+    },
+    {
+      "label": "bandit",
+      "type": "shell",
+      "command": "cd src && uv run bandit -x \"${pwd}/.venv\" -s B101 -r .",
+      "group": "test",
+      "problemMatcher": "$python"
+    },
+    {
+      "label": "bicep-validate",
+      "type": "shell",
+      "command": "bicep build infra/main.bicep --stdout --no-restore > /dev/null",
+      "group": "test"
+    },
+    {
+      "label": "bicep-checkov",
+      "type": "shell",
+      "command": "source src/.venv/bin/activate && uv run checkov --framework bicep -d ${workspaceFolder}/infra --compact",
+      "group": "test",
+      "dependsOn": [
+        "bicep-validate"
+      ]
+    },
+    {
+      "label": "LOG_LEVEL=debug bicep-checkov-debug",
+      "type": "shell",
+      "command": "source src/.venv/bin/activate && uv run checkov --framework bicep -d ${workspaceFolder}/infra --compact",
+      "group": "test",
+      "dependsOn": [
+        "bicep-validate"
+      ]
+    },
+    {
+      "label": "preLaunch",
+      "dependsOn": [
+        "build",
+        "start_azurite"
+      ]
+    },
+    {
+      "label": "prepareAzureDev",
+      "type": "shell",
+      "command": "./scripts/map-env-vars.sh",
+      "windows": {
+        "command": ".\\scripts\\test.cmd"
+      },
+      "presentation": {
+        "reveal": "always"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

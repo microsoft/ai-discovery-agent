@@ -1,0 +1,42 @@
+{
+  "name": "Azure Developer CLI",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "16",
+      "nodeGypDependencies": false
+    },
+    "ghcr.io/devcontainers/features/azure-cli": {},
+    "ghcr.io/azure/azure-dev/azd": {},
+    "ghcr.io/va-h/devcontainers-features/uv": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.azure-dev",
+        "ms-azuretools.vscode-bicep",
+        "ms-python.python",
+        "ms-python.black-formatter",
+        "teamsdevapp.vscode-ai-foundry",
+        "ms-python.isort",
+        "charliermarsh.ruff",
+        "Azurite.azurite",
+        "ms-python.debugpy",
+        "ms-python.vscode-python-envs",
+        "Upstash.context7-mcp",
+        "GitHub.copilot"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "${workspaceFolder}/src/.venv/bin/python"
+      }
+    }
+  },
+  "postCreateCommand": "curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64 && chmod +x ./bicep && sudo mv ./bicep /usr/local/bin/bicep && bicep --help && cd src && uv sync && azd version && uv --version",
+  "forwardPorts": [
+    8000
+  ],
+  "remoteUser": "vscode",
+  "hostRequirements": {
+    "memory": "8gb"
+  }
+}

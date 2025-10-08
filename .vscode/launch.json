@@ -1,0 +1,46 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python Debugger: FastAPI",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/src",
+      "module": "uvicorn",
+      "args": ["server:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
+      "autoStartBrowser": true,
+      "env": {
+        "LOGLEVEL": "DEBUG"
+      },
+      "preLaunchTask": "preLaunch",
+      "postDebugTask": "stop_azurite"
+    },
+    {
+      "name": "Python Debugger: Chainlit",
+      "type": "debugpy",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/src",
+      "module": "chainlit",
+      "args": [
+        "run",
+        "--debug",
+        "-h",
+        "-w",
+        "main.py",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8000"
+      ],
+      "autoStartBrowser": true,
+      "env": {
+        "LOGLEVEL": "DEBUG"
+      },
+      "preLaunchTask": "preLaunch",
+      "postDebugTask": "stop_azurite"
+    }
+  ]
+}
