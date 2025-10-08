@@ -6,90 +6,90 @@ This document groups the 12 user stories into higher-level epics for planning, s
 
 ## Epic 1: Conversational Guidance & Phase Orchestration
 
-**Stories:** 01 Chat-Based Guidance, 02 Workflow Phase Navigation & Reordering  
-**Rationale:** Establishes the primary user interaction model and structural backbone of the workshop experience. Without this, downstream data capture and generation lack usable context flow.  
-**Key Capabilities:** Phase presentation, navigation commands, contextual prompts, summaries, non-linear traversal.  
-**Dependencies:** None (foundational).  
-**Enables:** Data structuring (Epic 2), export readiness (Epic 3).  
+**Stories:** 01 Chat-Based Guidance, 02 Workflow Phase Navigation & Reordering
+**Rationale:** Establishes the primary user interaction model and structural backbone of the workshop experience. Without this, downstream data capture and generation lack usable context flow.
+**Key Capabilities:** Phase presentation, navigation commands, contextual prompts, summaries, non-linear traversal.
+**Dependencies:** None (foundational).
+**Enables:** Data structuring (Epic 2), export readiness (Epic 3).
 **Success Metrics:**
 
 - 90% of facilitator navigation actions succeed without fallback help.
-- <2s median first-token latency for guidance prompts.  
+- <2s median first-token latency for guidance prompts.
   **Milestone:** MVP (Release 0.1).
 
 ---
 
 ## Epic 2: Structured Data, Media Capture & Validation
 
-**Stories:** 03 Data Collection & Validation, 04 Audio Input & Transcription, 05 Document & Diagram Upload  
-**Rationale:** Ensures comprehensive, multimodal capture of workshop knowledge with schema-backed integrity—critical for high-quality documentation.  
-**Key Capabilities:** Schema mapping, validation gating, audio transcription lifecycle, file ingestion & metadata, rich text preservation.  
-**Dependencies:** Epic 1 (contextual phase targeting).  
-**Enables:** Accurate export (Epic 3), compliance enforcement (Epic 5).  
+**Stories:** 03 Data Collection & Validation, 04 Audio Input & Transcription, 05 Document & Diagram Upload
+**Rationale:** Ensures comprehensive, multimodal capture of workshop knowledge with schema-backed integrity—critical for high-quality documentation.
+**Key Capabilities:** Schema mapping, validation gating, audio transcription lifecycle, file ingestion & metadata, rich text preservation.
+**Dependencies:** Epic 1 (contextual phase targeting).
+**Enables:** Accurate export (Epic 3), compliance enforcement (Epic 5).
 **Success Metrics:**
 
 - <5% validation rework after first pass in feasibility workshops.
-- ≥95% successful transcription availability within SLA (<5s for <60s clip).  
+- ≥95% successful transcription availability within SLA (<5s for <60s clip).
   **Milestone:** MVP (Release 0.1) for core schema + upload; transcription may be phased (Release 0.2) if needed.
 
 ---
 
 ## Epic 3: Documentation Generation & Export Pipeline
 
-**Stories:** 06 Documentation Generation  
-**Rationale:** Converts structured data into facilitator deliverables, the main value output of the workshop process.  
-**Key Capabilities:** Markdown export (MVP), section ordering, regeneration versioning, attachment and transcript inclusion, future Word/PPT templating.  
-**Dependencies:** Epics 1 & 2 (complete data & navigation state).  
-**Enables:** Stakeholder sharing, archival, and review cycles (ties to compliance sign-off).  
+**Stories:** 06 Documentation Generation
+**Rationale:** Converts structured data into facilitator deliverables, the main value output of the workshop process.
+**Key Capabilities:** Markdown export (MVP), section ordering, regeneration versioning, attachment and transcript inclusion, future Word/PPT templating.
+**Dependencies:** Epics 1 & 2 (complete data & navigation state).
+**Enables:** Stakeholder sharing, archival, and review cycles (ties to compliance sign-off).
 **Success Metrics:**
 
 - 100% mandatory sections populated or flagged before export.
-- <10s p95 generation time for median dataset.  
+- <10s p95 generation time for median dataset.
   **Milestone:** MVP (Markdown in Release 0.1); Word/PPT in Release 0.3.
 
 ---
 
 ## Epic 4: Session Lifecycle, Resilience & Multilingual Experience
 
-**Stories:** 07 Session Management, 08 Multilanguage Support  
-**Rationale:** Facilitators need continuity across interruptions and language-appropriate guidance for global applicability.  
-**Key Capabilities:** Autosave, resume, snapshots/rollback (optional), language detection & override, Unicode-preserving storage.  
-**Dependencies:** Epics 1 & 2 (phases & structured content).  
-**Enables:** Cross-region adoption, iterative session refinement.  
+**Stories:** 07 Session Management, 08 Multilanguage Support
+**Rationale:** Facilitators need continuity across interruptions and language-appropriate guidance for global applicability.
+**Key Capabilities:** Autosave, resume, snapshots/rollback (optional), language detection & override, Unicode-preserving storage.
+**Dependencies:** Epics 1 & 2 (phases & structured content).
+**Enables:** Cross-region adoption, iterative session refinement.
 **Success Metrics:**
 
 - <1% data loss incidents (autosave reliability).
-- ≥90% correct initial language detection accuracy.  
+- ≥90% correct initial language detection accuracy.
   **Milestone:** Core session persistence in Release 0.1; snapshots & advanced language tooling in Release 0.2.
 
 ---
 
 ## Epic 5: Trust, Security, Privacy & Governance Controls
 
-**Stories:** 09 Security & Privacy Governance, 12 Compliance Automation (SFI & RAI)  
-**Rationale:** Protects sensitive client information and enforces mandatory organizational standards—prerequisite for production rollout.  
-**Key Capabilities:** Access isolation, encryption assurances, deletion workflows, audit logging, automated infra/code scans, RAI guardrail tests, compliance artifact generation.  
-**Dependencies:** Foundational data model (Epic 2) and session isolation (Epic 4).  
-**Enables:** Production deployment sign-off, risk mitigation, external trust.  
+**Stories:** 09 Security & Privacy Governance, 12 Compliance Automation (SFI & RAI)
+**Rationale:** Protects sensitive client information and enforces mandatory organizational standards—prerequisite for production rollout.
+**Key Capabilities:** Access isolation, encryption assurances, deletion workflows, audit logging, automated infra/code scans, RAI guardrail tests, compliance artifact generation.
+**Dependencies:** Foundational data model (Epic 2) and session isolation (Epic 4).
+**Enables:** Production deployment sign-off, risk mitigation, external trust.
 **Success Metrics:**
 
 - 0 unresolved critical vulnerabilities at release gates.
-- 100% features with attached compliance artifact.  
+- 100% features with attached compliance artifact.
   **Milestone:** Baseline security gating in Release 0.1; full automated RAI guardrail matrix in Release 0.2–0.3.
 
 ---
 
 ## Epic 6: Experience Quality (Performance, Usability & Accessibility)
 
-**Stories:** 10 Performance & Responsiveness, 11 Usability & Accessibility  
-**Rationale:** Ensures the tool is efficient, inclusive, and ergonomic—improving adoption and facilitator satisfaction.  
-**Key Capabilities:** Latency instrumentation, streaming fallback, progress indicators, WCAG 2.1 AA compliance, focus management, keyboard coverage, alt text support.  
-**Dependencies:** Rendering + interaction flows from Epic 1; content assets from Epics 2 & 4.  
-**Enables:** Stable scale-up, compliance with accessibility standards.  
+**Stories:** 10 Performance & Responsiveness, 11 Usability & Accessibility
+**Rationale:** Ensures the tool is efficient, inclusive, and ergonomic—improving adoption and facilitator satisfaction.
+**Key Capabilities:** Latency instrumentation, streaming fallback, progress indicators, WCAG 2.1 AA compliance, focus management, keyboard coverage, alt text support.
+**Dependencies:** Rendering + interaction flows from Epic 1; content assets from Epics 2 & 4.
+**Enables:** Stable scale-up, compliance with accessibility standards.
 **Success Metrics:**
 
 - p95 prompt first-token latency ≤2s under normal load.
-- 0 critical accessibility blocker issues in audit.  
+- 0 critical accessibility blocker issues in audit.
   **Milestone:** Incremental; baseline performance + basic accessibility in Release 0.1, full WCAG AA polish in Release 0.2.
 
 ---
