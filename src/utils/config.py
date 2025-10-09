@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """
 Configuration loading utilities for AI Discovery Workshop Agent.
 """
