@@ -14,28 +14,31 @@ This is a set of agents to help during the AI Discovery Workshop training or to 
 
 ## Installation
 
-1. **Clone the repository**:
+1. **Fork the repository**:
 
-   ```bash
-   git clone https://github.com/microsoft/ai-discovery-agent.git
-   cd ai-discovery-agent
-   ```
+    The `azd` deployment process requires write access to the repository to set up GitHub Actions for automated deployments. Please fork this repository to your own GitHub account.
 
-2. **Install dependencies**:
+2. **Clone the repository**:
+    ```bash
+    git clone https://github.com/youraccount/ai-discovery-agent.git
+    cd ai-discovery-agent
+    ```
 
-Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
+3. **Install dependencies**:
 
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-```
+    Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
 
-```bash
-cd src
-# Create a virtual environment and install requirements
-uv sync
-```
+    ```bash
+    curl -LsSf https://astral.sh/uv/install.sh | sh
+    ```
 
-3. **Configure authentication**:
+    ```bash
+    cd src
+    # Create a virtual environment and install requirements
+    uv sync
+    ```
+
+4. **Configure authentication**:
 
    The application supports both password-based and OAuth authentication.
 
@@ -81,10 +84,10 @@ uv sync
    - If OAuth is disabled or not configured, only password authentication will be available
    - Users can switch between available authentication methods on the login page
 
-4. [Optional] **Configure pages and agents**:
+5. [Optional] **Configure pages and agents**:
    If you want to create your own list of agents, rename the file [src/config/pages-example.yaml](src/config/pages-example.yaml) to `src/config/pages.yaml` to use the example configuration, and customize it to your needs.
 
-5. **Create the needed resources**:
+6. **Create the needed resources**:
    See next section for deploying the website. The command `azd provision` will create all the resources you need on Azure using the [`infra`](infra) folder, and will also generate the .env file with the needed values for running the solution locally. The infrastructure is secure by default, using private endpoints for Azure OpenAI and Storage. During development, the AZD command automatically enables public network access for easier local development. You need to be logged in with the az and azd commands:
 
    ```bash
@@ -93,7 +96,7 @@ uv sync
    azd provision
    ```
 
-6. **Run the application**:
+7. **Run the application**:
    ```bash
    uv run -m chainlit run -dhw chainlit_app.py
    ```

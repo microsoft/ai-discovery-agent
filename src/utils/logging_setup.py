@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """
 Logging setup utilities for AI Discovery Workshop Agent.
 """
