@@ -22,7 +22,6 @@ if [ -z "$GITHUB_SECRET" ]; then
     echo "Creating or updating GitHub repo $GITHUB_REPOSITORY for environment: $DEPLOYMENT_ENVIRONMENT"
     gh api --method PUT -H "Accept: application/vnd.github+json" "repos/${GITHUB_REPOSITORY}/environments/${DEPLOYMENT_ENVIRONMENT}"
 
-
     gh variable set AZURE_GH_FED_CLIENT_ID --body "$AZURE_GH_FED_CLIENT_ID" --env "$DEPLOYMENT_ENVIRONMENT"
     gh variable set AZURE_TENANT_ID --body "$AZURE_TENANT_ID" --env "$DEPLOYMENT_ENVIRONMENT"
     gh variable set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID" --env "$DEPLOYMENT_ENVIRONMENT"
