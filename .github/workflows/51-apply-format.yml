@@ -134,7 +134,7 @@ jobs:
             echo "No changes to commit"
             echo "changes_made=false" >> $GITHUB_ENV
           else
-            git commit -m "Auto-format code with pre-commit Requested by: @${{ steps.extract.outputs.requester }} Co-authored-by: ${{ steps.extract.outputs.requester }} <${{ steps.extract.outputs.requester }}@users.noreply.github.com>"
+            git commit -m "Auto-format code with pre-commit\nRequested by: @${{ steps.extract.outputs.requester }}\nCo-authored-by: ${{ steps.extract.outputs.requester }} <${{ steps.extract.outputs.requester }}@users.noreply.github.com>"
             git push
             echo "changes_made=true" >> $GITHUB_ENV
           fi
