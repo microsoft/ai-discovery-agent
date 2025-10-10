@@ -89,7 +89,7 @@ jobs:
             echo "Invalid requester format: $REQUESTER"
             exit 1
           fi
-          
+
           # Additional length check for GitHub usernames (max 39 characters)
           if [ ${#REQUESTER} -gt 39 ]; then
             echo "Requester name too long: $REQUESTER"
@@ -153,7 +153,7 @@ jobs:
             # The requester has already been validated to contain only safe characters
             printf -v COMMIT_MSG "Auto-format code with pre-commit\n\nRequested by: @%s\n\nCo-authored-by: %s <%s@users.noreply.github.com>" \
               "$REQUESTER" "$REQUESTER" "$REQUESTER"
-            
+
             git commit -m "$COMMIT_MSG"
             git push
             echo "changes_made=true" >> $GITHUB_ENV
