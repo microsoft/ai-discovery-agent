@@ -144,6 +144,8 @@ jobs:
       - name: Comment on successful formatting
         if: steps.extract.outputs.should_format == 'true' && env.changes_made == 'true'
         uses: actions/github-script@v8
+        env:
+          REQUESTER: ${{ steps.extract.outputs.requester }}
         with:
           script: |
             github.rest.issues.createComment({
@@ -152,7 +154,7 @@ jobs:
               repo: context.repo.repo,
               body: `✅ **Formatting Applied Successfully**
 
-              @${{ steps.extract.outputs.requester }} Your formatting request has been processed. The code has been automatically formatted using pre-commit hooks.
+              @${process.env.REQUESTER} Your formatting request has been processed. The code has been automatically formatted using pre-commit hooks.
 
               **Changes applied:**
               - Code formatting with Black
