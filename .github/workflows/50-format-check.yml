@@ -33,19 +33,6 @@ jobs:
               prHeadSha = context.payload.pull_request.head.sha;
               prHeadRef = context.payload.pull_request.head.ref;
               shouldFormat = false; // Only check format on PR events
-            } else if (context.eventName === 'issue_comment') {
-              prNumber = context.payload.issue.number;
-
-              // Get PR details
-              const { data: pr } = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNumber,
-              });
-
-              prHeadSha = pr.head.sha;
-              prHeadRef = pr.head.ref;
-              shouldFormat = context.payload.comment.body.includes('/format');
             }
 
             core.setOutput('pr_number', prNumber);
