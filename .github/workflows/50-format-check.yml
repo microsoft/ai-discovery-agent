@@ -84,19 +84,23 @@ jobs:
           echo "${{ steps.pr_info.outputs.pr_head_sha }}" > ./format-request/pr_head_sha
           echo "${{ steps.pr_info.outputs.pr_head_ref }}" > ./format-request/pr_head_ref
 
-      - name: Upload format request artifact
+      - name: Set requester login for format request
         if: steps.pr_info.outputs.should_format == 'true' && steps.format_check.outputs.formatting_needed == 'true'
-        uses: actions/upload-artifact@v4
+        run: |
           requester_login="${{ github.event.comment.user.login || github.event.pull_request.user.login }}"
           if [[ "$requester_login" =~ ^[A-Za-z0-9_-]+$ ]]; then
             echo "$requester_login" > ./format-request/requester
           else
             echo "invalid_login" > ./format-request/requester
           fi
+
+      - name: Upload format request artifact
+        if: steps.pr_info.outputs.should_format == 'true' && steps.format_check.outputs.formatting_needed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
           name: format-request
           path: format-request/
           retention-days: 1
-
       - name: Comment on PR if formatting needed (PR events only)
         if: >
           github.event_name == 'pull_request' &&
