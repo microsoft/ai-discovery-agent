@@ -19,12 +19,51 @@ jobs:
       pull-requests: read
 
     steps:
+
+      # Retrieves the source branch reference (ref) of the current pull request.
+      # This action uses the GitHub API to fetch the pull request details and extracts
+      # the head reference, which represents the branch that contains the changes.
+      # The reference is returned as a string and can be used in subsequent steps
+      # via ${{ steps.ref.outputs.result }}.
+      # 
+      # Outputs:
+      #   result: The branch reference of the PR (e.g., 'feature/my-branch')
+      # 
+      # Requirements:
+      #   - Must be run in a pull request context
+      #   - Requires 'pull-requests: read' permission
+      - name: Get PR REF
+        id: ref
+        uses: actions/github-script@v8
+        with:
+          result-encoding: string
+          retries: 3
+          script: |
+            const { owner, repo, number } = context.issue;
+            
+            // Check if this is actually a PR
+            try {
+              const pr = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: number,
+              });
+              return pr.data.head.ref;
+            } catch (error) {
+              if (error.status === 404) {
+                core.setFailed('This action only works on pull request comments');
+              }
+              throw error;
+            }
+
       - name: Checkout PR code
         uses: actions/checkout@v5
         with:
+          token: ${{ secrets.PUSH_PAT }}
+          repository: ${{ github.repository }}
           # For pull_request events, this safely checks out the PR head
-          # For issue_comment events, we check out the base branch (safe)
-          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.repository.default_branch }}
+          # For issue_comment events, we check out the PR head ref (safe)
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || steps.ref.outputs.result }}
 
       - name: Get PR information
         id: pr_info
