@@ -1,0 +1,133 @@
+name: Format Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created]
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+    # Only run on pull requests or when /format comment is made on a PR
+    if: >
+      github.event_name == 'pull_request' ||
+      (github.event.issue.pull_request && contains(github.event.comment.body, '/format'))
+
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v5
+        with:
+          # For pull_request events, this safely checks out the PR head
+          # For issue_comment events, we check out the base branch (safe)
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.event.repository.default_branch }}
+
+      - name: Get PR information
+        id: pr_info
+        uses: actions/github-script@v8
+        with:
+          script: |
+            let prNumber, prHeadSha, prHeadRef, shouldFormat = false;
+
+            if (context.eventName === 'pull_request') {
+              prNumber = context.payload.pull_request.number;
+              prHeadSha = context.payload.pull_request.head.sha;
+              prHeadRef = context.payload.pull_request.head.ref;
+              shouldFormat = false; // Only check format on PR events
+            } else if (context.eventName === 'issue_comment') {
+              prNumber = context.payload.issue.number;
+
+              // Get PR details
+              const { data: pr } = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+              });
+
+              prHeadSha = pr.head.sha;
+              prHeadRef = pr.head.ref;
+              shouldFormat = context.payload.comment.body.includes('/format');
+            }
+
+            core.setOutput('pr_number', prNumber);
+            core.setOutput('pr_head_sha', prHeadSha);
+            core.setOutput('pr_head_ref', prHeadRef);
+            core.setOutput('should_format', shouldFormat);
+
+            return {
+              prNumber,
+              prHeadSha,
+              prHeadRef,
+              shouldFormat
+            };
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Check if formatting is needed
+        id: format_check
+        run: |
+          # Install dependencies
+          uv sync --only-group dev --directory src
+          . src/.venv/bin/activate
+
+          # Run pre-commit to check if formatting is needed
+          set +e
+          uv run pre-commit run --all-files --show-diff-on-failure
+          format_needed=$?
+          set -e
+
+          if [ $format_needed -eq 0 ]; then
+            echo "formatting_needed=false" >> $GITHUB_OUTPUT
+            echo "No formatting changes needed"
+          else
+            echo "formatting_needed=true" >> $GITHUB_OUTPUT
+            echo "Formatting changes are needed"
+          fi
+
+      - name: Save format request data
+        if: steps.pr_info.outputs.should_format == 'true' && steps.format_check.outputs.formatting_needed == 'true'
+        run: |
+          mkdir -p ./format-request
+          echo "${{ steps.pr_info.outputs.pr_number }}" > ./format-request/pr_number
+          echo "${{ steps.pr_info.outputs.pr_head_sha }}" > ./format-request/pr_head_sha
+          echo "${{ steps.pr_info.outputs.pr_head_ref }}" > ./format-request/pr_head_ref
+          echo "${{ github.event.comment.user.login || github.event.pull_request.user.login }}" > ./format-request/requester
+
+      - name: Upload format request artifact
+        if: steps.pr_info.outputs.should_format == 'true' && steps.format_check.outputs.formatting_needed == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-request
+          path: format-request/
+          retention-days: 1
+
+      - name: Comment on PR if formatting needed (PR events only)
+        if: >
+          github.event_name == 'pull_request' &&
+          steps.format_check.outputs.formatting_needed == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ steps.pr_info.outputs.pr_number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🔧 **Formatting Issues Detected**
+
+              This PR has formatting issues that need to be fixed. You can:
+
+              1. **Auto-format**: Comment \`/format\` on this PR to automatically apply formatting fixes
+              2. **Manual fix**: Run \`uv run pre-commit run --all-files\` locally and commit the changes
+
+              The CI will update once formatting is applied.`
+            });
