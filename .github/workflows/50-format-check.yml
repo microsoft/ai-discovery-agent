@@ -101,7 +101,12 @@ jobs:
       - name: Upload format request artifact
         if: steps.pr_info.outputs.should_format == 'true' && steps.format_check.outputs.formatting_needed == 'true'
         uses: actions/upload-artifact@v4
-        with:
+          requester_login="${{ github.event.comment.user.login || github.event.pull_request.user.login }}"
+          if [[ "$requester_login" =~ ^[A-Za-z0-9_-]+$ ]]; then
+            echo "$requester_login" > ./format-request/requester
+          else
+            echo "invalid_login" > ./format-request/requester
+          fi
           name: format-request
           path: format-request/
           retention-days: 1
