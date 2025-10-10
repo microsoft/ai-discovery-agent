@@ -167,6 +167,8 @@ jobs:
       - name: Comment on no changes needed
         if: steps.extract.outputs.should_format == 'true' && env.changes_made == 'false'
         uses: actions/github-script@v8
+        env:
+          REQUESTER: ${{ steps.extract.outputs.requester }}
         with:
           script: |
             github.rest.issues.createComment({
@@ -175,5 +177,5 @@ jobs:
               repo: context.repo.repo,
               body: `ℹ️ **No Formatting Changes Needed**
 
-              @${{ steps.extract.outputs.requester }} The code in this PR is already properly formatted. No changes were necessary.`
+              @${process.env.REQUESTER} The code in this PR is already properly formatted. No changes were necessary.`
             });
