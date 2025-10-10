@@ -161,6 +161,7 @@ jobs:
           name: format-request
           path: format-request/
           retention-days: 1
+
       - name: Comment on PR if formatting needed (PR events only)
         if: >
           github.event_name == 'pull_request' &&
