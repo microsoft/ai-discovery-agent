@@ -83,6 +83,19 @@ jobs:
             exit 1
           fi
 
+          # Validate and sanitize requester (GitHub username format)
+          # Only allow alphanumeric characters, hyphens, and underscores (valid GitHub username format)
+          if ! [[ "$REQUESTER" =~ ^[a-zA-Z0-9_-]+$ ]]; then
+            echo "Invalid requester format: $REQUESTER"
+            exit 1
+          fi
+          
+          # Additional length check for GitHub usernames (max 39 characters)
+          if [ ${#REQUESTER} -gt 39 ]; then
+            echo "Requester name too long: $REQUESTER"
+            exit 1
+          fi
+
           echo "should_format=true" >> $GITHUB_OUTPUT
           echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           echo "pr_head_sha=$PR_HEAD_SHA" >> $GITHUB_OUTPUT
@@ -136,7 +149,12 @@ jobs:
             echo "No changes to commit"
             echo "changes_made=false" >> $GITHUB_ENV
           else
-            git commit -m "Auto-format code with pre-commit Requested by: @$REQUESTER Co-authored-by: $REQUESTER <$REQUESTER@users.noreply.github.com>"
+            # Create a safe commit message using printf to avoid injection
+            # The requester has already been validated to contain only safe characters
+            printf -v COMMIT_MSG "Auto-format code with pre-commit\n\nRequested by: @%s\n\nCo-authored-by: %s <%s@users.noreply.github.com>" \
+              "$REQUESTER" "$REQUESTER" "$REQUESTER"
+            
+            git commit -m "$COMMIT_MSG"
             git push
             echo "changes_made=true" >> $GITHUB_ENV
           fi
