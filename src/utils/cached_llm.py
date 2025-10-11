@@ -46,7 +46,13 @@ def create_llm(
     """
     parsed = urlparse(endpoint)
     host = parsed.hostname
-    if host == "localhost" or host == "127.0.0.1":
+    # More robust check for local development environments
+    local_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}
+    if (
+        host in local_hosts
+        or (host and host.endswith(".local"))
+        or (host and host.endswith(".localhost"))
+    ):
         # Local model with model override
         model = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "llama-2-13b-chat")
         return ChatOpenAI(
