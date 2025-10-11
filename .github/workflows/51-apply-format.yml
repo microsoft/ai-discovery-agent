@@ -119,49 +119,14 @@ jobs:
           echo "pr_head_ref=$PR_HEAD_REF" >> $GITHUB_OUTPUT
           echo "requester=$REQUESTER" >> $GITHUB_OUTPUT
 
-      # Retrieves the source branch reference (ref) of the current pull request.
-      # This action uses the GitHub API to fetch the pull request details and extracts
-      # the head reference, which represents the branch that contains the changes.
-      # The reference is returned as a string and can be used in subsequent steps
-      # via ${{ steps.ref.outputs.result }}.
-      #
-      # Outputs:
-      #   result: The branch reference of the PR (e.g., 'feature/my-branch')
-      #
-      # Requirements:
-      #   - Must be run in a pull request context
-      #   - Requires 'pull-requests: read' permission
-      - name: Get PR REF
-        id: ref
-        uses: actions/github-script@v8
-        with:
-          result-encoding: string
-          retries: 3
-          script: |
-            const { owner, repo, number } = context.issue;
-
-            // Check if this is actually a PR
-            try {
-              const pr = await github.rest.pulls.get({
-                owner,
-                repo,
-                pull_number: number,
-              });
-              return pr.data.head.ref;
-            } catch (error) {
-              if (error.status === 404) {
-                core.setFailed('This action only works on pull request comments');
-              }
-              throw error;
-            }
 
       - name: Checkout PR code
         uses: actions/checkout@v5
         with:
           token: ${{ secrets.PUSH_PAT }}
           repository: ${{ github.repository }}
-          # Check out the PR head ref that corresponds to the pull_request
-          ref: ${{ steps.ref.outputs.result }}
+          # Check out the PR head sha that corresponds to the original pull_request
+          ref: ${{ steps.extract.outputs.pr_head_sha }}
 
 
       - name: Install Python
