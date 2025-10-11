@@ -4,12 +4,12 @@ on:
   workflow_dispatch:
   workflow_call:
   pull_request:
-    branches: [main]
+    branches: [main,dev,release/*]
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
   push:
-    branches: [release/*]
+    branches: [main,dev,release/*]
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
