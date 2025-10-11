@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """FastAPI server module for AI Discovery Agent.
 
 This module provides a FastAPI server that serves the Chainlit application

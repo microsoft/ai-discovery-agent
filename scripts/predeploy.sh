@@ -1,5 +1,5 @@
-repo_name=$(gh repo view --json nameWithOwner -t "{{.nameWithOwner}}")
-azd env set GITHUB_REPOSITORY "$repo_name"
+#!/bin/bash
 
 cd src
-uv pip compile pyproject.toml --no-deps -o requirements.txt
+# App service relies on the requirements file
+uv pip compile pyproject.toml -o requirements.txt

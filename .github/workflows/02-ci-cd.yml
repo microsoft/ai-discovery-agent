@@ -37,6 +37,7 @@ jobs:
       contents: read
       # only needed for private repository
       issues: read
+      actions: read
   infra-security:
     uses: ./.github/workflows/03-bicep-security.yml
     secrets: inherit
@@ -124,7 +125,7 @@ jobs:
         uses: Azure/setup-azd@v2.2.0
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: Run tests
         run: uv run pytest

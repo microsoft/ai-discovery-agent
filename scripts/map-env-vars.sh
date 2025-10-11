@@ -17,14 +17,16 @@ echo "azd .env file loaded successfully."
 if [ -z "$GITHUB_SECRET" ]; then
     echo "Setting GitHub repository variables from environment..."
     GITHUB_REPOSITORY=$(gh repo view --json nameWithOwner -t "{{.nameWithOwner}}")
-    echo "Creating or updating GitHub repo $GITHUB_REPOSITORY for environment: $AZURE_ENV_NAME"
-    gh api --method PUT -H "Accept: application/vnd.github+json" "repos/${GITHUB_REPOSITORY}/environments/${AZURE_ENV_NAME}"
+    DEPLOYMENT_ENVIRONMENT="dev"
 
-    gh variable set AZURE_GH_FED_CLIENT_ID --body "$AZURE_GH_FED_CLIENT_ID" --env "$AZURE_ENV_NAME"
-    gh variable set AZURE_TENANT_ID --body "$AZURE_TENANT_ID" --env "$AZURE_ENV_NAME"
-    gh variable set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID" --env "$AZURE_ENV_NAME"
-    gh variable set AZURE_ENV_NAME --body "$AZURE_ENV_NAME" --env "$AZURE_ENV_NAME"
-    gh variable set AZURE_LOCATION --body "$AZURE_LOCATION" --env "$AZURE_ENV_NAME"
+    echo "Creating or updating GitHub repo $GITHUB_REPOSITORY for environment: $DEPLOYMENT_ENVIRONMENT"
+    gh api --method PUT -H "Accept: application/vnd.github+json" "repos/${GITHUB_REPOSITORY}/environments/${DEPLOYMENT_ENVIRONMENT}"
+
+    gh variable set AZURE_GH_FED_CLIENT_ID --body "$AZURE_GH_FED_CLIENT_ID" --env "$DEPLOYMENT_ENVIRONMENT"
+    gh variable set AZURE_TENANT_ID --body "$AZURE_TENANT_ID" --env "$DEPLOYMENT_ENVIRONMENT"
+    gh variable set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID" --env "$DEPLOYMENT_ENVIRONMENT"
+    gh variable set AZURE_ENV_NAME --body "$AZURE_ENV_NAME" --env "$DEPLOYMENT_ENVIRONMENT"
+    gh variable set AZURE_LOCATION --body "$AZURE_LOCATION" --env "$DEPLOYMENT_ENVIRONMENT"
 else
     echo "GITHUB_SECRET is set, skipping GitHub variable configuration."
 fi

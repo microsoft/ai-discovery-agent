@@ -19,7 +19,6 @@ classifiers = [
 
 dependencies = [
     "chainlit>=2.8.0",
-    "bcrypt>=4.3.0",
     "python-dotenv>=1.1.0",
     "openai>=1.104.2",
     "azure-identity>=1.23.0",
@@ -68,8 +67,8 @@ select = [
     "UP", # pyupgrade
 ]
 ignore = [
-    "E203",  # handled by Black
-    "E501",  # line length enforced by Black
+    "E203", # handled by Black
+    "E501", # line length enforced by Black
 ]
 
 [tool.setuptools.packages.find]

@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """
 Unit tests for the auth module.
 
@@ -27,25 +30,40 @@ class TestPasswordAuthentication:
     async def test_password_auth_callback_success(self, mock_yaml_load, mock_file):
         """Test successful password authentication."""
         # Arrange
-        mock_yaml_load.return_value = SAMPLE_AUTH_CONFIG
-        username = "testuser"
         password = "testpass"  # nosec B105
 
-        # Mock bcrypt.checkpw properly - need to mock bcrypt.hashpw instead since that's what's used
-        with patch("auth.bcrypt.hashpw") as mock_hashpw:
-            # The actual implementation uses hashpw and compares the result
-            stored_hash = "$2b$12$sample.hashed.password.for.testing"
-            mock_hashpw.return_value = stored_hash.encode("utf-8")
+        # Create a proper PBKDF2 hash for the test password
+        from auth import _hash_password
 
-            # Act
-            result = await password_auth_callback(username, password)
+        hashed_password = _hash_password(password)
 
-            # Assert
-            assert result is not None
-            assert result.identifier == username
-            assert result.metadata["email"] == "test@example.com"
-            assert result.metadata["first_name"] == "Test"
-            assert result.metadata["roles"] == ["user"]
+        # Update the test config with the properly hashed password
+        test_config = {
+            "credentials": {
+                "usernames": {
+                    "testuser": {
+                        "email": "test@example.com",
+                        "first_name": "Test",
+                        "last_name": "User",
+                        "password": hashed_password,
+                        "roles": ["user"],
+                    }
+                }
+            }
+        }
+
+        mock_yaml_load.return_value = test_config
+        username = "testuser"
+
+        # Act
+        result = await password_auth_callback(username, password)
+
+        # Assert
+        assert result is not None
+        assert result.identifier == username
+        assert result.metadata["email"] == "test@example.com"
+        assert result.metadata["first_name"] == "Test"
+        assert result.metadata["roles"] == ["user"]
 
     @patch("builtins.open", new_callable=mock_open)
     @patch("auth.yaml.load")
@@ -69,20 +87,37 @@ class TestPasswordAuthentication:
     ):
         """Test authentication with wrong password."""
         # Arrange
-        mock_yaml_load.return_value = SAMPLE_AUTH_CONFIG
+        correct_password = "testpass"  # nosec B105
+        wrong_password = "wrongpass"  # nosec B105
+
+        # Create a proper PBKDF2 hash for the correct password
+        from auth import _hash_password
+
+        hashed_password = _hash_password(correct_password)
+
+        # Update the test config with the properly hashed password
+        test_config = {
+            "credentials": {
+                "usernames": {
+                    "testuser": {
+                        "email": "test@example.com",
+                        "first_name": "Test",
+                        "last_name": "User",
+                        "password": hashed_password,
+                        "roles": ["user"],
+                    }
+                }
+            }
+        }
+
+        mock_yaml_load.return_value = test_config
         username = "testuser"
-        password = "wrongpass"  # nosec B105
 
-        # Mock bcrypt to simulate password verification failure
-        with patch("auth.bcrypt.hashpw") as mock_hashpw:
-            # Different hash result means wrong password
-            mock_hashpw.return_value = b"different_hash_result"
+        # Act - try to authenticate with wrong password
+        result = await password_auth_callback(username, wrong_password)
 
-            # Act
-            result = await password_auth_callback(username, password)
-
-            # Assert
-            assert result is None
+        # Assert
+        assert result is None
 
     @patch("builtins.open", side_effect=FileNotFoundError)
     async def test_password_auth_callback_config_not_found(self, mock_file):

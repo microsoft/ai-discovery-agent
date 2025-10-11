@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """
 Agent registry for AI Discovery Workshop Agent (unified YAML version)
 

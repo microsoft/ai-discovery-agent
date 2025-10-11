@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """
 Integration tests for message routing and chat handling.
 
@@ -12,6 +15,7 @@ import pytest
 import main
 from agents.agent_manager import ChainlitAgentManager
 from chat_handlers import on_chat_start, set_chat_profiles
+from persistence.conversation_manager import DummyConversationManager
 from tests.fixtures.data import (
     create_mock_admin_user,
     create_mock_user,
@@ -135,7 +139,7 @@ class TestChatStartIntegration:
 
                     # Act
                     await on_chat_start(
-                        main.get_agent_manager(), main.get_conversation_manager()
+                        main.get_agent_manager(), DummyConversationManager()
                     )
 
                     # Assert
@@ -167,7 +171,7 @@ class TestChatStartIntegration:
 
                 # Act
                 await on_chat_start(
-                    main.get_agent_manager(), main.get_conversation_manager()
+                    main.get_agent_manager(), DummyConversationManager()
                 )
 
                 # Assert - should send authentication error message
@@ -192,7 +196,7 @@ class TestChatStartIntegration:
 
                     # Act
                     await on_chat_start(
-                        main.get_agent_manager(), main.get_conversation_manager()
+                        main.get_agent_manager(), DummyConversationManager()
                     )
 
                     # Assert - should send no agents available message
