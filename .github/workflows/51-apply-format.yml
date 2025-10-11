@@ -80,8 +80,8 @@ jobs:
             exit 1
           fi
 
-          # Validate SHA format (40 hex characters)
-          if ! [[ "$PR_HEAD_SHA" =~ ^[a-f0-9]{40}$ ]]; then
+          # Validate SHA format (40 hex characters, uppercase or lowercase)  
+          if ! [[ "$PR_HEAD_SHA" =~ ^[a-fA-F0-9]{40}$ ]]; then
             echo "Invalid SHA format: $PR_HEAD_SHA"
             exit 1
           fi
