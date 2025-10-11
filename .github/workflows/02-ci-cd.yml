@@ -38,6 +38,7 @@ jobs:
       # only needed for private repository
       issues: read
       actions: read
+      security-events: write
   infra-security:
     uses: ./.github/workflows/03-bicep-security.yml
     secrets: inherit
