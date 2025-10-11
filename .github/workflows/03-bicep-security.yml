@@ -37,21 +37,14 @@ jobs:
         with:
           directory: infra/
           config_file: infra/.checkov.yaml # Use project-specific configuration
-          quiet: true # Display only failed checks
-          # soft_fail: true # Do not return an error code if there are failed checks
-          framework: bicep # Specify to run checks only on Azure Bicep templates
-          output_format: junitxml,cli # Set output formats
-          output_file_path: bicep_results.xml # Specify the file path for the JUnit XML output
-          # output_format: sarif # Set output format to SARIF for integration with GitHub security tab
-          # output_file_path: bicep_results.sarif # Specify the file path for the SARIF output
-          download_external_modules: true # Enable downloading external modules
 
       # need code scanning activated to upload SARIF results to security tab
-      # - name: Upload SARIF Results to GitHub
-      #   if: always() # Ensure this step runs regardless of previous steps' success or failure
-      #   uses: github/codeql-action/upload-sarif@v3
-      #   with:
-      #     sarif_file: bicep_results.sarif
+      - name: Upload SARIF Results to GitHub
+        if: (!cancelled())
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: bicep_results.sarif
+          category: bicep-scan
       - name: Upload Test Results
         if: (!cancelled())
         uses: actions/upload-artifact@v4

@@ -31,29 +31,22 @@ soft-fail: false
 
 # Output formats
 output:
-  - cli
+  - sarif
   - junitxml
-  # Uncomment for GitHub Security tab integration (requires code scanning enabled)
-  # - sarif
-
+  - cli
+output-file-path: bicep_results.sarif,bicep_results.xml,console
 # Framework-specific settings
 framework:
   - bicep
-  - arm  # ARM templates generated from Bicep
 
 # External modules
 download-external-modules: true
 
 # Compact output
-compact: true
+# compact: true
 
 # Quiet mode (only show failed checks)
-quiet: true
-
-# Check severity threshold
-# Options: critical, high, medium, low
-# Only checks at or above this severity will be evaluated
-check-threshold: medium
+# quiet: true
 
 # Specific checks to always run (high-priority security checks)
 check:
@@ -89,7 +82,7 @@ check:
 #   - infra/examples/
 
 # Enable GitHub annotations
-github-action: true
+# github-action: true
 
 # Set baseline (if migrating from existing infrastructure)
 # baseline: .checkov.baseline
@@ -106,6 +99,3 @@ enable-secret-scan-all-files: true
 #   - aws
 #   - gcp
 
-# Performance settings
-parallel: true
-max-workers: 4

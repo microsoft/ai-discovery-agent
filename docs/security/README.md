@@ -173,7 +173,7 @@ checkov -d . --framework bicep --config-file .checkov.yaml
 ```bash
 # Run Bandit security scanner
 cd src
-uv run bandit -c bandit.yml -r .
+uv run bandit -c .bandit.yml -r .
 ```
 
 **CI/CD:** `.github/workflows/01-ci.yml`
