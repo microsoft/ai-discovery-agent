@@ -1,5 +1,4 @@
 name: Azure Bicep Template Analysis
-
 on:
   workflow_dispatch:
   workflow_call:
@@ -9,7 +8,9 @@ on:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
   push:
-    branches: [release/*]
+    branches-ignore:
+      - main # for main we run ci/cd
+      - dev
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
@@ -28,8 +29,9 @@ jobs:
     name: Checkov Bicep Analysis
     permissions:
       security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
+
     steps:
-      - name: Checkout Repository
+      - name: Checkout
         uses: actions/checkout@v5
 
       - name: Run Checkov Action
