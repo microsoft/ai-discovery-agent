@@ -4,21 +4,18 @@ on:
   workflow_dispatch:
   workflow_call:
   pull_request:
-    branches:
-      - main
-      - dev
+    branches: [main]
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
   push:
-    branches:
-      - main
-      - dev
+    branches: [release/*]
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
 
 permissions:
+  id-token: write
   contents: read # Allows actions/checkout to fetch the code
   issues: read # only needed for private repository
   actions: read # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)

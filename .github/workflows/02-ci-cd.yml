@@ -43,6 +43,7 @@ jobs:
     uses: ./.github/workflows/03-bicep-security.yml
     secrets: inherit
     permissions:
+      id-token: write
       contents: read # Allows actions/checkout to fetch the code
       security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
       checks: write
