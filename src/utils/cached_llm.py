@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 import os
+from urllib.parse import urlparse
 
 import chainlit as cl
 from azure.identity import get_bearer_token_provider
@@ -43,7 +44,23 @@ def create_llm(
         multiple authentication methods in order (environment variables, managed identity,
         Azure CLI, etc.).
     """
-    if "azure.com" in endpoint:
+    parsed = urlparse(endpoint)
+    host = parsed.hostname
+    if host == "localhost" or host == "127.0.0.1":
+        # Local model with model override
+        model = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "llama-2-13b-chat")
+        return ChatOpenAI(
+            model=model,
+            base_url=endpoint,
+            streaming=True,
+            temperature=temperature,
+            stream_usage=True,
+            api_key=SecretStr(
+                os.environ.get("AZURE_ENV_NAME", "")
+            ),  # used to bypass the api key requirement
+            tags=[tag] if tag else None,
+        )
+    else:
         # Use Azure identity for authentication
         token_provider = get_bearer_token_provider(
             get_azure_credential(), "https://cognitiveservices.azure.com/.default"
@@ -61,19 +78,5 @@ def create_llm(
             temperature=temperature,
             streaming=True,
             stream_usage=True,
-            tags=[tag] if tag else None,
-        )
-    else:
-        # Local model with model override
-        model = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "llama-2-13b-chat")
-        return ChatOpenAI(
-            model=model,
-            base_url=endpoint,
-            streaming=True,
-            temperature=temperature,
-            stream_usage=True,
-            api_key=SecretStr(
-                os.environ.get("AZURE_ENV_NAME", "")
-            ),  # used to bypass the api key requirement
             tags=[tag] if tag else None,
         )
