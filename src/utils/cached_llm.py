@@ -43,7 +43,7 @@ def create_llm(
         multiple authentication methods in order (environment variables, managed identity,
         Azure CLI, etc.).
     """
-    if endpoint.startswith("https"):
+    if "azure.com" in endpoint:
         # Use Azure identity for authentication
         token_provider = get_bearer_token_provider(
             get_azure_credential(), "https://cognitiveservices.azure.com/.default"
