@@ -1,4 +1,3 @@
-
 import os
 
 
@@ -15,9 +14,12 @@ def get_azure_credential():
         DefaultAzureCredential or ManagedIdentityCredential: The appropriate Azure credential object.
     """
     from azure.identity import DefaultAzureCredential, ManagedIdentityCredential
-    if os.getenv("LOCAL_DEVELOPMENT","false").lower() == "true":
+
+    if os.getenv("LOCAL_DEVELOPMENT", "false").lower() == "true":
         # Use DefaultAzureCredential for local development; it attempts multiple authentication methods including environment variables, managed identity, Azure CLI, etc.
-        credential = DefaultAzureCredential()  # CodeQL [SM05139] Okay use of DefaultAzureCredential as it is only used in development 
+        credential = (
+            DefaultAzureCredential()
+        )  # CodeQL [SM05139] Okay use of DefaultAzureCredential as it is only used in development
     else:
         credential = ManagedIdentityCredential()
     return credential
