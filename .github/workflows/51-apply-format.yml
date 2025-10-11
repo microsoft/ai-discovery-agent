@@ -154,11 +154,15 @@ jobs:
             echo "No changes to commit"
             echo "changes_made=false" >> $GITHUB_ENV
           else
-            # Create a safe commit message using printf to avoid injection
-            # The requester has already been validated to contain only safe characters
-            printf -v COMMIT_MSG "Auto-format code with pre-commit\n\nRequested by: @%s\n\nCo-authored-by: %s <%s@users.noreply.github.com>" \
-              "$REQUESTER" "$REQUESTER" "$REQUESTER"
+            # Create a safe commit message using a here-document to avoid format string vulnerabilities
+            COMMIT_MSG=$(cat <<EOF
+Auto-format code with pre-commit
 
+Requested by: @$REQUESTER
+
+Co-authored-by: $REQUESTER <$REQUESTER@users.noreply.github.com>
+EOF
+)
             git commit -m "$COMMIT_MSG"
             git push
             echo "changes_made=true" >> $GITHUB_ENV
