@@ -12,6 +12,8 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref || github.run_id }}
   cancel-in-progress: true
 
+permissions: {}
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest

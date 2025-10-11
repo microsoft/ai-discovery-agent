@@ -6,6 +6,8 @@ on:
   issue_comment:
     types: [created]
 
+permissions: {}
+
 jobs:
   check-format:
     runs-on: ubuntu-latest
