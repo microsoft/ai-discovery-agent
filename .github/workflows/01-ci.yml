@@ -59,9 +59,9 @@ jobs:
         working-directory: src
         if: always()
         run: |
-          uv run bandit -x "${pwd}/.venv" -s B101 -r -f xml -o bandit_test.xml .
+          uv run bandit -c .bandit -r -f xml -o bandit_test.xml .
           # if you install bandit_sarif_formatter you can also do:
-          # uv run bandit -x "${pwd}/.venv" -s B101 -r -f sarif -o /tmp/bandit.sarif .
+          # uv run bandit -c .bandit -r -f sarif -o /tmp/bandit.sarif .
 
       - name: Upload Test Results
         if: (!cancelled())

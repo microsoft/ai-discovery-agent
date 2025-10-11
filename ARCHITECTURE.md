@@ -28,6 +28,9 @@ graph TD
 | (root) `resources.bicep` | Orchestrates modules + App Service (prod/staging), Azure OpenAI, identity, outputs. | App URIs, model endpoints, storage URL |
 
 ## 3. Security Guardrails
+
+> **Comprehensive Security Documentation:** See [docs/security/](docs/security/) for detailed security analysis, threat modeling, and testing guides.
+
 | Layer | Guardrail | Rationale |
 | ----- | --------- | --------- |
 | Transport | HTTPS enforced for App & Storage; TLS1_2 minimum | Prevent downgrade / insecure channels |
@@ -36,6 +39,31 @@ graph TD
 | Data | No public blob access; encrypted services (blob/file) | Confidentiality & integrity by default |
 | Deployment | Staging slot then manual swap | Safer rollouts & rollback path |
 | CI/CD | GitHub OIDC federation (no static secrets) | Eliminates credential leakage risk |
+
+### Security Reviews & Documentation
+
+**STRIDE Threat Model:** [docs/security/STRIDE_THREAT_MODEL.md](docs/security/STRIDE_THREAT_MODEL.md)
+- Complete threat analysis across all six STRIDE categories
+- Risk assessments and mitigations
+- Implementation roadmap
+
+**Security Baseline:** [docs/security/SECURITY_BASELINE.md](docs/security/SECURITY_BASELINE.md)
+- Infrastructure security controls (Bicep, Checkov)
+- Application security (SAST with Bandit, CodeQL)
+- Dependency management (Dependabot)
+- CI/CD security (OIDC, GitHub Actions)
+
+**DAST Guide:** [docs/security/DAST_GUIDE.md](docs/security/DAST_GUIDE.md)
+- Dynamic application security testing approach
+- OWASP ZAP, Burp Suite, Nuclei configurations
+- AI-specific testing (prompt injection)
+- CI/CD integration strategies
+
+**Security Review Checklist:** [docs/security/SECURITY_REVIEW_CHECKLIST.md](docs/security/SECURITY_REVIEW_CHECKLIST.md)
+- PR review requirements
+- Infrastructure change validation
+- Deployment verification
+- Compliance sign-off procedures
 
 ## 4. Conversation Persistence
 - Container: `default/conversations`
