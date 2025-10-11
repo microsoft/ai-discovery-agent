@@ -98,4 +98,3 @@ enable-secret-scan-all-files: true
 # skip-framework:
 #   - aws
 #   - gcp
-
