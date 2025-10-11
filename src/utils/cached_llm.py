@@ -47,7 +47,7 @@ def create_llm(
     parsed = urlparse(endpoint)
     host = parsed.hostname
     # More robust check for local development environments
-    local_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "::1"} # nosec B104
+    local_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}  # nosec B104
     if (
         host in local_hosts
         or (host and host.endswith(".local"))
