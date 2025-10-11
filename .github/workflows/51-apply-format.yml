@@ -171,7 +171,6 @@ jobs:
       - name: Comment on successful formatting
         if: steps.extract.outputs.should_format == 'true' && steps.commit.outputs.changes_made == 'true'
         uses: actions/github-script@v8
-        uses: actions/github-script@v8
         env:
           REQUESTER: ${{ steps.extract.outputs.requester }}
         with:
@@ -193,7 +192,6 @@ jobs:
             });
       - name: Comment on no changes needed
         if: steps.extract.outputs.should_format == 'true' && steps.commit.outputs.changes_made == 'false'
-        uses: actions/github-script@v8
         uses: actions/github-script@v8
         env:
           REQUESTER: ${{ steps.extract.outputs.requester }}
