@@ -126,7 +126,7 @@ jobs:
           token: ${{ secrets.PUSH_PAT }}
           repository: ${{ github.repository }}
           # Check out the PR head sha that corresponds to the original pull_request
-          ref: ${{ steps.extract.outputs.pr_head_sha }}
+          ref: ${{ steps.extract.outputs.pr_head_ref }}
 
 
       - name: Install Python
