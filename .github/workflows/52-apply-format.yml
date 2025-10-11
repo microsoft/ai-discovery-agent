@@ -2,14 +2,13 @@ name: Apply Format
 
 on:
   workflow_run:
-    workflows: ["Format Check"]
+    workflows: ["Format Request"]
     types:
       - completed
 
 permissions: {}
 
 jobs:
-
   apply-format:
     runs-on: ubuntu-latest
     if: >
