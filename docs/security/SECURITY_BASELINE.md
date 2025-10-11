@@ -134,7 +134,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 **Bandit Configuration:**
 ```bash
-bandit -x .venv -s B101 -r -f xml -o bandit_test.xml .
+uv run bandit -c bandit.yml -r .
 ```
 
 **Suppressions:**

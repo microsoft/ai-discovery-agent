@@ -59,12 +59,12 @@ jobs:
       - name: bandit security scan (SARIF)
         working-directory: src
         if: always()
-        run: uv run bandit -c .bandit -r -f sarif -o bandit.sarif .
+        run: uv run bandit -c bandit.yml -r -f sarif -o bandit.sarif .
 
       - name: bandit security scan (XML)
         working-directory: src
         if: always()
-        run: uv run bandit -c .bandit -r -f xml -o bandit_test.xml .
+        run: uv run bandit -c bandit.yml -r -f xml -o bandit_test.xml .
 
       - name: Upload SARIF file
         if: (!cancelled())
@@ -75,6 +75,13 @@ jobs:
           # Optional category for the results
           # Used to differentiate multiple results for one commit
           category: bandit-scan
+
+      - name: Bandit by PyCQA
+        uses: PyCQA/bandit-action@v1.0.1
+        if: always()
+        with:
+          targets: src
+          configfile: src/bandit.yml
 
       - name: Upload Test Results
         if: (!cancelled())

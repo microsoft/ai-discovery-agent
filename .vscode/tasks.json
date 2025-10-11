@@ -32,7 +32,7 @@
     {
       "label": "bandit",
       "type": "shell",
-      "command": "cd src && uv run bandit -x \"${pwd}/.venv\" -s B101 -r .",
+      "command": "cd src && uv run bandit -c bandit.yml -r .",
       "group": "test",
       "problemMatcher": "$python"
     },
