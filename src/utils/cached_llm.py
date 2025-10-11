@@ -2,9 +2,10 @@
 # Licensed under the MIT license.
 
 import chainlit as cl
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.identity import get_bearer_token_provider
 from langchain_openai import AzureChatOpenAI
 
+from utils.credentials import get_azure_credential
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -34,13 +35,13 @@ def create_llm(
             and Azure AD authentication.
 
     Note:
-        This function uses DefaultAzureCredential for authentication, which attempts
+        This function uses get_azure_credential for authentication, which attempts
         multiple authentication methods in order (environment variables, managed identity,
         Azure CLI, etc.).
     """
     # Use Azure identity for authentication
     token_provider = get_bearer_token_provider(
-        DefaultAzureCredential(), "https://cognitiveservices.azure.com/.default"
+        get_azure_credential(), "https://cognitiveservices.azure.com/.default"
     )
     logger.info(
         "Creating AzureChatOpenAI instance with endpoint: %s, deployment: %s",

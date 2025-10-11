@@ -18,10 +18,10 @@ from datetime import UTC, datetime
 from typing import Any
 
 from azure.core.exceptions import ResourceNotFoundError
-from azure.identity import DefaultAzureCredential  # Added for managed identity
 from azure.storage.blob import ContentSettings
 from azure.storage.blob.aio import BlobServiceClient  # Updated to async client
 
+from utils.credentials import get_azure_credential
 from utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -77,12 +77,12 @@ class AzureStorageManager:
                     "Azure Storage configuration missing. Provide AZURE_STORAGE_CONNECTION_STRING "
                     "or set AZURE_STORAGE_ACCOUNT_URL for managed identity."
                 )
-            credential = DefaultAzureCredential()
+            credential = get_azure_credential()
             self.blob_service_client = BlobServiceClient(
                 account_url=account_url, credential=credential
             )
             logger.info(
-                "AzureStorageManager initialized with managed identity (DefaultAzureCredential)."
+                f"AzureStorageManager initialized with ${type(credential).__name__}."
             )
 
     def _get_user_container_name(self, user_id: str) -> str:
