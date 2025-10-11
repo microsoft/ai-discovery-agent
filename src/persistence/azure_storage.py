@@ -82,7 +82,7 @@ class AzureStorageManager:
                 account_url=account_url, credential=credential
             )
             logger.info(
-                f"AzureStorageManager initialized with ${type(credential).__name__}."
+                f"AzureStorageManager initialized with {type(credential).__name__}."
             )
 
     def _get_user_container_name(self, user_id: str) -> str:
