@@ -56,13 +56,15 @@ jobs:
         run: uv run pytest --junit-xml pytest.xml
         working-directory: src
 
-      - name: bandit security scan
+      - name: bandit security scan (SARIF)
         working-directory: src
         if: always()
-        run: |
-          # uv run bandit -c .bandit -r -f xml -o bandit_test.xml .
-          # if you install bandit_sarif_formatter you can also do:
-          uv run bandit -c .bandit -r -f sarif -o bandit.sarif .
+        run: uv run bandit -c .bandit -r -f sarif -o bandit.sarif .
+
+      - name: bandit security scan (XML)
+        working-directory: src
+        if: always()
+        run: uv run bandit -c .bandit -r -f xml -o bandit_test.xml .
 
       - name: Upload SARIF file
         if: (!cancelled())
