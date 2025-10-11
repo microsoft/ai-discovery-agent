@@ -36,7 +36,8 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-
+        with:
+            token: ${{ secrets.GITHUB_TOKEN }}
       - name: Run Checkov Action
         id: checkov
         uses: bridgecrewio/checkov-action@v12
