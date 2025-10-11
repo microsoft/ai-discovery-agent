@@ -161,19 +161,14 @@ jobs:
           cd src
 
           # Install only formatting dependencies with pinned versions
-          uv add --group dev black==24.8.0 isort==5.13.2 ruff==0.6.8 --no-sync
           uv sync --only-group dev
-
-          # Run formatters directly instead of through pre-commit
-          echo "Running Black formatter..."
-          uv run black . --check --diff || uv run black .
-
-          echo "Running isort..."
-          uv run isort . --check-only --diff || uv run isort .
-
-          echo "Running Ruff..."
-          uv run ruff check . --fix --unsafe-fixes
-          uv run ruff format .
+          if uv run pre-commit run --all-files; then
+              echo "Pre-commit checks passed or made changes."
+          else
+              # set -e # If the next one still fails, just fail the job
+              echo "Pre-commit checks failed. Running a second time to fix issues."
+              uv run pre-commit run --all-files
+          fi
 
       - name: Commit and push changes
         if: steps.extract.outputs.should_format == 'true'
