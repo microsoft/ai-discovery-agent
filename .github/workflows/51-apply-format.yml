@@ -80,7 +80,7 @@ jobs:
             exit 1
           fi
 
-          # Validate SHA format (40 hex characters, uppercase or lowercase)  
+          # Validate SHA format (40 hex characters, uppercase or lowercase)
           if ! [[ "$PR_HEAD_SHA" =~ ^[a-fA-F0-9]{40}$ ]]; then
             echo "Invalid SHA format: $PR_HEAD_SHA"
             exit 1
@@ -143,6 +143,7 @@ jobs:
 
       - name: Commit and push changes
         if: steps.extract.outputs.should_format == 'true'
+        id: commit
         env:
           REQUESTER: ${{ steps.extract.outputs.requester }}
         run: |
@@ -152,24 +153,24 @@ jobs:
 
           if git diff --staged --quiet; then
             echo "No changes to commit"
-            echo "changes_made=false" >> $GITHUB_ENV
+            echo "changes_made=false" >> $GITHUB_OUTPUT
           else
             # Create a safe commit message using a here-document to avoid format string vulnerabilities
             COMMIT_MSG=$(cat <<EOF
-Auto-format code with pre-commit
+            Auto-format code with pre-commit
 
-Requested by: @$REQUESTER
+            Requested by: @$REQUESTER
 
-Co-authored-by: $REQUESTER <$REQUESTER@users.noreply.github.com>
-EOF
-)
+            Co-authored-by: $REQUESTER <$REQUESTER@users.noreply.github.com>
+            EOF
+            )
             git commit -m "$COMMIT_MSG"
             git push
-            echo "changes_made=true" >> $GITHUB_ENV
+            echo "changes_made=true" >> $GITHUB_OUTPUT
           fi
-
       - name: Comment on successful formatting
-        if: steps.extract.outputs.should_format == 'true' && env.changes_made == 'true'
+        if: steps.extract.outputs.should_format == 'true' && steps.commit.outputs.changes_made == 'true'
+        uses: actions/github-script@v8
         uses: actions/github-script@v8
         env:
           REQUESTER: ${{ steps.extract.outputs.requester }}
@@ -190,9 +191,9 @@ EOF
 
               The CI checks should now pass! 🎉`
             });
-
       - name: Comment on no changes needed
-        if: steps.extract.outputs.should_format == 'true' && env.changes_made == 'false'
+        if: steps.extract.outputs.should_format == 'true' && steps.commit.outputs.changes_made == 'false'
+        uses: actions/github-script@v8
         uses: actions/github-script@v8
         env:
           REQUESTER: ${{ steps.extract.outputs.requester }}
