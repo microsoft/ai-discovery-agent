@@ -16,7 +16,10 @@ import main
 from agents.agent_manager import ChainlitAgentManager
 from chat_handlers import on_chat_start, set_chat_profiles
 from persistence.conversation_manager import DummyConversationManager
-from tests.fixtures.data import create_mock_admin_user, create_mock_user
+from tests.fixtures.data import (
+    create_mock_admin_user,
+    create_mock_user,
+)
 
 
 class TestChatProfileIntegration:
