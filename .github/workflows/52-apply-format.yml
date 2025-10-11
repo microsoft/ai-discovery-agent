@@ -115,6 +115,22 @@ jobs:
           # Check out the PR head sha that corresponds to the original pull_request
           ref: ${{ steps.extract.outputs.pr_head_ref }}
 
+      - name: Security validation
+        if: steps.extract.outputs.should_format == 'true'
+        run: |
+          # Validate that we're only formatting, not executing arbitrary code
+          # Check for suspicious files that shouldn't be in a Python project
+          find . -name "*.exe" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" | head -10 | while read file; do
+            echo "Warning: Found executable file $file"
+          done
+          
+          # Ensure pyproject.toml hasn't been modified to include malicious build scripts
+          if [ -f src/pyproject.toml ]; then
+            if grep -E "(build-backend|build_meta|build\.py)" src/pyproject.toml; then
+              echo "Build scripts detected in pyproject.toml - manual review required"
+            fi
+          fi
+
 
       - name: Install Python
         if: steps.extract.outputs.should_format == 'true'
@@ -126,21 +142,38 @@ jobs:
         if: steps.extract.outputs.should_format == 'true'
         uses: astral-sh/setup-uv@v7
 
+      - name: Validate pre-commit config
+        if: steps.extract.outputs.should_format == 'true'
+        run: |
+          # Ensure pre-commit config hasn't been tampered with
+          if [ -f .pre-commit-config.yaml ]; then
+            # Check for suspicious patterns in pre-commit config
+            if grep -E "(exec|eval|system|subprocess|shell|bash|sh|cmd)" .pre-commit-config.yaml; then
+              echo "Suspicious patterns found in pre-commit config"
+              exit 1
+            fi
+          fi
+
       - name: Apply formatting
         if: steps.extract.outputs.should_format == 'true'
         run: |
-          # Install dependencies
-          uv sync --only-group dev --directory src
-          . src/.venv/bin/activate
-
-          set +e # Don't exit immediately if pre-commit fails
-          if uv run pre-commit run --all-files; then
-              echo "Pre-commit checks passed or made changes."
-          else
-              set -e # If the next one still fails, just fail the job
-              echo "Pre-commit checks failed. Running a second time to fix issues."
-              uv run pre-commit run --all-files
-          fi
+          # Use explicit tool versions instead of pre-commit to avoid untrusted code execution
+          cd src
+          
+          # Install only formatting dependencies with pinned versions
+          uv add --group dev black==24.8.0 isort==5.13.2 ruff==0.6.8 --no-sync
+          uv sync --only-group dev
+          
+          # Run formatters directly instead of through pre-commit
+          echo "Running Black formatter..."
+          uv run black . --check --diff || uv run black .
+          
+          echo "Running isort..."
+          uv run isort . --check-only --diff || uv run isort .
+          
+          echo "Running Ruff..."
+          uv run ruff check . --fix --unsafe-fixes
+          uv run ruff format .
 
       - name: Commit and push changes
         if: steps.extract.outputs.should_format == 'true'
