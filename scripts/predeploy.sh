@@ -1,5 +1,4 @@
-repo_name=$(gh repo view --json nameWithOwner -t "{{.nameWithOwner}}")
-azd env set GITHUB_REPOSITORY "$repo_name"
+#!/bin/bash
 
 cd src
 # App service relies on the requirements file
