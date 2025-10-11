@@ -1,6 +1,6 @@
 # Security Baseline & Controls
 
-> **Purpose:** Document baseline security controls and configurations for the AI Discovery Workshop Facilitator  
+> **Purpose:** Document baseline security controls and configurations for the AI Discovery Workshop Facilitator
 > **Last Updated:** October 2025
 
 ## Overview
@@ -11,8 +11,8 @@ This document establishes the security baseline for the AI Discovery Workshop Fa
 
 ### 1.1 Azure Bicep Security
 
-**Tool:** Checkov (Bridgecrew)  
-**Configuration:** `.github/workflows/03-bicep-security.yml`  
+**Tool:** Checkov (Bridgecrew)
+**Configuration:** `.github/workflows/03-bicep-security.yml`
 **Scan Frequency:** On every PR and push to release branches
 
 **Implemented Checks:**
@@ -128,8 +128,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 ### 2.1 Python Security Scanning
 
-**Tool:** Bandit  
-**Configuration:** `.github/workflows/01-ci.yml`  
+**Tool:** Bandit
+**Configuration:** `.github/workflows/01-ci.yml`
 **Scan Frequency:** On every PR and push
 
 **Bandit Configuration:**
@@ -157,8 +157,8 @@ uv run bandit -x .venv -s B101 -r .
 
 ### 2.2 Code Quality & Static Analysis
 
-**Tool:** CodeQL (GitHub Advanced Security)  
-**Configuration:** `.github/workflows/codeql.yml`  
+**Tool:** CodeQL (GitHub Advanced Security)
+**Configuration:** `.github/workflows/codeql.yml`
 **Scan Frequency:** Weekly + on PRs
 
 **Languages Analyzed:**
@@ -228,7 +228,7 @@ updates:
 
 ### 3.2 Python Dependencies
 
-**Package Manager:** uv  
+**Package Manager:** uv
 **Lock File:** `src/uv.lock`
 
 **Security Practices:**
@@ -382,7 +382,7 @@ resource logs 'config' = {
       fileSystem: { level: 'Verbose' }
     }
     httpLogs: {
-      fileSystem: { 
+      fileSystem: {
         enabled: true
         retentionInDays: 1
         retentionInMb: 35
@@ -580,6 +580,6 @@ uv run pytest --junit-xml pytest.xml
 
 ---
 
-**Document Owner:** Platform Engineering Team  
-**Last Security Audit:** October 2025  
+**Document Owner:** Platform Engineering Team
+**Last Security Audit:** October 2025
 **Next Audit:** January 2026

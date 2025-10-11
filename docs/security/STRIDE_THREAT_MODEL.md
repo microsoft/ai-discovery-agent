@@ -1,7 +1,7 @@
 # STRIDE Threat Model Analysis
 
-> **Last Updated:** October 2025  
-> **Scope:** AI Discovery Workshop Facilitator Infrastructure  
+> **Last Updated:** October 2025
+> **Scope:** AI Discovery Workshop Facilitator Infrastructure
 > **Reference:** [Microsoft STRIDE Threat Modeling](https://learn.microsoft.com/en-us/azure/security/develop/threat-modeling-tool-threats)
 
 ## Executive Summary
@@ -39,7 +39,7 @@ The AI Discovery Workshop Facilitator is a multi-agent AI system built on:
 - ✅ Chainlit session management
 - ✅ Session secrets generated per environment
 
-**Risk Level:** MEDIUM  
+**Risk Level:** MEDIUM
 **Residual Risk:** LOW (with OAuth enabled)
 
 **Recommendations:**
@@ -429,6 +429,6 @@ The AI Discovery Workshop Facilitator is a multi-agent AI system built on:
 
 ---
 
-**Document Ownership:** Security Team  
-**Review Cycle:** Quarterly or upon major architectural changes  
+**Document Ownership:** Security Team
+**Review Cycle:** Quarterly or upon major architectural changes
 **Next Review:** January 2026

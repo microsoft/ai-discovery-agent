@@ -110,7 +110,7 @@ This directory contains comprehensive security documentation for the AI Discover
    ```bash
    # Python SAST
    cd src && uv run bandit -x .venv -s B101 -r .
-   
+
    # Run tests
    cd src && uv run pytest
    ```
@@ -166,7 +166,7 @@ cd infra
 checkov -d . --framework bicep --config-file .checkov.yaml
 ```
 
-**Configuration:** `infra/.checkov.yaml`  
+**Configuration:** `infra/.checkov.yaml`
 **CI/CD:** `.github/workflows/03-bicep-security.yml`
 
 ### Application Security (Python SAST)
@@ -184,7 +184,7 @@ uv run bandit -x .venv -s B101 -r . -f xml -o bandit_test.xml
 # View results: GitHub Security tab
 ```
 
-**CI/CD:** `.github/workflows/codeql.yml`  
+**CI/CD:** `.github/workflows/codeql.yml`
 **Frequency:** Weekly + on PRs
 
 ### Dependency Security
@@ -343,5 +343,5 @@ To contribute to security documentation:
 
 ---
 
-**Last Updated:** October 2025  
+**Last Updated:** October 2025
 **Next Review:** January 2026

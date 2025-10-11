@@ -13,17 +13,6 @@ import os
 import chainlit as cl
 from dotenv import load_dotenv
 
-from interfaces import ConversationManager
-from persistence.conversation_manager import (
-    AzureStorageConversationManager,
-    DummyConversationManager,
-)
-
-# Load env values from file before importing other modules
-load_dotenv(".azure.env", override=False)
-load_dotenv(".env", override=False)
-
-from agents import ChainlitAgentManager  # noqa E402
 from auth import (
     is_oauth_enabled,
     oauth_callback,  # noqa E402
@@ -35,6 +24,19 @@ from chat_handlers import (
     on_message,
     set_chat_profiles,
 )
+from interfaces import ConversationManager
+from persistence.conversation_manager import (
+    AzureStorageConversationManager,
+    DummyConversationManager,
+)
+
+# Load env values from file before importing other modules
+load_dotenv(".azure.env", override=False)
+load_dotenv(".env", override=False)
+
+from agents import ChainlitAgentManager  # noqa E402
+
+
 from persistence import AzureStorageManager  # noqa E402
 from utils.cached_llm import create_llm  # noqa E402
 from utils.config import setup_auth_secret  # noqa E402

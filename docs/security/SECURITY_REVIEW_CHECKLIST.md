@@ -1,6 +1,6 @@
 # Security Review Checklist
 
-> **Purpose:** Ensure all changes undergo appropriate security review  
+> **Purpose:** Ensure all changes undergo appropriate security review
 > **Use:** Reference this checklist for PRs, releases, and architecture changes
 
 ## 1. Code Changes Review
@@ -259,10 +259,10 @@ For **Medium** or **High** risk changes:
 
 ## Review Sign-off
 
-**Reviewer Name:** ___________________________  
-**Date:** ___________________________  
-**Risk Level:** ⬜ Low  ⬜ Medium  ⬜ High  
-**Security Approved:** ⬜ Yes  ⬜ Yes with conditions  ⬜ No  
+**Reviewer Name:** ___________________________
+**Date:** ___________________________
+**Risk Level:** ⬜ Low  ⬜ Medium  ⬜ High
+**Security Approved:** ⬜ Yes  ⬜ Yes with conditions  ⬜ No
 
 **Notes/Conditions:**
 ```
