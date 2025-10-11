@@ -227,7 +227,6 @@ class Agent(abc.ABC):
             through the created chain with message streaming mode enabled.
         """
         try:
-
             # langchain_messages = self._convert_to_langchain_messages(messages)
             chain = self.create_chain()
             full_messages = self.get_system_prompts() + messages
