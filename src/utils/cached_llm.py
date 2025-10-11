@@ -1,9 +1,14 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
+import os
+from urllib.parse import urlparse
+
 import chainlit as cl
 from azure.identity import get_bearer_token_provider
-from langchain_openai import AzureChatOpenAI
+from langchain.chat_models.base import BaseChatModel
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from pydantic import SecretStr
 
 from utils.credentials import get_azure_credential
 from utils.logging_setup import get_logger
@@ -18,7 +23,7 @@ def create_llm(
     deployment: str | None,
     temperature: float | None,
     tag: str | None,
-) -> AzureChatOpenAI:
+) -> BaseChatModel:
     """
     Create an instance of AzureChatOpenAI with Azure AD authentication.
 
@@ -39,22 +44,45 @@ def create_llm(
         multiple authentication methods in order (environment variables, managed identity,
         Azure CLI, etc.).
     """
-    # Use Azure identity for authentication
-    token_provider = get_bearer_token_provider(
-        get_azure_credential(), "https://cognitiveservices.azure.com/.default"
-    )
-    logger.info(
-        "Creating AzureChatOpenAI instance with endpoint: %s, deployment: %s",
-        endpoint,
-        deployment,
-    )
-    return AzureChatOpenAI(
-        azure_endpoint=endpoint,
-        api_version=api_version,
-        azure_ad_token_provider=token_provider,
-        azure_deployment=deployment,
-        temperature=temperature,
-        streaming=True,
-        stream_usage=True,
-        tags=[tag] if tag else None,
-    )
+    parsed = urlparse(endpoint)
+    host = parsed.hostname
+    # More robust check for local development environments
+    local_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}  # nosec B104
+    if (
+        host in local_hosts
+        or (host and host.endswith(".local"))
+        or (host and host.endswith(".localhost"))
+    ):
+        # Local model with model override
+        model = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "llama-2-13b-chat")
+        return ChatOpenAI(
+            model=model,
+            base_url=endpoint,
+            streaming=True,
+            temperature=temperature,
+            stream_usage=True,
+            api_key=SecretStr(
+                os.environ.get("AZURE_ENV_NAME", "")
+            ),  # used to bypass the api key requirement
+            tags=[tag] if tag else None,
+        )
+    else:
+        # Use Azure identity for authentication
+        token_provider = get_bearer_token_provider(
+            get_azure_credential(), "https://cognitiveservices.azure.com/.default"
+        )
+        logger.info(
+            "Creating AzureChatOpenAI instance with endpoint: %s, deployment: %s",
+            endpoint,
+            deployment,
+        )
+        return AzureChatOpenAI(
+            azure_endpoint=endpoint,
+            api_version=api_version,
+            azure_ad_token_provider=token_provider,
+            azure_deployment=deployment,
+            temperature=temperature,
+            streaming=True,
+            stream_usage=True,
+            tags=[tag] if tag else None,
+        )

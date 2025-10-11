@@ -12,8 +12,8 @@ with the persistence layer.
 from datetime import UTC, datetime
 from typing import Any
 
+from langchain.chat_models.base import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
-from langchain_openai import AzureChatOpenAI
 
 from interfaces import ConversationManager
 from utils.logging_setup import get_logger
@@ -37,7 +37,7 @@ class AzureStorageConversationManager(ConversationManager):
     def __init__(
         self,
         storage_manager: AzureStorageManager,
-        openai_client: AzureChatOpenAI | None = None,
+        openai_client: BaseChatModel | None = None,
     ):
         """
         Initialize conversation manager.
