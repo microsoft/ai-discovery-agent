@@ -101,7 +101,7 @@ def _verify_password(password: str, hashed_password: str) -> bool:
 
         else:
             # Plain text password (legacy, insecure)
-            return password == hashed_password
+            return secrets.compare_digest(password, hashed_password)
 
     except Exception as e:
         logger.error(f"Password verification error: {e}")
