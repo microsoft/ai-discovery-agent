@@ -157,12 +157,12 @@ jobs:
           else
             # Create a safe commit message using a here-document to avoid format string vulnerabilities
             COMMIT_MSG=$(cat <<EOF
-            Auto-format code with pre-commit
+          Auto-format code with pre-commit
 
-            Requested by: @$REQUESTER
+          Requested by: @$REQUESTER
 
-            Co-authored-by: $REQUESTER <$REQUESTER@users.noreply.github.com>
-            EOF
+          Co-authored-by: $REQUESTER <$REQUESTER@users.noreply.github.com>
+          EOF
             )
             git commit -m "$COMMIT_MSG"
             git push
