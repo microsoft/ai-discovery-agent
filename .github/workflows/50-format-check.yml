@@ -16,7 +16,7 @@ jobs:
 
     permissions:
       contents: read
-      pull-requests: read
+      pull-requests: write
 
     steps:
       # Retrieves the source branch reference (ref) of the current pull request.
