@@ -7,7 +7,6 @@ on:
     branches:
       - main
       - dev
-      - release/*
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
@@ -15,7 +14,6 @@ on:
     branches:
       - main
       - dev
-      - release/*
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
@@ -26,6 +24,7 @@ permissions:
   actions: read # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
   checks: write
   pull-requests: write # only needed unless run with comment_mode: off
+  security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
 
 jobs:
   checkov-scan:
@@ -36,8 +35,7 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-            token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Checkov Action
         id: checkov
         uses: bridgecrewio/checkov-action@v12
