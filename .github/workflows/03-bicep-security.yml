@@ -24,7 +24,6 @@ permissions:
   actions: read # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
   checks: write
   pull-requests: write # only needed unless run with comment_mode: off
-  security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
 
 jobs:
   checkov-scan:
@@ -35,8 +34,6 @@ jobs:
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
-        with:
-          token: ${{ secrets.PUSH_PAT }}
 
       - name: Run Checkov Action
         id: checkov
