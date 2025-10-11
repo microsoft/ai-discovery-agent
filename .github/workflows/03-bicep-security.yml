@@ -14,20 +14,19 @@ on:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
 
+permissions:
+  contents: read # Allows actions/checkout to fetch the code
+  issues: read # only needed for private repository
+  actions: read # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
+  checks: write
+  pull-requests: write # only needed unless run with comment_mode: off
+
 jobs:
   checkov-scan:
     runs-on: ubuntu-latest
     name: Checkov Bicep Analysis
     permissions:
-      contents: read # Allows actions/checkout to fetch the code
       security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
-      checks: write
-      # only needed unless run with comment_mode: off
-      pull-requests: write
-      # only needed for private repository
-      issues: read
-      # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
-      actions: read
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v5
@@ -63,17 +62,6 @@ jobs:
     name: "Publish Infra Tests Results"
     needs: checkov-scan
     runs-on: ubuntu-latest
-    permissions:
-      checks: write
-
-      # only needed unless run with comment_mode: off
-      pull-requests: write
-
-      # only needed for private repository
-      contents: read
-
-      # only needed for private repository
-      issues: read
     if: (!cancelled())
 
     steps:
