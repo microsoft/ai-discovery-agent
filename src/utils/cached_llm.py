@@ -4,7 +4,7 @@
 import os
 
 import chainlit as cl
-from azure.identity import DefaultAzureCredential, get_bearer_token_provider
+from azure.identity import get_bearer_token_provider
 from langchain.chat_models.base import BaseChatModel
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from pydantic import SecretStr
@@ -72,7 +72,8 @@ def create_llm(
             streaming=True,
             temperature=temperature,
             stream_usage=True,
-            api_key=SecretStr("this is a fake secret"),
+            api_key=SecretStr(
+                os.environ.get("AZURE_ENV_NAME", "")
+            ),  # used to bypass the api key requirement
             tags=[tag] if tag else None,
         )
-
