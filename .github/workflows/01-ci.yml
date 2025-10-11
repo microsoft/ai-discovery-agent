@@ -59,9 +59,19 @@ jobs:
         working-directory: src
         if: always()
         run: |
-          uv run bandit -c .bandit -r -f xml -o bandit_test.xml .
+          # uv run bandit -c .bandit -r -f xml -o bandit_test.xml .
           # if you install bandit_sarif_formatter you can also do:
-          # uv run bandit -c .bandit -r -f sarif -o /tmp/bandit.sarif .
+          uv run bandit -c .bandit -r -f sarif -o bandit.sarif .
+
+      - name: Upload SARIF file
+        if: (!cancelled())
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          # Path to SARIF file relative to the root of the repository
+          sarif_file: bandit.sarif
+          # Optional category for the results
+          # Used to differentiate multiple results for one commit
+          category: bandit-scan
 
       - name: Upload Test Results
         if: (!cancelled())
@@ -69,6 +79,8 @@ jobs:
         with:
           name: CI Test Results
           path: src/*test.xml
+
+
 
   publish-ci-test-results:
     name: "Publish CI Tests Results"
