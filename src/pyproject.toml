@@ -37,15 +37,17 @@ dependencies = [
 [dependency-groups]
 # Development / tooling dependencies (not included in runtime requirements compilation)
 dev = [
-    "black==25.9.0",
+    "black==24.8.0",
     "pre-commit>=3.8.0",
-    "ruff>=0.7.0",
+    "ruff==0.6.8",
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
     "bandit>=1.8.6",
     "checkov>=3.2.473",
+    "isort==5.13.2",
+    "bandit-sarif-formatter>=1.1.1",
 ]
 
 [tool.black]

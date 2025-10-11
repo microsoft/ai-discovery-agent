@@ -222,3 +222,6 @@ src/.azure.env
 # Ignore Azurite files
 __azurite*
 __blob*
+
+*.sarif
+*_results.xml

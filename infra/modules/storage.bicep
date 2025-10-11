@@ -52,15 +52,8 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
       bypass: 'AzureServices'
       defaultAction: 'Deny'
       virtualNetworkRules: []
-      ipRules: clientIpAddress == ''
-        ? []
-        : [
-            // Allow access from client IP while developing
-            {
-              action: 'Allow'
-              value: clientIpAddress
-            }
-          ]
+      // Allow access from client IP while developing if specified
+      ipRules: clientIpAddress == '' ? [] : [{ action: 'Allow', value: clientIpAddress }]
     }
   }
 }
