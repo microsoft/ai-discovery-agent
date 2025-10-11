@@ -123,7 +123,7 @@ jobs:
           find . -name "*.exe" -o -name "*.dll" -o -name "*.so" -o -name "*.dylib" | head -10 | while read file; do
             echo "Warning: Found executable file $file"
           done
-          
+
           # Ensure pyproject.toml hasn't been modified to include malicious build scripts
           if [ -f src/pyproject.toml ]; then
             if grep -E "(build-backend|build_meta|build\.py)" src/pyproject.toml; then
@@ -159,18 +159,18 @@ jobs:
         run: |
           # Use explicit tool versions instead of pre-commit to avoid untrusted code execution
           cd src
-          
+
           # Install only formatting dependencies with pinned versions
           uv add --group dev black==24.8.0 isort==5.13.2 ruff==0.6.8 --no-sync
           uv sync --only-group dev
-          
+
           # Run formatters directly instead of through pre-commit
           echo "Running Black formatter..."
           uv run black . --check --diff || uv run black .
-          
+
           echo "Running isort..."
           uv run isort . --check-only --diff || uv run isort .
-          
+
           echo "Running Ruff..."
           uv run ruff check . --fix --unsafe-fixes
           uv run ruff format .
