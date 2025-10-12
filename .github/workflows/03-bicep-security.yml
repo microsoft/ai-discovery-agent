@@ -99,7 +99,7 @@ jobs:
       # only needed unless run with comment_mode: off
       pull-requests: write
 
-      # only needed for private repository
+      # Required for actions/checkout to fetch code in any repository type (public or private)
       contents: read
 
       # needed when the workflow needs to read issue information, regardless of repository visibility
