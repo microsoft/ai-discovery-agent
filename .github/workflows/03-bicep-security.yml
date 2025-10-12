@@ -48,30 +48,36 @@ jobs:
       - name: Check if Code Scanning is enabled
         id: check-code-scanning
         if: (!cancelled())
-        run: |
-          # Check if code scanning is enabled by querying the GitHub API
-          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
-            -H "Accept: application/vnd.github+json" \
-            "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?per_page=1" \
-            -w "%{http_code}")
-          
-          HTTP_CODE="${RESPONSE: -3}"
-          
-          if [ "$HTTP_CODE" = "200" ]; then
-            echo "code-scanning-enabled=true" >> $GITHUB_OUTPUT
-            echo "✅ Code scanning is enabled in this repository"
-          elif [ "$HTTP_CODE" = "404" ]; then
-            echo "code-scanning-enabled=false" >> $GITHUB_OUTPUT
-            echo "⚠️ Code scanning is not enabled in this repository"
-            echo "💡 To enable code scanning, go to Settings > Security & analysis > Code scanning"
-          else
-            echo "code-scanning-enabled=false" >> $GITHUB_OUTPUT
-            echo "❌ Unable to determine code scanning status (HTTP $HTTP_CODE)"
-          fi
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              // Check if code scanning is enabled by querying the GitHub API
+              await github.rest.codeScanning.listAlertsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 1
+              });
+
+              // If we reach here, code scanning is enabled
+              core.setOutput('enabled', 'true');
+              console.log('✅ Code scanning is enabled in this repository');
+
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('enabled', 'false');
+                console.log('⚠️ Code scanning is not enabled in this repository');
+                console.log('💡 To enable code scanning, go to Settings > Security & analysis > Code scanning');
+              } else {
+                core.setOutput('enabled', 'false');
+                console.log(`❌ Unable to determine code scanning status: ${error.message}`);
+                console.log(`Status: ${error.status}`);
+              }
+            }
 
       # need code scanning activated to upload SARIF results to security tab
       - name: Upload SARIF Results to GitHub
-        if: (!cancelled()) && (steps.check-code-scanning.outputs.code-scanning-enabled == 'true')
+        if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled == 'true')
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: bicep_results.sarif
