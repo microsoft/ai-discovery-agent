@@ -9,7 +9,8 @@ on:
 permissions: {}
 
 jobs:
-  apply-format:
+  # Job 1: Unprivileged formatting (no write access, no secrets)
+  format-code:
     runs-on: ubuntu-latest
     if: >
       github.event.workflow_run.event == 'issue_comment' &&
@@ -17,8 +18,15 @@ jobs:
 
     permissions:
       actions: read
-      contents: write
-      pull-requests: write
+      contents: read  # Only read access - no write permissions
+
+    outputs:
+      should_format: ${{ steps.extract.outputs.should_format }}
+      pr_number: ${{ steps.extract.outputs.pr_number }}
+      pr_head_sha: ${{ steps.extract.outputs.pr_head_sha }}
+      pr_head_ref: ${{ steps.extract.outputs.pr_head_ref }}
+      requester: ${{ steps.extract.outputs.requester }}
+      changes_made: ${{ steps.apply_format.outputs.changes_made }}
 
     steps:
       # requires actions/read permission
@@ -107,8 +115,9 @@ jobs:
           echo "requester=$REQUESTER" >> $GITHUB_OUTPUT
 
 
-      # First checkout: Use default token for untrusted code
+      # First checkout: Use default token for untrusted code (UNPRIVILEGED JOB)
       - name: Checkout PR code (unprivileged)
+        if: steps.extract.outputs.should_format == 'true'
         uses: actions/checkout@v5
         with:
           # Use default GITHUB_TOKEN (read-only) for untrusted checkout
@@ -173,13 +182,14 @@ jobs:
 
       - name: Apply formatting (sandboxed)
         if: steps.extract.outputs.should_format == 'true'
+        id: apply_format
         run: |
-          UV_PATH=$(dirname $(which uv))
           # Run formatting in a sandboxed way - no network access, no secrets
           cd src
 
           # Install only formatting dependencies with pinned versions
           uv sync --only-group dev
+          UV_PATH=$(dirname $(which uv))
 
           # Set restrictive environment for formatting
           export HOME=/tmp/sandbox
@@ -189,26 +199,103 @@ jobs:
           if uv run pre-commit run --all-files; then
               echo "Pre-commit checks passed or made changes."
           else
-              # set -e # If the next one still fails, just fail the job
-              echo "Pre-commit checks failed. Running a second time to check if issues persist."
+              echo "Pre-commit checks failed. Running a second time to fix issues."
               uv run pre-commit run --all-files
           fi
 
-      - name: Configure git with privileged access
-        if: steps.extract.outputs.should_format == 'true'
+          # Check if any changes were made
+          cd ..
+          git add -A
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+            echo "changes_made=false" >> $GITHUB_OUTPUT
+          else
+            echo "changes_made=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create formatted code artifact
+        if: steps.extract.outputs.should_format == 'true' && steps.apply_format.outputs.changes_made == 'true'
         run: |
-          # Configure git for pushing with privileged token
+          # Create artifact with formatted code
+          mkdir -p /tmp/formatted-code
+
+          # Copy all files to artifact directory
+          cp -r . /tmp/formatted-code/repo
+
+          # Copy metadata
+          echo "${{ steps.extract.outputs.pr_number }}" > /tmp/formatted-code/pr_number
+          echo "${{ steps.extract.outputs.pr_head_sha }}" > /tmp/formatted-code/pr_head_sha
+          echo "${{ steps.extract.outputs.pr_head_ref }}" > /tmp/formatted-code/pr_head_ref
+          echo "${{ steps.extract.outputs.requester }}" > /tmp/formatted-code/requester
+
+      - name: Upload formatted code artifact
+        if: steps.extract.outputs.should_format == 'true' && steps.apply_format.outputs.changes_made == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatted-code
+          path: /tmp/formatted-code
+          retention-days: 1
+
+  # Job 2: Privileged push (write access, with secrets)
+  push-changes:
+    runs-on: ubuntu-latest
+    needs: format-code
+    if: needs.format-code.outputs.should_format == 'true' && needs.format-code.outputs.changes_made == 'true'
+
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Download formatted code artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: formatted-code
+          path: /tmp/formatted-code/
+
+      - name: Extract and validate formatted code
+        id: validate
+        run: |
+          # Validate artifact contents
+          if [ ! -f /tmp/formatted-code/pr_number ] || [ ! -f /tmp/formatted-code/pr_head_ref ]; then
+            echo "Invalid formatted code artifact"
+            exit 1
+          fi
+
+          PR_NUMBER=$(cat /tmp/formatted-code/pr_number)
+          PR_HEAD_REF=$(cat /tmp/formatted-code/pr_head_ref)
+          REQUESTER=$(cat /tmp/formatted-code/requester)
+
+          # Validate PR number is numeric
+          if ! [[ "$PR_NUMBER" =~ ^[0-9]+$ ]]; then
+            echo "Invalid PR number: $PR_NUMBER"
+            exit 1
+          fi
+
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "pr_head_ref=$PR_HEAD_REF" >> $GITHUB_OUTPUT
+          echo "requester=$REQUESTER" >> $GITHUB_OUTPUT
+
+      - name: Checkout base repository
+        uses: actions/checkout@v5
+        with:
+          token: ${{ secrets.PUSH_PAT }}
+          ref: ${{ steps.validate.outputs.pr_head_ref }}
+
+      - name: Apply formatted changes
+        run: |
+          # Replace current code with formatted version
+          rm -rf ./*
+          cp -r /tmp/formatted-code/repo/* .
+
+          # Configure git
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          # Set the remote URL with the privileged token for pushing
-          git remote set-url origin https://x-access-token:${{ secrets.PUSH_PAT }}@github.com/${{ github.repository }}.git
-
       - name: Commit and push changes
-        if: steps.extract.outputs.should_format == 'true'
         id: commit
         env:
-          REQUESTER: ${{ steps.extract.outputs.requester }}
+          REQUESTER: ${{ steps.validate.outputs.requester }}
         run: |
           git add -A
 
@@ -216,7 +303,7 @@ jobs:
             echo "No changes to commit"
             echo "changes_made=false" >> $GITHUB_OUTPUT
           else
-            # Create a safe commit message using a here-document to avoid format string vulnerabilities
+            # Create a safe commit message
             COMMIT_MSG=$(cat <<EOF
           Auto-format code with pre-commit
 
@@ -229,15 +316,16 @@ jobs:
             git push
             echo "changes_made=true" >> $GITHUB_OUTPUT
           fi
+
       - name: Comment on successful formatting
-        if: steps.extract.outputs.should_format == 'true' && steps.commit.outputs.changes_made == 'true'
+        if: steps.commit.outputs.changes_made == 'true'
         uses: actions/github-script@v8
         env:
-          REQUESTER: ${{ steps.extract.outputs.requester }}
+          REQUESTER: ${{ steps.validate.outputs.requester }}
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: ${{ steps.extract.outputs.pr_number }},
+              issue_number: ${{ steps.validate.outputs.pr_number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `✅ **Formatting Applied Successfully**
@@ -251,15 +339,25 @@ jobs:
 
               The CI checks should now pass! 🎉`
             });
+
+  # Job 3: Handle no changes case
+  no-changes-comment:
+    runs-on: ubuntu-latest
+    needs: format-code
+    if: needs.format-code.outputs.should_format == 'true' && needs.format-code.outputs.changes_made == 'false'
+
+    permissions:
+      pull-requests: write
+
+    steps:
       - name: Comment on no changes needed
-        if: steps.extract.outputs.should_format == 'true' && steps.commit.outputs.changes_made == 'false'
         uses: actions/github-script@v8
         env:
-          REQUESTER: ${{ steps.extract.outputs.requester }}
+          REQUESTER: ${{ needs.format-code.outputs.requester }}
         with:
           script: |
             github.rest.issues.createComment({
-              issue_number: ${{ steps.extract.outputs.pr_number }},
+              issue_number: ${{ needs.format-code.outputs.pr_number }},
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: `ℹ️ **No Formatting Changes Needed**
