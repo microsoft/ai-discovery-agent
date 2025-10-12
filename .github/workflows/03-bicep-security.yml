@@ -30,7 +30,7 @@ jobs:
       issues: read
       # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
       actions: read
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -40,6 +40,8 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: infra/
+          output_format: sarif, junitxml, cli
+          output_file_path: bicep_results.sarif,bicep_results.xml,console
           config_file: infra/.checkov.yaml # Use project-specific configuration
 
       # need code scanning activated to upload SARIF results to security tab
@@ -70,7 +72,7 @@ jobs:
       contents: read
 
       # only needed for private repository
-      issues: read    
+      issues: read
     if: (!cancelled())
 
     steps:
