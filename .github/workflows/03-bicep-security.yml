@@ -102,7 +102,7 @@ jobs:
       # only needed for private repository
       contents: read
 
-      # only needed for private repository
+      # needed when the workflow needs to read issue information, regardless of repository visibility
       issues: read
     if: (!cancelled())
 
