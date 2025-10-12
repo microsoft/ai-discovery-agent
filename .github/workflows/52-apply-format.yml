@@ -176,7 +176,7 @@ jobs:
         run: |
           UV_PATH=$(dirname $(which uv))
           # Run formatting in a sandboxed way - no network access, no secrets
-          cd src          
+          cd src
 
           # Install only formatting dependencies with pinned versions
           uv sync --only-group dev
