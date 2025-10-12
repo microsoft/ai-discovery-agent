@@ -44,9 +44,34 @@ jobs:
           output_file_path: bicep_results.sarif,bicep_results.xml,console
           config_file: infra/.checkov.yaml # Use project-specific configuration
 
+      # Check if code scanning is enabled in the repository
+      - name: Check if Code Scanning is enabled
+        id: check-code-scanning
+        if: (!cancelled())
+        run: |
+          # Check if code scanning is enabled by querying the GitHub API
+          RESPONSE=$(curl -s -H "Authorization: Bearer ${{ github.token }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/code-scanning/alerts?per_page=1" \
+            -w "%{http_code}")
+          
+          HTTP_CODE="${RESPONSE: -3}"
+          
+          if [ "$HTTP_CODE" = "200" ]; then
+            echo "code-scanning-enabled=true" >> $GITHUB_OUTPUT
+            echo "✅ Code scanning is enabled in this repository"
+          elif [ "$HTTP_CODE" = "404" ]; then
+            echo "code-scanning-enabled=false" >> $GITHUB_OUTPUT
+            echo "⚠️ Code scanning is not enabled in this repository"
+            echo "💡 To enable code scanning, go to Settings > Security & analysis > Code scanning"
+          else
+            echo "code-scanning-enabled=false" >> $GITHUB_OUTPUT
+            echo "❌ Unable to determine code scanning status (HTTP $HTTP_CODE)"
+          fi
+
       # need code scanning activated to upload SARIF results to security tab
       - name: Upload SARIF Results to GitHub
-        if: (!cancelled())
+        if: (!cancelled()) && (steps.check-code-scanning.outputs.code-scanning-enabled == 'true')
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: bicep_results.sarif
