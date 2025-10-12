@@ -154,14 +154,14 @@ jobs:
               echo "Suspicious patterns found in pre-commit config"
               exit 1
             fi
-            
+
             # Ensure only safe, known formatting tools are used
             echo "Validating pre-commit hooks..."
             ALLOWED_REPOS="https://github.com/(pre-commit/pre-commit-hooks|charliermarsh/ruff-pre-commit|psf/black|PyCQA/isort)"
             if grep -E "^[[:space:]]*-[[:space:]]*repo:" .pre-commit-config.yaml | grep -v -E "$ALLOWED_REPOS"; then
               echo "Only approved formatting tools are allowed:"
               echo "- https://github.com/pre-commit/pre-commit-hooks"
-              echo "- https://github.com/charliermarsh/ruff-pre-commit" 
+              echo "- https://github.com/charliermarsh/ruff-pre-commit"
               echo "- https://github.com/psf/black"
               echo "- https://github.com/PyCQA/isort"
               echo ""
@@ -174,22 +174,23 @@ jobs:
       - name: Apply formatting (sandboxed)
         if: steps.extract.outputs.should_format == 'true'
         run: |
+          UV_PATH=$(dirname $(which uv))
           # Run formatting in a sandboxed way - no network access, no secrets
-          cd src
+          cd src          
 
           # Install only formatting dependencies with pinned versions
           uv sync --only-group dev
-          
+
           # Set restrictive environment for formatting
           export HOME=/tmp/sandbox
-          export PATH="/usr/local/bin:/usr/bin:/bin"
+          export PATH="/usr/local/bin:/usr/bin:/bin:$UV_PATH"
           unset AWS_* AZURE_* GH_* GITHUB_TOKEN
-          
+
           if uv run pre-commit run --all-files; then
               echo "Pre-commit checks passed or made changes."
           else
               # set -e # If the next one still fails, just fail the job
-              echo "Pre-commit checks failed. Running a second time to fix issues."
+              echo "Pre-commit checks failed. Running a second time to check if issues persist."
               uv run pre-commit run --all-files
           fi
 
@@ -199,7 +200,7 @@ jobs:
           # Configure git for pushing with privileged token
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          
+
           # Set the remote URL with the privileged token for pushing
           git remote set-url origin https://x-access-token:${{ secrets.PUSH_PAT }}@github.com/${{ github.repository }}.git
 
