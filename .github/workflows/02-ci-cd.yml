@@ -166,9 +166,9 @@ jobs:
           # Create auth config
           echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
 
-          # Create .deployment file for faster Azure deployment
-          echo "[config]" > src/.deployment
-          echo "command = startup.sh" >> src/.deployment
+          # # Create .deployment file for faster Azure deployment
+          # echo "[config]" > src/.deployment
+          # echo "command = startup.sh" >> src/.deployment
 
       - name: Deploy to Azure Web App staging slot
         id: webapp-deploy
