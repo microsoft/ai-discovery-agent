@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
+import functools
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +30,7 @@ class ChainlitAgentManager:
     def load_configurations(self) -> None:
         """Load configuration from YAML files."""
         try:
+            logger.info(f"Loading pages configuration from {PAGES_CONFIG_FILE}")
             with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
                 self.pages_config = yaml.load(file, Loader=SafeLoader)
             self.agents_config = self.pages_config.get("agents", {})
@@ -55,10 +57,25 @@ class ChainlitAgentManager:
         Dict[str, Dict[str, Any]]
             Dictionary of available agents with their configurations
         """
-        is_admin = user_roles and "admin" in user_roles
         available_agents = {}
 
-        sections = self.pages_config.get("sections", {})
+        if user_roles is None:
+            user_roles = []
+
+        logger.info(f"Cache info: {self._extract_agents_from_sections.cache_info()}")
+
+        available_agents = self._extract_agents_from_sections(self, *user_roles)
+
+        return available_agents
+
+    @functools.lru_cache(maxsize=32)
+    @staticmethod
+    def _extract_agents_from_sections(
+        manager: "ChainlitAgentManager", *args: Any
+    ) -> dict[str, dict[str, Any]]:
+        is_admin = args is not None and "admin" in args
+        sections = manager.pages_config.get("sections", {})
+        available_agents = {}
         for section_name, pages in sections.items():
             for page_config in pages:
                 if page_config.get("type") == "agent":
@@ -73,10 +90,9 @@ class ChainlitAgentManager:
                         "header": page_config["header"],
                         "subtitle": page_config["subtitle"],
                         "section": section_name,
-                        "config": self.agents_config.get(agent_key, {}),
+                        "config": manager.agents_config.get(agent_key, {}),
                         "default": page_config.get("default", False),
                     }
-
         return available_agents
 
     def get_agent_info(self, agent_key: str) -> dict[str, Any] | None:
