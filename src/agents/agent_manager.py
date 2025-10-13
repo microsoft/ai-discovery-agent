@@ -73,7 +73,7 @@ class ChainlitAgentManager:
     def _extract_agents_from_sections(
         manager: "ChainlitAgentManager", *args: Any
     ) -> dict[str, dict[str, Any]]:
-        is_admin = args is not None and "admin" in args
+        is_admin = "admin" in args
         sections = manager.pages_config.get("sections", {})
         available_agents = {}
         for section_name, pages in sections.items():
