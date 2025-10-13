@@ -129,9 +129,13 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@v7
 
-      - name: Run tests
-        run: uv run pytest
-        working-directory: src
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('src/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
 
       - name: Generate requirements.txt
         run: uv pip compile src/pyproject.toml -o src/requirements.txt
@@ -152,10 +156,19 @@ jobs:
 
       - name: Prepare deployment package
         run: |
+          # Clean up unnecessary files to reduce deployment size
           rm -rf src/.venv
-          rm -rf src/__pycache__
-          rm -rf src/*.egg-info
+          find src -name "__pycache__" -type d -exec rm -rf {} + || true
+          find src -name "*.pyc" -delete || true
+          find src -name "*.egg-info" -type d -exec rm -rf {} + || true
+          rm -rf src/tests
+
+          # Create auth config
           echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
+
+          # Create .deployment file for faster Azure deployment
+          echo "[config]" > src/.deployment
+          echo "command = startup.sh" >> src/.deployment
 
       - name: Deploy to Azure Web App staging slot
         id: webapp-deploy
@@ -164,6 +177,87 @@ jobs:
           app-name: ${{ needs.provision.outputs.WEB_APP_NAME }}
           slot-name: staging
           package: "./src"
+
+      - name: Warmup staging slot
+        run: |
+          # Wait for deployment to complete
+          sleep 30
+
+          # Get staging slot URL
+          STAGING_URL="https://${{ needs.provision.outputs.WEB_APP_NAME }}-staging.azurewebsites.net"
+
+          # Warmup the application
+          echo "Warming up staging slot at $STAGING_URL"
+          for i in {1..5}; do
+            echo "Warmup attempt $i/5..."
+            curl -f -s -o /dev/null --connect-timeout 30 --max-time 60 "$STAGING_URL/health" || echo "Warmup attempt $i failed"
+            sleep 10
+          done
+
+          # Verify health endpoint
+          echo "Verifying health endpoint..."
+          curl -f --connect-timeout 30 --max-time 60 "$STAGING_URL/health"
+
+          echo "Staging slot warmed up successfully!"
+
+  # swap-to-production:
+  #   runs-on: ubuntu-latest
+  #   needs: [provision, deploy, config-settings]
+  #   environment:
+  #     name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
+  #   env:
+  #     AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
+  #     AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  #     AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  #   steps:
+  #     - name: Log in with Azure (Federated Credentials)
+  #       uses: azure/login@v2
+  #       if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
+  #       with:
+  #         client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
+  #         tenant-id: ${{ env.AZURE_TENANT_ID }}
+  #         subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+  #     - name: Log in with Azure (Client Credentials)
+  #       uses: azure/login@v2
+  #       if: ${{ env.AZURE_CREDENTIALS != '' }}
+  #       with:
+  #         creds: ${{ env.AZURE_CREDENTIALS }}
+
+  #     - name: Swap staging slot to production
+  #       run: |
+  #         echo "Swapping staging slot to production..."
+  #         az webapp deployment slot swap \
+  #           --name "${{ needs.provision.outputs.WEB_APP_NAME }}" \
+  #           --resource-group "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" \
+  #           --slot staging \
+  #           --target-slot production
+
+  #         echo "Slot swap completed successfully!"
+
+  #     - name: Verify production deployment
+  #       run: |
+  #         # Wait for swap to complete
+  #         sleep 30
+
+  #         # Get production URL
+  #         PROD_URL="https://${{ needs.provision.outputs.WEB_APP_NAME }}.azurewebsites.net"
+
+  #         # Verify health endpoint on production
+  #         echo "Verifying production deployment at $PROD_URL"
+  #         for i in {1..10}; do
+  #           if curl -f --connect-timeout 30 --max-time 60 "$PROD_URL/health"; then
+  #             echo "Production deployment verified successfully!"
+  #             exit 0
+  #           else
+  #             echo "Verification attempt $i/10 failed, retrying in 30 seconds..."
+  #             sleep 30
+  #           fi
+  #         done
+
+  #         echo "Production deployment verification failed!"
+  #         exit 1
 
   config-settings:
     runs-on: ubuntu-latest

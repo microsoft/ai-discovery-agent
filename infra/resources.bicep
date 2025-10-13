@@ -22,6 +22,9 @@ var siteConfig = {
   webSocketsEnabled: true
   detailedErrorLoggingEnabled: true
   logsDirectorySizeLimit: 35
+  // Performance optimizations
+  minimumElasticInstanceCount: 1
+  numberOfWorkers: 1
 }
 
 module vnet './modules/vnet.bicep' = {
@@ -139,6 +142,27 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
       APPINSIGHTS_INSTRUMENTATIONKEY: applicationInsights.properties.InstrumentationKey // todo: use keyvault '@Microsoft.KeyVault(SecretUri=${keyVault::appInsightsInstrumentationKeyKeyVaultSecret.properties.secretUri})'
       APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
       OTEL_SERVICE_NAME: 'production'
+
+      // Performance and warmup settings
+      WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '3'
+      WEBSITE_WARMUP_PATH: '/health'
+      WEBSITE_SWAP_WARMUP_PING_PATH: '/health'
+      WEBSITE_SWAP_WARMUP_PING_STATUSES: '200'
+      WEBSITE_TIME_ZONE: 'UTC'
+
+      // Python optimization settings
+      PYTHONUNBUFFERED: '1'
+      PYTHONIOENCODING: 'utf-8'
+      PYTHONDONTWRITEBYTECODE: '1'
+
+      // Application performance settings
+      WEB_CONCURRENCY: '1'
+      WORKER_CONNECTIONS: '1000'
+      WORKER_TIMEOUT: '1200' // 20 minutes
+
+      // Disable unused features for better performance
+      WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'false'
+      WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
     }
   }
 
@@ -211,6 +235,27 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
         AZURE_STORAGE_ACCOUNT_URL: storage.outputs.storageAccountBlobEndpoint
         APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsights.properties.ConnectionString
         OTEL_SERVICE_NAME: 'staging'
+
+        // Performance and warmup settings
+        WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '3'
+        WEBSITE_WARMUP_PATH: '/health'
+        WEBSITE_SWAP_WARMUP_PING_PATH: '/health'
+        WEBSITE_SWAP_WARMUP_PING_STATUSES: '200'
+        WEBSITE_TIME_ZONE: 'UTC'
+
+        // Python optimization settings
+        PYTHONUNBUFFERED: '1'
+        PYTHONIOENCODING: 'utf-8'
+        PYTHONDONTWRITEBYTECODE: '1'
+
+        // Application performance settings
+        WEB_CONCURRENCY: '1'
+        WORKER_CONNECTIONS: '1000'
+        WORKER_TIMEOUT: '1200'
+
+        // Disable unused features for better performance
+        WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'false'
+        WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
       }
     }
 
@@ -252,6 +297,12 @@ resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
   kind: 'linux'
   properties: {
     reserved: true
+    perSiteScaling: false
+    elasticScaleEnabled: false
+    maximumElasticWorkerCount: 1
+    isSpot: false
+    targetWorkerCount: 0
+    targetWorkerSizeId: 0
   }
 }
 
