@@ -363,7 +363,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   tags: union(tags, { 'azd-service-name': 'appinsights' })
 }
 
-resource openAIRoleAssignmentForLocalUser 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource openAIRoleAssignmentForLocalUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: azureOpenAI
   name: guid(azureOpenAI.id, principalId, resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'))
   properties: {
@@ -373,7 +373,7 @@ resource openAIRoleAssignmentForLocalUser 'Microsoft.Authorization/roleAssignmen
   }
 }
 
-resource openAIRoleAssignmentForAppService 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource openAIRoleAssignmentForAppService 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: azureOpenAI
   name: guid(azureOpenAI.id, web.id, resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'))
   properties: {
@@ -383,7 +383,7 @@ resource openAIRoleAssignmentForAppService 'Microsoft.Authorization/roleAssignme
   }
 }
 
-resource openAIRoleAssignmentForStagingSlot 'Microsoft.Authorization/roleAssignments@2020-04-01-preview' = {
+resource openAIRoleAssignmentForStagingSlot 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: azureOpenAI
   name: guid(azureOpenAI.id, web::stagingSlot.id, resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'))
   properties: {
