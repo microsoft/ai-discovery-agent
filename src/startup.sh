@@ -30,14 +30,6 @@ for file in "server.py" "main.py"; do
     fi
 done
 
-# Install dependencies if requirements.txt exists
-if [ -f "requirements.txt" ]; then
-    echo "Installing dependencies from requirements.txt..."
-    pip install --no-cache-dir -r requirements.txt
-else
-    echo "WARNING: No requirements.txt found, dependencies may not be installed"
-fi
-
 # Set default values for performance
 export PYTHONUNBUFFERED="${PYTHONUNBUFFERED:-1}"
 export PYTHONIOENCODING="${PYTHONIOENCODING:-utf-8}"
