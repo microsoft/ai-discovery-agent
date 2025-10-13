@@ -14,21 +14,22 @@ on:
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
-
-permissions:
-  id-token: write
-  contents: read # Allows actions/checkout to fetch the code
-  issues: read # only needed for private repository
-  actions: read # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
-  checks: write
-  pull-requests: write # only needed unless run with comment_mode: off
+permissions: {}
 
 jobs:
   checkov-scan:
     runs-on: ubuntu-latest
     name: Checkov Bicep Analysis
     permissions:
+      contents: read # Allows actions/checkout to fetch the code
       security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
+      checks: write
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+      # only needed for private repository
+      issues: read
+      # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
+      actions: read
 
     steps:
       - name: Checkout
@@ -39,11 +40,44 @@ jobs:
         uses: bridgecrewio/checkov-action@v12
         with:
           directory: infra/
+          output_format: sarif, junitxml, cli
+          output_file_path: bicep_results.sarif,bicep_results.xml,console
           config_file: infra/.checkov.yaml # Use project-specific configuration
+
+      # Check if code scanning is enabled in the repository
+      - name: Check if Code Scanning is enabled
+        id: check-code-scanning
+        if: (!cancelled())
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              // Check if code scanning is enabled by querying the GitHub API
+              await github.rest.codeScanning.listAlertsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 1
+              });
+
+              // If we reach here, code scanning is enabled
+              core.setOutput('enabled', 'true');
+              console.log('✅ Code scanning is enabled in this repository');
+
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('enabled', 'false');
+                console.log('⚠️ Code scanning is not enabled in this repository');
+                console.log('💡 To enable code scanning, go to Settings > Security & analysis > Code scanning');
+              } else {
+                core.setOutput('enabled', 'false');
+                console.log(`❌ Unable to determine code scanning status: ${error.message}`);
+                console.log(`Status: ${error.status}`);
+              }
+            }
 
       # need code scanning activated to upload SARIF results to security tab
       - name: Upload SARIF Results to GitHub
-        if: (!cancelled())
+        if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled == 'true')
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: bicep_results.sarif
@@ -59,6 +93,17 @@ jobs:
     name: "Publish Infra Tests Results"
     needs: checkov-scan
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+
+      # Required for actions/checkout to fetch code in any repository type (public or private)
+      contents: read
+
+      # needed when the workflow needs to read issue information, regardless of repository visibility
+      issues: read
     if: (!cancelled())
 
     steps:
