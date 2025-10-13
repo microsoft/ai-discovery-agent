@@ -20,6 +20,10 @@ from fastapi import FastAPI, status
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
 
+from utils.logging_setup import get_logger
+
+logger = get_logger(__name__)
+
 # Load env values from file before importing other modules
 load_dotenv(".azure.env", override=False)
 load_dotenv(".env", override=False)
@@ -64,11 +68,13 @@ def get_health() -> HealthCheck:
     return HealthCheck(status="OK")
 
 
+logger.info("Initializing FastAPI server for AI Discovery Agent")
 FastAPIInstrumentor.instrument_app(app)
 
 # Mount the Chainlit application at the root path ("/")
 # This integrates the Chainlit chat interface with the FastAPI server
 # The target "main.py" contains the Chainlit application logic
+logger.info("Mounting Chainlit application at root path '/'")
 mount_chainlit(app, target="main.py", path="/")
 
 
@@ -78,6 +84,7 @@ def main() -> None:
     # the local network - https://www.uvicorn.org/settings/#socket-binding
     # Using configurable HOST from environment variable for security
     # In production, set HOST=0.0.0.0 to bind to all interfaces when needed
+    logger.info(f"Starting uvicorn server on {HOST}:{PORT}")
     uvicorn.run("server:app", host=HOST, port=PORT)
 
 

@@ -45,6 +45,7 @@ from utils.logging_setup import get_logger  # noqa E402
 logger = get_logger(__name__)
 
 # Setup authentication secret
+logger.info("Setting up authentication secret...")
 setup_auth_secret()
 
 # Global instances - these will be available to chat_handlers via getter functions
