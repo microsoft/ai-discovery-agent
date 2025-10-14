@@ -103,7 +103,9 @@ class TestAzureStorageConversationManager:
         messages = [{"role": "user", "content": "Help with complex topic"}]
 
         mock_generation = MagicMock()
-        mock_generation.text = "This is a very long conversation title that exceeds fifty characters"
+        mock_generation.text = (
+            "This is a very long conversation title that exceeds fifty characters"
+        )
 
         mock_response = MagicMock()
         mock_response.generations = [[mock_generation]]
@@ -569,4 +571,3 @@ class TestConversationManagerEdgeCases:
         title = await self.manager.generate_conversation_title(messages)
 
         assert "Conversation" in title
-
