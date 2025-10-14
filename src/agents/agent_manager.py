@@ -61,7 +61,7 @@ def get_available_agents(
     if user_roles is None:
         user_roles = []
 
-    logger.info(f"Cache info: {_extract_agents_from_sections.cache_info()}")
+    logger.debug(f"Cache info: {_extract_agents_from_sections.cache_info()}")
 
     available_agents = _extract_agents_from_sections(*user_roles)
 
