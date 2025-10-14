@@ -34,8 +34,6 @@ from persistence.conversation_manager import (
 load_dotenv(".azure.env", override=False)
 load_dotenv(".env", override=False)
 
-from agents import ChainlitAgentManager  # noqa E402
-
 
 from persistence import AzureStorageManager  # noqa E402
 from utils.cached_llm import create_llm  # noqa E402
@@ -49,7 +47,6 @@ logger.info("Setting up authentication secret...")
 setup_auth_secret()
 
 # Global instances - these will be available to chat_handlers via getter functions
-_agent_manager: ChainlitAgentManager = ChainlitAgentManager()
 _storage_manager: AzureStorageManager | None = None
 _conversation_manager: ConversationManager
 
@@ -89,11 +86,6 @@ except Exception as e:
     logger.error(f"Failed to initialize persistence layer: {e}")
     _storage_manager = None
     _conversation_manager = DummyConversationManager()
-
-
-def get_agent_manager() -> ChainlitAgentManager:
-    """Get the global agent manager instance."""
-    return _agent_manager
 
 
 def get_storage_manager() -> AzureStorageManager | None:
@@ -142,13 +134,13 @@ else:
 @cl.set_chat_profiles
 async def chat_profile(user: cl.User | None = None):
     """Set available chat profiles."""
-    return await set_chat_profiles(get_agent_manager(), user)
+    return await set_chat_profiles(user)
 
 
 @cl.on_chat_start
 async def start():
     """Handle chat start event."""
-    await on_chat_start(get_agent_manager(), get_conversation_manager())
+    await on_chat_start(get_conversation_manager())
 
 
 @cl.on_message
@@ -160,7 +152,7 @@ async def main(message: cl.Message):
 @cl.on_chat_resume
 async def resume(thread):
     """Handle chat resume event."""
-    await on_chat_resume(get_agent_manager(), get_conversation_manager(), thread)
+    await on_chat_resume(get_conversation_manager(), thread)
 
 
 if __name__ == "__main__":

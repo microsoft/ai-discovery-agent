@@ -12,8 +12,6 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import chainlit as cl
 import pytest
 
-import main
-from agents.agent_manager import ChainlitAgentManager
 from chat_handlers import on_chat_start, set_chat_profiles
 from persistence.conversation_manager import DummyConversationManager
 from tests.fixtures.data import (
@@ -26,10 +24,9 @@ class TestChatProfileIntegration:
     """Test chat profile setup integration."""
 
     @pytest.fixture
-    def mock_agent_manager(self):
-        """Create a mock agent manager."""
-        manager = Mock(spec=ChainlitAgentManager)
-        manager.get_available_agents.return_value = {
+    def mock_available_agents(self):
+        """Mock available agents for testing."""
+        return {
             "facilitator": {
                 "title": "Workshop Facilitator",
                 "header": "Facilitator",
@@ -43,27 +40,21 @@ class TestChatProfileIntegration:
                 "default": False,
             },
         }
-        return manager
 
-    async def test_set_chat_profiles_regular_user(self, mock_agent_manager):
+    async def test_set_chat_profiles_regular_user(self, mock_available_agents):
         """Test chat profile setup for regular user."""
         # Create a mock user
         user = Mock(spec=cl.User)
         user.metadata = {"roles": ["user"]}
 
-        # Mock the get_agent_manager function
-        with patch("main.get_agent_manager", return_value=mock_agent_manager):
+        # Mock the agent_manager module functions
+        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
             # Test with user having restricted access
-            mock_agent_manager.get_available_agents.return_value = {
-                "facilitator": {
-                    "title": "Workshop Facilitator",
-                    "header": "Facilitator",
-                    "subtitle": "AI Workshop Facilitator",
-                    "default": True,
-                },
+            mock_get_agents.return_value = {
+                "facilitator": mock_available_agents["facilitator"]
             }
 
-            profiles = await set_chat_profiles(main.get_agent_manager(), user)
+            profiles = await set_chat_profiles(user)
 
             # Should have one profile for regular user
             assert len(profiles) == 1
@@ -71,15 +62,17 @@ class TestChatProfileIntegration:
             assert profiles[0].markdown_description == "AI Workshop Facilitator"
             assert profiles[0].default is True
 
-    async def test_set_chat_profiles_admin_user(self, mock_agent_manager):
+    async def test_set_chat_profiles_admin_user(self, mock_available_agents):
         """Test chat profile setup for admin user."""
         # Create a mock admin user
         user = Mock(spec=cl.User)
         user.metadata = {"roles": ["admin", "user"]}
 
-        # Mock the get_agent_manager function
-        with patch("main.get_agent_manager", return_value=mock_agent_manager):
-            profiles = await set_chat_profiles(main.get_agent_manager(), user)
+        # Mock the agent_manager module functions
+        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+            mock_get_agents.return_value = mock_available_agents
+
+            profiles = await set_chat_profiles(user)
 
             # Should have both profiles for admin user
             assert len(profiles) == 2
@@ -89,7 +82,7 @@ class TestChatProfileIntegration:
 
     async def test_set_chat_profiles_no_user(self):
         """Test chat profile setup when no user is provided."""
-        profiles = await set_chat_profiles(main.get_agent_manager(), None)
+        profiles = await set_chat_profiles(None)
 
         # Should return empty list when no user
         assert profiles == []
@@ -117,35 +110,30 @@ class TestChatStartIntegration:
 
     async def test_on_chat_start_with_user(self, mock_session, mock_user):
         """Test chat start with authenticated user."""
-        # Mock the agent manager
-        mock_agent_manager = Mock(spec=ChainlitAgentManager)
-        mock_agent_manager.get_available_agents.return_value = {
-            "facilitator": {
-                "title": "Workshop Facilitator",
-                "header": "Facilitator",
-                "subtitle": "AI Workshop Facilitator",
-                "default": True,
+        # Mock the agent manager functions
+        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+            mock_get_agents.return_value = {
+                "facilitator": {
+                    "title": "Workshop Facilitator",
+                    "header": "Facilitator",
+                    "subtitle": "AI Workshop Facilitator",
+                    "default": True,
+                }
             }
-        }
 
-        with patch("chainlit.user_session") as mock_cl_session:
-            mock_cl_session.get.return_value = mock_user
-            mock_cl_session.set = Mock()
+            with patch("chainlit.user_session") as mock_cl_session:
+                mock_cl_session.get.return_value = mock_user
+                mock_cl_session.set = Mock()
 
-            with patch("main.get_agent_manager", return_value=mock_agent_manager):
                 with patch("chainlit.Message") as mock_message:
                     mock_message_instance = AsyncMock()
                     mock_message.return_value = mock_message_instance
 
                     # Act
-                    await on_chat_start(
-                        main.get_agent_manager(), DummyConversationManager()
-                    )
+                    await on_chat_start(DummyConversationManager())
 
                     # Assert
-                    mock_agent_manager.get_available_agents.assert_called_once_with(
-                        ["user"]
-                    )
+                    mock_get_agents.assert_called_once_with(["user"])
                     # Check that session was set with available agents
                     mock_cl_session.set.assert_any_call(
                         "available_agents",
@@ -170,9 +158,7 @@ class TestChatStartIntegration:
                 mock_message.return_value = mock_message_instance
 
                 # Act
-                await on_chat_start(
-                    main.get_agent_manager(), DummyConversationManager()
-                )
+                await on_chat_start(DummyConversationManager())
 
                 # Assert - should send authentication error message
                 mock_message_instance.send.assert_called()
@@ -183,21 +169,18 @@ class TestChatStartIntegration:
 
     async def test_on_chat_start_no_available_agents(self, mock_user):
         """Test chat start when user has no available agents."""
-        mock_agent_manager = Mock(spec=ChainlitAgentManager)
-        mock_agent_manager.get_available_agents.return_value = {}
+        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+            mock_get_agents.return_value = {}
 
-        with patch("chainlit.user_session") as mock_cl_session:
-            mock_cl_session.get.return_value = mock_user
+            with patch("chainlit.user_session") as mock_cl_session:
+                mock_cl_session.get.return_value = mock_user
 
-            with patch("main.get_agent_manager", return_value=mock_agent_manager):
                 with patch("chainlit.Message") as mock_message:
                     mock_message_instance = AsyncMock()
                     mock_message.return_value = mock_message_instance
 
                     # Act
-                    await on_chat_start(
-                        main.get_agent_manager(), DummyConversationManager()
-                    )
+                    await on_chat_start(DummyConversationManager())
 
                     # Assert - should send no agents available message
                     mock_message_instance.send.assert_called()

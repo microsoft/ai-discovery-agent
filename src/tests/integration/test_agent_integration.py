@@ -15,12 +15,11 @@ from unittest.mock import patch
 import pytest
 import yaml
 
-from agents.agent_manager import ChainlitAgentManager
 from tests.fixtures.data import SAMPLE_AGENT_CONFIG
 
 
 class TestAgentManagerIntegration:
-    """Integration tests for ChainlitAgentManager."""
+    """Integration tests for agent_manager module."""
 
     @pytest.fixture
     def temp_config_file(self):
@@ -31,69 +30,96 @@ class TestAgentManagerIntegration:
         # Cleanup
         os.unlink(f.name)
 
+    @pytest.fixture(autouse=True)
+    def reset_module_state(self):
+        """Reset agent_manager module state before each test."""
+        # Import here to avoid import at module level
+        import agents.agent_manager as agent_manager
+
+        # Store original state
+        original_config = agent_manager.agents_config.copy()
+        original_pages = agent_manager.pages_config.copy()
+        original_agent = agent_manager.current_agent
+
+        yield
+
+        # Restore original state
+        agent_manager.agents_config = original_config
+        agent_manager.pages_config = original_pages
+        agent_manager.current_agent = original_agent
+
     def test_load_configurations_with_real_file(self, temp_config_file):
         """Test loading configurations from actual file."""
         # Patch the PAGES_CONFIG_FILE constant
         with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)):
-            manager = ChainlitAgentManager()
+            import agents.agent_manager as agent_manager
+
+            # Reload the module by calling load_configurations
+            agent_manager.load_configurations()
 
             # Verify configuration was loaded correctly
-            assert manager.pages_config == SAMPLE_AGENT_CONFIG
-            assert manager.agents_config == SAMPLE_AGENT_CONFIG["agents"]
-            assert "facilitator" in manager.agents_config
-            assert "expert" in manager.agents_config
+            assert agent_manager.pages_config == SAMPLE_AGENT_CONFIG
+            assert agent_manager.agents_config == SAMPLE_AGENT_CONFIG["agents"]
+            assert "facilitator" in agent_manager.agents_config
+            assert "expert" in agent_manager.agents_config
 
     def test_agent_switching_workflow(self, temp_config_file):
         """Test complete agent switching workflow."""
         with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)):
-            manager = ChainlitAgentManager()
+            import agents.agent_manager as agent_manager
+
+            # Load configuration
+            agent_manager.load_configurations()
 
             # Test initial state
-            assert manager.current_agent is None
+            assert agent_manager.current_agent is None
 
             # Test switching to facilitator
-            success = manager.set_current_agent("facilitator")
+            success = agent_manager.set_current_agent("facilitator")
             assert success is True
-            assert manager.current_agent == "facilitator"
+            assert agent_manager.current_agent == "facilitator"
 
             # Test getting agent info
-            agent_info = manager.get_agent_info("facilitator")
+            agent_info = agent_manager.get_agent_info("facilitator")
             assert agent_info is not None
             assert agent_info["model"] == "gpt-4o"
             assert agent_info["temperature"] == 0.7
 
             # Test switching to expert
-            success = manager.set_current_agent("expert")
+            success = agent_manager.set_current_agent("expert")
             assert success is True
-            assert manager.current_agent == "expert"
+            assert agent_manager.current_agent == "expert"
 
             # Test switching to non-existent agent
-            success = manager.set_current_agent("nonexistent")
+            success = agent_manager.set_current_agent("nonexistent")
             assert success is False
-            assert manager.current_agent == "expert"  # Should remain unchanged
+            assert agent_manager.current_agent == "expert"  # Should remain unchanged
 
     def test_role_based_access_control_workflow(self, temp_config_file):
         """Test complete role-based access control workflow."""
         with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)):
-            manager = ChainlitAgentManager()
+            import agents.agent_manager as agent_manager
+
+            # Load configuration
+            agent_manager.load_configurations()
 
             # Test regular user access
-            user_agents = manager.get_available_agents(["user"])
+            user_agents = agent_manager.get_available_agents(["user"])
             assert "facilitator" in user_agents
             assert "expert" not in user_agents  # admin_only
 
             # Test admin user access
-            admin_agents = manager.get_available_agents(["admin", "user"])
+            admin_agents = agent_manager.get_available_agents(["admin", "user"])
             assert "facilitator" in admin_agents
             assert "expert" in admin_agents  # admin can access admin_only
 
             # Test no roles
-            no_role_agents = manager.get_available_agents(None)
+            no_role_agents = agent_manager.get_available_agents(None)
             assert "facilitator" in no_role_agents
             assert "expert" not in no_role_agents
 
             # Test empty roles
-            empty_role_agents = manager.get_available_agents([])
+            empty_role_agents = agent_manager.get_available_agents([])
             assert "facilitator" in empty_role_agents
             assert "expert" not in empty_role_agents
 
@@ -101,25 +127,48 @@ class TestAgentManagerIntegration:
 class TestAgentManagerErrorHandling:
     """Test error handling in agent manager."""
 
+    @pytest.fixture(autouse=True)
+    def reset_module_state(self):
+        """Reset agent_manager module state before each test."""
+        import agents.agent_manager as agent_manager
+
+        # Store original state
+        original_config = agent_manager.agents_config.copy()
+        original_pages = agent_manager.pages_config.copy()
+        original_agent = agent_manager.current_agent
+
+        yield
+
+        # Restore original state
+        agent_manager.agents_config = original_config
+        agent_manager.pages_config = original_pages
+        agent_manager.current_agent = original_agent
+
     def test_missing_config_file(self):
         """Test behavior when config file is missing."""
         with patch(
             "agents.agent_manager.PAGES_CONFIG_FILE", Path("/nonexistent/config.yaml")
         ):
-            manager = ChainlitAgentManager()
+            import agents.agent_manager as agent_manager
+
+            # Load configuration (should handle missing file gracefully)
+            agent_manager.load_configurations()
 
             # Should have empty configs
-            assert manager.pages_config == {}
-            assert manager.agents_config == {}
+            assert agent_manager.pages_config == {}
+            assert agent_manager.agents_config == {}
+
+            # Clear cache to ensure fresh lookup
+            agent_manager._extract_agents_from_sections.cache_clear()
 
             # Operations should handle empty config gracefully
-            agents = manager.get_available_agents(["user"])
+            agents = agent_manager.get_available_agents(["user"])
             assert agents == {}
 
-            agent_info = manager.get_agent_info("any_agent")
+            agent_info = agent_manager.get_agent_info("any_agent")
             assert agent_info is None
 
-            success = manager.set_current_agent("any_agent")
+            success = agent_manager.set_current_agent("any_agent")
             assert success is False
 
     def test_malformed_config_file(self):
@@ -128,15 +177,19 @@ class TestAgentManagerErrorHandling:
             f.write("invalid: yaml: content: [")  # Invalid YAML
             f.flush()
 
-            with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                manager = ChainlitAgentManager()
+            try:
+                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import agents.agent_manager as agent_manager
 
-                # Should have empty configs due to parsing error
-                assert manager.pages_config == {}
-                assert manager.agents_config == {}
+                    # Load configuration (should handle parsing error gracefully)
+                    agent_manager.load_configurations()
 
-            # Cleanup
-            os.unlink(f.name)
+                    # Should have empty configs due to parsing error
+                    assert agent_manager.pages_config == {}
+                    assert agent_manager.agents_config == {}
+            finally:
+                # Cleanup
+                os.unlink(f.name)
 
     def test_incomplete_config_structure(self):
         """Test behavior with incomplete config structure."""
@@ -163,24 +216,45 @@ class TestAgentManagerErrorHandling:
             yaml.dump(incomplete_config, f)
             f.flush()
 
-            with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                manager = ChainlitAgentManager()
+            try:
+                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import agents.agent_manager as agent_manager
 
-                # Should still load the config
-                assert manager.agents_config == incomplete_config["agents"]
+                    # Load configuration
+                    agent_manager.load_configurations()
 
-                # But may have None/missing values for incomplete fields
-                agent_info = manager.get_agent_info("incomplete_agent")
-                assert agent_info is not None
-                assert agent_info["model"] == "gpt-4o"
-                assert "persona" not in agent_info or agent_info["persona"] is None
+                    # Should still load the config
+                    assert agent_manager.agents_config == incomplete_config["agents"]
 
-            # Cleanup
-            os.unlink(f.name)
+                    # But may have None/missing values for incomplete fields
+                    agent_info = agent_manager.get_agent_info("incomplete_agent")
+                    assert agent_info is not None
+                    assert agent_info["model"] == "gpt-4o"
+                    assert "persona" not in agent_info or agent_info["persona"] is None
+            finally:
+                # Cleanup
+                os.unlink(f.name)
 
 
 class TestAgentConfigurationValidation:
     """Test validation of agent configuration structures."""
+
+    @pytest.fixture(autouse=True)
+    def reset_module_state(self):
+        """Reset agent_manager module state before each test."""
+        import agents.agent_manager as agent_manager
+
+        # Store original state
+        original_config = agent_manager.agents_config.copy()
+        original_pages = agent_manager.pages_config.copy()
+        original_agent = agent_manager.current_agent
+
+        yield
+
+        # Restore original state
+        agent_manager.agents_config = original_config
+        agent_manager.pages_config = original_pages
+        agent_manager.current_agent = original_agent
 
     def test_valid_single_document_agent(self):
         """Test agent with single document configuration."""
@@ -210,16 +284,20 @@ class TestAgentConfigurationValidation:
             yaml.dump(config, f)
             f.flush()
 
-            with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                manager = ChainlitAgentManager()
+            try:
+                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import agents.agent_manager as agent_manager
 
-                agent_info = manager.get_agent_info("single_doc_agent")
-                assert agent_info is not None
-                assert agent_info["document"] == "prompts/single_doc.md"
-                assert agent_info["model"] == "gpt-4o"
+                    # Load configuration
+                    agent_manager.load_configurations()
 
-            # Cleanup
-            os.unlink(f.name)
+                    agent_info = agent_manager.get_agent_info("single_doc_agent")
+                    assert agent_info is not None
+                    assert agent_info["document"] == "prompts/single_doc.md"
+                    assert agent_info["model"] == "gpt-4o"
+            finally:
+                # Cleanup
+                os.unlink(f.name)
 
     def test_valid_multiple_documents_agent(self):
         """Test agent with multiple documents configuration."""
@@ -252,14 +330,21 @@ class TestAgentConfigurationValidation:
             yaml.dump(config, f)
             f.flush()
 
-            with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                manager = ChainlitAgentManager()
+            try:
+                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import agents.agent_manager as agent_manager
 
-                agent_info = manager.get_agent_info("multi_doc_agent")
-                assert agent_info is not None
-                assert agent_info["documents"] == ["prompts/doc1.md", "prompts/doc2.md"]
-                assert agent_info["model"] == "gpt-4o-mini"
-                assert agent_info["temperature"] == 1.0
+                    # Load configuration
+                    agent_manager.load_configurations()
 
-            # Cleanup
-            os.unlink(f.name)
+                    agent_info = agent_manager.get_agent_info("multi_doc_agent")
+                    assert agent_info is not None
+                    assert agent_info["documents"] == [
+                        "prompts/doc1.md",
+                        "prompts/doc2.md",
+                    ]
+                    assert agent_info["model"] == "gpt-4o-mini"
+                    assert agent_info["temperature"] == 1.0
+            finally:
+                # Cleanup
+                os.unlink(f.name)
