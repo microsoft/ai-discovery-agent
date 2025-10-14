@@ -30,6 +30,15 @@
       ]
     },
     {
+      "label": "validate all",
+      "group": "build",
+      "dependsOn": [
+        "build",
+        "bandit",
+        "bicep-checkov"
+      ]
+    },
+    {
       "label": "bandit",
       "type": "shell",
       "command": "cd src && uv run bandit -c .bandit.yml -r .",

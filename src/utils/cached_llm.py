@@ -44,14 +44,12 @@ def create_llm(
         multiple authentication methods in order (environment variables, managed identity,
         Azure CLI, etc.).
     """
-    parsed = urlparse(endpoint)
-    host = parsed.hostname
-    # More robust check for local development environments
-    local_hosts = {"localhost", "127.0.0.1", "0.0.0.0", "::1"}  # nosec B104
+    parsed_host = urlparse(endpoint).hostname
+    # local development environments
     if (
-        host in local_hosts
-        or (host and host.endswith(".local"))
-        or (host and host.endswith(".localhost"))
+        parsed_host in {"localhost", "127.0.0.1"}
+        or (parsed_host and parsed_host.endswith(".local"))
+        or (parsed_host and parsed_host.endswith(".localhost"))
     ):
         # Local model with model override
         model = os.environ.get("AZURE_OPENAI_DEPLOYMENT", "llama-2-13b-chat")
