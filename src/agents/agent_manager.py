@@ -63,14 +63,14 @@ def get_available_agents(
 
     logger.debug(f"Cache info: {_extract_agents_from_sections.cache_info()}")
 
-    available_agents = _extract_agents_from_sections(*user_roles)
+    available_agents = _extract_agents_from_sections(tuple(user_roles))
 
     return available_agents
 
 
 @functools.lru_cache(maxsize=32)
-def _extract_agents_from_sections(*args: Any) -> dict[str, dict[str, Any]]:
-    is_admin = "admin" in args
+def _extract_agents_from_sections(user_roles: tuple[str, ...]) -> dict[str, dict[str, Any]]:
+    is_admin = "admin" in user_roles
     sections = pages_config.get("sections", {})
     available_agents = {}
     for section_name, pages in sections.items():
