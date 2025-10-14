@@ -47,7 +47,7 @@ def create_llm(
     parsed_host = urlparse(endpoint).hostname
     # local development environments
     if (
-        parsed_host in {"localhost", "127.0.0.1"}
+        parsed_host in {"localhost", "127.0.0.1", "::1"}
         or (parsed_host and parsed_host.endswith(".local"))
         or (parsed_host and parsed_host.endswith(".localhost"))
     ):

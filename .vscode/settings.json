@@ -20,5 +20,9 @@
     "__blobstorage__": true,
     "__queuestorage__": true
   },
-  "bandit.cwd": "${workspaceFolder}/src"
+  "bandit.cwd": "${workspaceFolder}/src",
+  "bandit.args": [
+    "-c",
+    "${workspaceFolder}/src/.bandit.yml"
+  ]
 }

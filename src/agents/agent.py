@@ -120,6 +120,10 @@ class Agent(abc.ABC):
         self._llm: AzureChatOpenAI | None = None
         self._chain: Runnable | None = None
 
+    def __str__(self) -> str:
+        """Return string representation of the agent."""
+        return f"{self.__class__.__name__}(agent_key='{self.agent_key}', model='{self.model}')"
+
     def _get_azure_chat_openai(self, tag: str | None = None) -> AzureChatOpenAI:
         """
         This method implements lazy initialization of the Azure OpenAI chat model.

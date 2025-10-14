@@ -11,9 +11,8 @@ exclude_dirs:
   - tests/fixtures
 
 # Skip specific tests
-# B101: assert_used - Allow assertions in test files
-skips:
-  - B101
+# skips:
+#   - B101
 
 # Test severity levels to report
 # Options: LOW, MEDIUM, HIGH
@@ -22,6 +21,10 @@ severity: MEDIUM
 # Confidence level threshold
 # Options: LOW, MEDIUM, HIGH
 confidence: MEDIUM
+
+# B101: assert_used - Allow assertions in test files
+assert_used:
+  skips: ["*_test.py", "*/test_*.py"]
 
 # Output format options
 # CLI default is text, CI/CD uses xml or json
