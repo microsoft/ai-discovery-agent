@@ -24,7 +24,8 @@
         "ms-python.debugpy",
         "ms-python.vscode-python-envs",
         "Upstash.context7-mcp",
-        "GitHub.copilot"
+        "GitHub.copilot",
+        "nwgh.bandit"
       ],
       "settings": {
         "python.defaultInterpreterPath": "${workspaceFolder}/src/.venv/bin/python"

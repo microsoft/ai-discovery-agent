@@ -36,6 +36,9 @@ def load_configurations() -> None:
         agents_config = {}
         pages_config = {}
 
+    # Clear the cache since the configuration data has changed
+    _extract_agents_from_sections.cache_clear()
+
 
 def get_available_agents(
     user_roles: list[str] | None = None,
