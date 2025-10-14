@@ -69,7 +69,9 @@ def get_available_agents(
 
 
 @functools.lru_cache(maxsize=32)
-def _extract_agents_from_sections(user_roles: tuple[str, ...]) -> dict[str, dict[str, Any]]:
+def _extract_agents_from_sections(
+    user_roles: tuple[str, ...]
+) -> dict[str, dict[str, Any]]:
     is_admin = "admin" in user_roles
     sections = pages_config.get("sections", {})
     available_agents = {}

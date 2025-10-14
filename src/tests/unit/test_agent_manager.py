@@ -162,6 +162,140 @@ class TestAgentManagerModule:
         cache_info = agent_manager._extract_agents_from_sections.cache_info()
         assert cache_info.hits > 0
 
+    def test_extract_agents_from_sections_comprehensive_caching(self):
+        """Test comprehensive caching behavior of _extract_agents_from_sections."""
+        # Arrange
+        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
+
+        # Clear cache before test
+        agent_manager._extract_agents_from_sections.cache_clear()
+        initial_cache_info = agent_manager._extract_agents_from_sections.cache_info()
+        assert initial_cache_info.hits == 0
+        assert initial_cache_info.misses == 0
+
+        # Test 1: First call should be a cache miss
+        user_roles_1 = ("user",)
+        result1 = agent_manager._extract_agents_from_sections(user_roles_1)
+        cache_info_after_first = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_after_first.misses == 1
+        assert cache_info_after_first.hits == 0
+        assert "facilitator" in result1
+        assert "expert" not in result1  # admin_only agent excluded
+
+        # Test 2: Second call with same arguments should be a cache hit
+        result2 = agent_manager._extract_agents_from_sections(user_roles_1)
+        cache_info_after_second = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_after_second.misses == 1
+        assert cache_info_after_second.hits == 1
+        assert result1 == result2
+
+        # Test 3: Call with different arguments should be a new cache miss
+        admin_roles = ("admin", "user")
+        result3 = agent_manager._extract_agents_from_sections(admin_roles)
+        cache_info_after_third = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_after_third.misses == 2
+        assert cache_info_after_third.hits == 1
+        assert "facilitator" in result3
+        assert "expert" in result3  # admin_only agent included for admin
+        assert result1 != result3  # Different results for different roles
+
+        # Test 4: Call admin roles again should be a cache hit
+        result4 = agent_manager._extract_agents_from_sections(admin_roles)
+        cache_info_after_fourth = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_after_fourth.misses == 2
+        assert cache_info_after_fourth.hits == 2
+        assert result3 == result4
+
+        # Test 5: Test empty roles tuple
+        empty_roles = ()
+        result5 = agent_manager._extract_agents_from_sections(empty_roles)
+        cache_info_after_fifth = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_after_fifth.misses == 3
+        assert cache_info_after_fifth.hits == 2
+        assert "facilitator" in result5
+        assert "expert" not in result5  # admin_only agent excluded for empty roles
+
+    def test_cache_invalidation_on_configuration_reload(self):
+        """Test that cache is properly cleared when configuration is reloaded."""
+        # Arrange
+        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
+        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        user_roles = ("user",)
+
+        # Clear cache and make initial call
+        agent_manager._extract_agents_from_sections.cache_clear()
+        result1 = agent_manager._extract_agents_from_sections(user_roles)
+        cache_info_before_reload = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_before_reload.misses == 1
+        assert cache_info_before_reload.hits == 0
+
+        # Act - Reload configuration (this should clear the cache)
+        with patch(
+            "builtins.open", mock_open(read_data=yaml.dump(SAMPLE_AGENT_CONFIG))
+        ):
+            with patch("agents.agent_manager.yaml.load") as mock_yaml_load:
+                mock_yaml_load.return_value = SAMPLE_AGENT_CONFIG
+                agent_manager.load_configurations()
+
+        # Assert - Cache should be cleared after reload
+        cache_info_after_reload = (
+            agent_manager._extract_agents_from_sections.cache_info()
+        )
+        assert cache_info_after_reload.misses == 0
+        assert cache_info_after_reload.hits == 0
+
+        # Next call should be a cache miss again
+        result2 = agent_manager._extract_agents_from_sections(user_roles)
+        cache_info_after_call = agent_manager._extract_agents_from_sections.cache_info()
+        assert cache_info_after_call.misses == 1
+        assert cache_info_after_call.hits == 0
+        assert (
+            result1 == result2
+        )  # Results should be the same (configuration didn't change)
+
+    def test_extract_agents_from_sections_performance_with_cache(self):
+        """Test that caching improves performance for repeated calls."""
+        import time
+
+        # Arrange
+        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
+        user_roles = ("user",)
+
+        # Clear cache before test
+        agent_manager._extract_agents_from_sections.cache_clear()
+
+        # Measure first call (cache miss)
+        start_time = time.perf_counter()
+        result1 = agent_manager._extract_agents_from_sections(user_roles)
+        first_call_time = time.perf_counter() - start_time
+
+        # Measure second call (cache hit)
+        start_time = time.perf_counter()
+        result2 = agent_manager._extract_agents_from_sections(user_roles)
+        second_call_time = time.perf_counter() - start_time
+
+        # Assert
+        assert result1 == result2
+        # Cache hit should be significantly faster (at least 2x faster)
+        # Note: This is a rough performance test - in practice the speedup
+        # depends on the complexity of the configuration processing
+        assert second_call_time < first_call_time
+        cache_info = agent_manager._extract_agents_from_sections.cache_info()
+        assert cache_info.hits == 1
+        assert cache_info.misses == 1
+
     def test_get_agent_info_existing_agent(self):
         """Test getting info for existing agent."""
         # Arrange

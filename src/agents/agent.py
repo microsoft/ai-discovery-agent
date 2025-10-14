@@ -34,9 +34,9 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from langchain.schema.runnable.config import RunnableConfig
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
 from langchain_core.runnables import Runnable
-from langchain_openai import AzureChatOpenAI
 
 from utils.cached_llm import create_llm
 from utils.logging_setup import get_logger
@@ -117,14 +117,14 @@ class Agent(abc.ABC):
         self.agent_key = agent_key
         self.model = model
         self.temperature = temperature
-        self._llm: AzureChatOpenAI | None = None
+        self._llm: BaseChatModel | None = None
         self._chain: Runnable | None = None
 
     def __str__(self) -> str:
         """Return string representation of the agent."""
         return f"{self.__class__.__name__}(agent_key='{self.agent_key}', model='{self.model}')"
 
-    def _get_azure_chat_openai(self, tag: str | None = None) -> AzureChatOpenAI:
+    def _get_azure_chat_openai(self, tag: str | None = None) -> BaseChatModel:
         """
         This method implements lazy initialization of the Azure OpenAI chat model.
         If the instance doesn't exist, it creates one using the provided configuration
