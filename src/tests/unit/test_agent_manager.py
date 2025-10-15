@@ -5,6 +5,7 @@
 Unit tests for the agent_manager module.
 
 Tests agent configuration loading, agent switching, and user role-based access.
+Updated for global configuration and thread-local current agent implementation.
 """
 
 from pathlib import Path
@@ -23,18 +24,19 @@ class TestAgentManagerModule:
     @pytest.fixture(autouse=True)
     def setup_clean_state(self):
         """Reset module state before each test."""
-        # Reset module-level variables to clean state
-        agent_manager.agents_config = {}
-        agent_manager.pages_config = {}
-        agent_manager.current_agent = None
         # Clear the LRU cache to ensure fresh lookups
         agent_manager._extract_agents_from_sections.cache_clear()
+        # Reset global configuration state to clean state
+        agent_manager._agents_config = {}
+        agent_manager._pages_config = {}
+        # Reset thread-local current agent
+        agent_manager._set_current_agent_thread_local(None)
         yield
         # Clean up after test
-        agent_manager.agents_config = {}
-        agent_manager.pages_config = {}
-        agent_manager.current_agent = None
         agent_manager._extract_agents_from_sections.cache_clear()
+        agent_manager._agents_config = {}
+        agent_manager._pages_config = {}
+        agent_manager._set_current_agent_thread_local(None)
 
     @pytest.fixture
     def mock_config_file(self):
@@ -52,8 +54,8 @@ class TestAgentManagerModule:
         agent_manager.load_configurations()
 
         # Assert
-        assert agent_manager.pages_config == SAMPLE_AGENT_CONFIG
-        assert agent_manager.agents_config == SAMPLE_AGENT_CONFIG["agents"]
+        assert agent_manager._pages_config == SAMPLE_AGENT_CONFIG
+        assert agent_manager._agents_config == SAMPLE_AGENT_CONFIG["agents"]
         mock_yaml_load.assert_called_once()
 
     @patch("builtins.open", side_effect=FileNotFoundError)
@@ -64,8 +66,8 @@ class TestAgentManagerModule:
         agent_manager.load_configurations()
 
         # Assert
-        assert agent_manager.pages_config == {}
-        assert agent_manager.agents_config == {}
+        assert agent_manager._pages_config == {}
+        assert agent_manager._agents_config == {}
         mock_logger.assert_called_once()
 
     @patch("builtins.open", new_callable=mock_open, read_data="invalid: yaml: content")
@@ -79,15 +81,15 @@ class TestAgentManagerModule:
         agent_manager.load_configurations()
 
         # Assert
-        assert agent_manager.pages_config == {}
-        assert agent_manager.agents_config == {}
+        assert agent_manager._pages_config == {}
+        assert agent_manager._agents_config == {}
         mock_logger.assert_called_once()
 
     def test_get_available_agents_regular_user(self):
         """Test getting available agents for regular user."""
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         user_roles = ["user"]
 
         # Act
@@ -101,8 +103,8 @@ class TestAgentManagerModule:
     def test_get_available_agents_admin_user(self):
         """Test getting available agents for admin user."""
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         user_roles = ["admin", "user"]
 
         # Act
@@ -116,8 +118,8 @@ class TestAgentManagerModule:
     def test_get_available_agents_no_roles(self):
         """Test getting available agents with no user roles."""
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         user_roles = None
 
         # Act
@@ -130,8 +132,8 @@ class TestAgentManagerModule:
     def test_get_available_agents_empty_config(self):
         """Test getting available agents with empty configuration."""
         # Arrange
-        agent_manager.pages_config = {"sections": {}}
-        agent_manager.agents_config = {}
+        agent_manager._agents_config = {}
+        agent_manager._pages_config = {"sections": {}}
         # Clear the cache to ensure fresh result
         agent_manager._extract_agents_from_sections.cache_clear()
         user_roles = ["user"]
@@ -145,7 +147,8 @@ class TestAgentManagerModule:
     def test_get_available_agents_caching(self):
         """Test that get_available_agents uses caching properly."""
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         user_roles = ["user"]
 
         # Clear cache before test
@@ -165,7 +168,8 @@ class TestAgentManagerModule:
     def test_extract_agents_from_sections_comprehensive_caching(self):
         """Test comprehensive caching behavior of _extract_agents_from_sections."""
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
 
         # Clear cache before test
         agent_manager._extract_agents_from_sections.cache_clear()
@@ -228,8 +232,8 @@ class TestAgentManagerModule:
     def test_cache_invalidation_on_configuration_reload(self):
         """Test that cache is properly cleared when configuration is reloaded."""
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         user_roles = ("user",)
 
         # Clear cache and make initial call
@@ -270,7 +274,8 @@ class TestAgentManagerModule:
         import time
 
         # Arrange
-        agent_manager.pages_config = SAMPLE_AGENT_CONFIG
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         user_roles = ("user",)
 
         # Clear cache before test
@@ -299,7 +304,8 @@ class TestAgentManagerModule:
     def test_get_agent_info_existing_agent(self):
         """Test getting info for existing agent."""
         # Arrange
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         agent_key = "facilitator"
 
         # Act
@@ -314,7 +320,8 @@ class TestAgentManagerModule:
     def test_get_agent_info_nonexistent_agent(self):
         """Test getting info for non-existent agent."""
         # Arrange
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         agent_key = "nonexistent"
 
         # Act
@@ -326,7 +333,8 @@ class TestAgentManagerModule:
     def test_set_current_agent_existing(self):
         """Test setting current agent to existing agent."""
         # Arrange
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         agent_key = "facilitator"
 
         # Act
@@ -334,12 +342,13 @@ class TestAgentManagerModule:
 
         # Assert
         assert result is True
-        assert agent_manager.current_agent == agent_key
+        assert agent_manager.get_current_agent() == agent_key
 
     def test_set_current_agent_nonexistent(self):
         """Test setting current agent to non-existent agent."""
         # Arrange
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
         agent_key = "nonexistent"
 
         # Act
@@ -347,12 +356,13 @@ class TestAgentManagerModule:
 
         # Assert
         assert result is False
-        assert agent_manager.current_agent is None
+        assert agent_manager.get_current_agent() is None
 
     def test_set_current_agent_empty_config(self):
         """Test setting current agent with empty configuration."""
         # Arrange
-        agent_manager.agents_config = {}
+        agent_manager._agents_config = {}
+        agent_manager._pages_config = {}
         agent_key = "facilitator"
 
         # Act
@@ -360,19 +370,20 @@ class TestAgentManagerModule:
 
         # Assert
         assert result is False
-        assert agent_manager.current_agent is None
+        assert agent_manager.get_current_agent() is None
 
     def test_current_agent_persistence(self):
         """Test that current agent persists across function calls."""
         # Arrange
-        agent_manager.agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
+        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
 
         # Act
         agent_manager.set_current_agent("facilitator")
-        first_check = agent_manager.current_agent
+        first_check = agent_manager.get_current_agent()
 
         agent_manager.set_current_agent("expert")
-        second_check = agent_manager.current_agent
+        second_check = agent_manager.get_current_agent()
 
         # Assert
         assert first_check == "facilitator"
@@ -398,5 +409,5 @@ class TestAgentManagerIntegration:
                 agent_manager.load_configurations()
 
                 # Assert
-                assert agent_manager.agents_config == SAMPLE_AGENT_CONFIG["agents"]
-                assert agent_manager.pages_config == SAMPLE_AGENT_CONFIG
+                assert agent_manager._agents_config == SAMPLE_AGENT_CONFIG["agents"]
+                assert agent_manager._pages_config == SAMPLE_AGENT_CONFIG

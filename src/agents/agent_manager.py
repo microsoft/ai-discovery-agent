@@ -2,6 +2,7 @@
 # Licensed under the MIT license.
 
 import functools
+import threading
 from pathlib import Path
 from typing import Any
 
@@ -15,26 +16,53 @@ PAGES_CONFIG_FILE = Path(__file__).parent.parent / "config/pages.yaml"
 logger = get_logger(__name__)
 
 
-"""Initialize the agent manager."""
-agents_config: dict[str, Any] = {}
-pages_config: dict[str, Any] = {}
-current_agent: str | None = None
+"""Initialize the agent manager with global configuration and thread-local current agent."""
+# Global configuration state (shared across all threads)
+_agents_config: dict[str, Any] = {}
+_pages_config: dict[str, Any] = {}
+
+# Thread-local storage for current agent (varies per user session/thread)
+_thread_local = threading.local()
+
+
+def _get_current_agent_thread_local() -> str | None:
+    """Get current agent from thread-local storage."""
+    if not hasattr(_thread_local, "current_agent"):
+        _thread_local.current_agent = None
+    return _thread_local.current_agent
+
+
+def _set_current_agent_thread_local(agent_key: str | None) -> None:
+    """Set current agent in thread-local storage."""
+    _thread_local.current_agent = agent_key
+
+
+def get_current_agent() -> str | None:
+    """Get the current active agent."""
+    return _get_current_agent_thread_local()
 
 
 def load_configurations() -> None:
     """Load configuration from YAML files."""
-    global agents_config, pages_config
+    global _agents_config, _pages_config
+
     try:
         logger.info(f"Loading pages configuration from {PAGES_CONFIG_FILE}")
         with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
             pages_config = yaml.load(file, Loader=SafeLoader)
         agents_config = pages_config.get("agents", {})
+
+        # Store in global variables
+        _agents_config = agents_config
+        _pages_config = pages_config
+
     except (yaml.YAMLError, FileNotFoundError) as e:
         logger.error(
             f"Error loading pages configuration: {e}", exc_info=e, stack_info=True
         )
-        agents_config = {}
-        pages_config = {}
+        # Store empty configs in global variables
+        _agents_config = {}
+        _pages_config = {}
 
     # Clear the cache since the configuration data has changed
     _extract_agents_from_sections.cache_clear()
@@ -72,8 +100,10 @@ def get_available_agents(
 def _extract_agents_from_sections(
     user_roles: tuple[str, ...]
 ) -> dict[str, dict[str, Any]]:
+    global _agents_config, _pages_config
+
     is_admin = "admin" in user_roles
-    sections = pages_config.get("sections", {})
+    sections = _pages_config.get("sections", {})
     available_agents = {}
     for section_name, pages in sections.items():
         for page_config in pages:
@@ -89,7 +119,7 @@ def _extract_agents_from_sections(
                     "header": page_config["header"],
                     "subtitle": page_config["subtitle"],
                     "section": section_name,
-                    "config": agents_config.get(agent_key, {}),
+                    "config": _agents_config.get(agent_key, {}),
                     "default": page_config.get("default", False),
                 }
     return available_agents
@@ -97,8 +127,9 @@ def _extract_agents_from_sections(
 
 def get_agent_info(agent_key: str) -> dict[str, Any] | None:
     """Get information about a specific agent."""
-    if agent_key in agents_config:
-        return agents_config[agent_key]
+    global _agents_config
+    if agent_key in _agents_config:
+        return _agents_config[agent_key]
     return None
 
 
@@ -116,13 +147,14 @@ def set_current_agent(agent_key: str) -> bool:
     bool
         True if agent was set successfully, False otherwise
     """
-    global current_agent
-    if agent_key in agents_config:
-        current_agent = agent_key
+    global _agents_config
+    if agent_key in _agents_config:
+        _set_current_agent_thread_local(agent_key)
         return True
     return False
 
 
 logger.info("Loading agent configurations")
 load_configurations()
-logger.info(f"Loaded {len(agents_config)} agents from configuration.")
+# Log the number of loaded agents
+logger.info(f"Loaded {len(_agents_config)} agents from configuration.")
