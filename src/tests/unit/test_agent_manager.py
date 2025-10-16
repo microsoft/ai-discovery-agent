@@ -29,14 +29,11 @@ class TestAgentManagerModule:
         # Reset global configuration state to clean state
         agent_manager._agents_config = {}
         agent_manager._pages_config = {}
-        # Reset thread-local current agent
-        agent_manager._set_current_agent_thread_local(None)
         yield
         # Clean up after test
         agent_manager._extract_agents_from_sections.cache_clear()
         agent_manager._agents_config = {}
         agent_manager._pages_config = {}
-        agent_manager._set_current_agent_thread_local(None)
 
     @pytest.fixture
     def mock_config_file(self):
@@ -329,65 +326,6 @@ class TestAgentManagerModule:
 
         # Assert
         assert result is None
-
-    def test_set_current_agent_existing(self):
-        """Test setting current agent to existing agent."""
-        # Arrange
-        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
-        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
-        agent_key = "facilitator"
-
-        # Act
-        result = agent_manager.set_current_agent(agent_key)
-
-        # Assert
-        assert result is True
-        assert agent_manager.get_current_agent() == agent_key
-
-    def test_set_current_agent_nonexistent(self):
-        """Test setting current agent to non-existent agent."""
-        # Arrange
-        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
-        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
-        agent_key = "nonexistent"
-
-        # Act
-        result = agent_manager.set_current_agent(agent_key)
-
-        # Assert
-        assert result is False
-        assert agent_manager.get_current_agent() is None
-
-    def test_set_current_agent_empty_config(self):
-        """Test setting current agent with empty configuration."""
-        # Arrange
-        agent_manager._agents_config = {}
-        agent_manager._pages_config = {}
-        agent_key = "facilitator"
-
-        # Act
-        result = agent_manager.set_current_agent(agent_key)
-
-        # Assert
-        assert result is False
-        assert agent_manager.get_current_agent() is None
-
-    def test_current_agent_persistence(self):
-        """Test that current agent persists across function calls."""
-        # Arrange
-        agent_manager._agents_config = SAMPLE_AGENT_CONFIG["agents"]
-        agent_manager._pages_config = SAMPLE_AGENT_CONFIG
-
-        # Act
-        agent_manager.set_current_agent("facilitator")
-        first_check = agent_manager.get_current_agent()
-
-        agent_manager.set_current_agent("expert")
-        second_check = agent_manager.get_current_agent()
-
-        # Assert
-        assert first_check == "facilitator"
-        assert second_check == "expert"
 
 
 class TestAgentManagerIntegration:

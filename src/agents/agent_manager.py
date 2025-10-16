@@ -2,7 +2,6 @@
 # Licensed under the MIT license.
 
 import functools
-import threading
 from pathlib import Path
 from typing import Any
 
@@ -16,30 +15,10 @@ PAGES_CONFIG_FILE = Path(__file__).parent.parent / "config/pages.yaml"
 logger = get_logger(__name__)
 
 
-"""Initialize the agent manager with global configuration and thread-local current agent."""
+"""Initialize the agent manager with global configuration."""
 # Global configuration state (shared across all threads)
 _agents_config: dict[str, Any] = {}
 _pages_config: dict[str, Any] = {}
-
-# Thread-local storage for current agent (varies per user session/thread)
-_thread_local = threading.local()
-
-
-def _get_current_agent_thread_local() -> str | None:
-    """Get current agent from thread-local storage."""
-    if not hasattr(_thread_local, "current_agent"):
-        _thread_local.current_agent = None
-    return _thread_local.current_agent
-
-
-def _set_current_agent_thread_local(agent_key: str | None) -> None:
-    """Set current agent in thread-local storage."""
-    _thread_local.current_agent = agent_key
-
-
-def get_current_agent() -> str | None:
-    """Get the current active agent."""
-    return _get_current_agent_thread_local()
 
 
 def load_configurations() -> None:
@@ -131,27 +110,6 @@ def get_agent_info(agent_key: str) -> dict[str, Any] | None:
     if agent_key in _agents_config:
         return _agents_config[agent_key]
     return None
-
-
-def set_current_agent(agent_key: str) -> bool:
-    """
-    Set the current active agent.
-
-    Parameters:
-    -----------
-    agent_key : str
-        The key of the agent to set as current
-
-    Returns:
-    --------
-    bool
-        True if agent was set successfully, False otherwise
-    """
-    global _agents_config
-    if agent_key in _agents_config:
-        _set_current_agent_thread_local(agent_key)
-        return True
-    return False
 
 
 logger.info("Loading agent configurations")

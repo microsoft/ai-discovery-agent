@@ -39,14 +39,12 @@ class TestAgentManagerIntegration:
         # Store original state from global configuration
         original_agents_config = agent_manager._agents_config.copy()
         original_pages_config = agent_manager._pages_config.copy()
-        original_current_agent = agent_manager._get_current_agent_thread_local()
 
         yield
 
-        # Restore original state to global configuration and thread-local current agent
+        # Restore original state to global configuration
         agent_manager._agents_config = original_agents_config
         agent_manager._pages_config = original_pages_config
-        agent_manager._set_current_agent_thread_local(original_current_agent)
 
     def test_load_configurations_with_real_file(self, temp_config_file):
         """Test loading configurations from actual file."""
@@ -62,40 +60,6 @@ class TestAgentManagerIntegration:
             assert agent_manager._agents_config == SAMPLE_AGENT_CONFIG["agents"]
             assert "facilitator" in agent_manager._agents_config
             assert "expert" in agent_manager._agents_config
-
-    def test_agent_switching_workflow(self, temp_config_file):
-        """Test complete agent switching workflow."""
-        with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)):
-            import agents.agent_manager as agent_manager
-
-            # Load configuration
-            agent_manager.load_configurations()
-
-            # Test initial state
-            assert agent_manager.get_current_agent() is None
-
-            # Test switching to facilitator
-            success = agent_manager.set_current_agent("facilitator")
-            assert success is True
-            assert agent_manager.get_current_agent() == "facilitator"
-
-            # Test getting agent info
-            agent_info = agent_manager.get_agent_info("facilitator")
-            assert agent_info is not None
-            assert agent_info["model"] == "gpt-4o"
-            assert agent_info["temperature"] == 0.7
-
-            # Test switching to expert
-            success = agent_manager.set_current_agent("expert")
-            assert success is True
-            assert agent_manager.get_current_agent() == "expert"
-
-            # Test switching to non-existent agent
-            success = agent_manager.set_current_agent("nonexistent")
-            assert success is False
-            assert (
-                agent_manager.get_current_agent() == "expert"
-            )  # Should remain unchanged
 
     def test_role_based_access_control_workflow(self, temp_config_file):
         """Test complete role-based access control workflow."""
@@ -137,14 +101,12 @@ class TestAgentManagerErrorHandling:
         # Store original state from global configuration
         original_agents_config = agent_manager._agents_config.copy()
         original_pages_config = agent_manager._pages_config.copy()
-        original_current_agent = agent_manager._get_current_agent_thread_local()
 
         yield
 
-        # Restore original state to global configuration and thread-local current agent
+        # Restore original state to global configuration
         agent_manager._agents_config = original_agents_config
         agent_manager._pages_config = original_pages_config
-        agent_manager._set_current_agent_thread_local(original_current_agent)
 
     def test_missing_config_file(self):
         """Test behavior when config file is missing."""
@@ -169,9 +131,6 @@ class TestAgentManagerErrorHandling:
 
             agent_info = agent_manager.get_agent_info("any_agent")
             assert agent_info is None
-
-            success = agent_manager.set_current_agent("any_agent")
-            assert success is False
 
     def test_malformed_config_file(self):
         """Test behavior with malformed YAML config."""
@@ -249,14 +208,12 @@ class TestAgentConfigurationValidation:
         # Store original state from global configuration
         original_agents_config = agent_manager._agents_config.copy()
         original_pages_config = agent_manager._pages_config.copy()
-        original_current_agent = agent_manager._get_current_agent_thread_local()
 
         yield
 
-        # Restore original state to global configuration and thread-local current agent
+        # Restore original state to global configuration
         agent_manager._agents_config = original_agents_config
         agent_manager._pages_config = original_pages_config
-        agent_manager._set_current_agent_thread_local(original_current_agent)
 
     def test_valid_single_document_agent(self):
         """Test agent with single document configuration."""
