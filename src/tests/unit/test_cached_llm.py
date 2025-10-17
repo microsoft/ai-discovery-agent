@@ -182,7 +182,7 @@ class TestCachedLLM:
             mock_azure_openai.return_value = mock_instance
 
             result = create_llm(
-                endpoint="https://test.openai.azure.com",
+                endpoint="https://myopenai.openai.azure.com",
                 api_version="2023-12-01-preview",
                 deployment="gpt-35-turbo",
                 temperature=None,
@@ -209,7 +209,7 @@ class TestCachedLLM:
             mock_azure_openai.return_value = mock_instance
 
             result = create_llm(
-                endpoint="https://test.openai.azure.com",
+                endpoint="https://myopenai.openai.azure.com",
                 api_version="2023-12-01-preview",
                 deployment=None,
                 temperature=0.5,
@@ -310,7 +310,7 @@ class TestCachedLLM:
             with patch("utils.cached_llm.get_azure_credential"):
                 with patch("utils.cached_llm.AzureChatOpenAI"):
                     create_llm(
-                        endpoint="https://test.openai.azure.com",
+                        endpoint="https://production.openai.azure.com",
                         api_version="2023-12-01-preview",
                         deployment="gpt-4",
                         temperature=0.7,
@@ -320,7 +320,7 @@ class TestCachedLLM:
                     mock_logger.info.assert_called_once()
                     log_call = mock_logger.info.call_args[0]
                     assert "Creating AzureChatOpenAI instance" in log_call[0]
-                    assert "https://test.openai.azure.com" in log_call[1]
+                    assert "https://production.openai.azure.com" in log_call[1]
                     assert "gpt-4" in log_call[2]
 
     def test_create_llm_multiple_tags(self):
