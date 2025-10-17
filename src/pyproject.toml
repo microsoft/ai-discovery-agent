@@ -46,7 +46,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "bandit>=1.8.6",
     "checkov>=3.2.473",
-    "isort==5.13.2",
+    "isort==7.0.0",
     "bandit-sarif-formatter>=1.1.1",
 ]
 
