@@ -12,6 +12,7 @@ import hashlib
 import os
 import secrets
 from pathlib import Path
+from typing import Final
 
 import chainlit as cl
 import yaml
@@ -22,6 +23,9 @@ from utils.logging_setup import get_logger
 AUTH_CONFIG_FILE = Path(__file__).parent / "config/auth-config.yaml"
 
 logger = get_logger(__name__)
+
+SALT_SIZE: Final[int] = 32  # 32 bytes = 256 bits
+PBKDF2_ITERATIONS: Final[int] = 100000
 
 
 def _hash_password(password: str) -> str:
@@ -38,18 +42,17 @@ def _hash_password(password: str) -> str:
     str
         Base64 encoded string containing salt and hash, separated by '$'
     """
-    salt = os.urandom(32)  # 32 bytes = 256 bits of salt
+    salt = os.urandom(SALT_SIZE)  # 32 bytes = 256 bits of salt
 
     # Use PBKDF2 with SHA-256, 100,000 iterations (recommended by OWASP)
     password_hash = hashlib.pbkdf2_hmac(
-        "sha256", password.encode("utf-8"), salt, 100000
+        "sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS
     )
 
     # Encode salt and hash as base64 and combine with separator
-    salt_b64 = base64.b64encode(salt).decode("ascii")
-    hash_b64 = base64.b64encode(password_hash).decode("ascii")
+    b64 = base64.b64encode(salt + password_hash).decode("ascii")
 
-    return f"pbkdf2_sha256${salt_b64}${hash_b64}"
+    return f"pbkdf2_sha256${b64}"
 
 
 def _verify_password(password: str, hashed_password: str) -> bool:
@@ -71,17 +74,18 @@ def _verify_password(password: str, hashed_password: str) -> bool:
     try:
         # Handle both new PBKDF2 format and legacy bcrypt format
         if hashed_password.startswith("pbkdf2_sha256$"):
-            # New PBKDF2 format: pbkdf2_sha256$salt_b64$hash_b64
+            # New PBKDF2 format: pbkdf2_sha256$salt+hash_b64
             parts = hashed_password.split("$")
-            if len(parts) != 3:
+            if len(parts) != 2:
                 return False
 
-            salt = base64.b64decode(parts[1])
-            expected_hash = base64.b64decode(parts[2])
+            salt_and_pass = base64.b64decode(parts[1])
+            salt = salt_and_pass[:SALT_SIZE]
+            expected_hash = salt_and_pass[SALT_SIZE:]
 
             # Hash the provided password with the same salt
             password_hash = hashlib.pbkdf2_hmac(
-                "sha256", password.encode("utf-8"), salt, 100000
+                "sha256", password.encode("utf-8"), salt, PBKDF2_ITERATIONS
             )
 
             # Use secrets.compare_digest for timing attack resistance
@@ -93,9 +97,7 @@ def _verify_password(password: str, hashed_password: str) -> bool:
             logger.warning(
                 "Legacy bcrypt password detected. Consider migrating to PBKDF2."
             )
-            # For now, fall back to plain text comparison (not secure, but maintains compatibility)
             return False
-
         else:
             # Plain text password (legacy, insecure)
             return secrets.compare_digest(password, hashed_password)
