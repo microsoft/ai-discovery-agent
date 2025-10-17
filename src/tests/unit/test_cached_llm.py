@@ -2,6 +2,7 @@
 
 import os
 from unittest.mock import MagicMock, patch
+from urllib.parse import urlparse
 
 from utils.cached_llm import create_llm
 
@@ -320,7 +321,12 @@ class TestCachedLLM:
                     mock_logger.info.assert_called_once()
                     log_call = mock_logger.info.call_args[0]
                     assert "Creating AzureChatOpenAI instance" in log_call[0]
-                    assert "https://production.openai.azure.com" in log_call[1]
+                    parsed_url = urlparse(log_call[1])
+                    expected_url = "https://production.openai.azure.com"
+                    expected_parsed = urlparse(expected_url)
+                    assert parsed_url.scheme == expected_parsed.scheme
+                    assert parsed_url.netloc == expected_parsed.netloc
+                    assert parsed_url.path == expected_parsed.path
                     assert "gpt-4" in log_call[2]
 
     def test_create_llm_multiple_tags(self):
