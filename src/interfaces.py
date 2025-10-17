@@ -35,11 +35,6 @@ class IAgentManager(ABC):
         """Get information about a specific agent."""
         pass
 
-    @abstractmethod
-    def set_current_agent(self, agent_key: str) -> bool:
-        """Set the current active agent."""
-        pass
-
 
 class IAuthenticator(ABC):
     """Abstract interface for authentication operations."""

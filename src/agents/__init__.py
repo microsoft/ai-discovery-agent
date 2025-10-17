@@ -29,9 +29,8 @@ agent_registry : Agent registry and factory
 # This file makes the agents directory a Python package
 
 from .agent import Agent
-from .agent_manager import ChainlitAgentManager
 from .agent_registry import agent_registry
 
 RESPONSE_TAG = "response"
 
-__all__ = ["agent_registry", "Agent", "ChainlitAgentManager", "RESPONSE_TAG"]
+__all__ = ["agent_registry", "Agent", "RESPONSE_TAG"]

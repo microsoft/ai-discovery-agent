@@ -11,8 +11,7 @@ import chainlit as cl
 from chainlit.types import ThreadDict
 from langchain.schema.runnable.config import RunnableConfig
 
-from agents import RESPONSE_TAG, agent_registry
-from agents.agent_manager import ChainlitAgentManager
+from agents import RESPONSE_TAG, agent_manager, agent_registry
 from agents.graph_agent import GraphAgent
 from persistence import ConversationManager
 from utils.config import load_program_info
@@ -22,9 +21,7 @@ from utils.mermaid import extract_mermaid
 logger = get_logger(__name__)
 
 
-async def set_chat_profiles(
-    agent_manager: ChainlitAgentManager, user: cl.User | None = None
-) -> list[cl.ChatProfile]:
+async def set_chat_profiles(user: cl.User | None = None) -> list[cl.ChatProfile]:
     """
     Set available chat profiles based on user permissions.
 
@@ -54,9 +51,7 @@ async def set_chat_profiles(
     return profiles
 
 
-async def on_chat_start(
-    agent_manager: ChainlitAgentManager, conversation_manager: ConversationManager
-) -> None:
+async def on_chat_start(conversation_manager: ConversationManager) -> None:
     """Initialize the chat session when a user connects."""
     user = cl.user_session.get("user")
     if not user:
@@ -124,7 +119,6 @@ async def on_message(
 
 
 async def on_chat_resume(
-    agent_manager: ChainlitAgentManager,
     conversation_manager: ConversationManager,
     thread: ThreadDict,
 ) -> None:

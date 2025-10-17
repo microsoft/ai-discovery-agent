@@ -1,6 +1,7 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
+import functools
 from pathlib import Path
 from typing import Any
 
@@ -14,92 +15,104 @@ PAGES_CONFIG_FILE = Path(__file__).parent.parent / "config/pages.yaml"
 logger = get_logger(__name__)
 
 
-class ChainlitAgentManager:
+"""Initialize the agent manager with global configuration."""
+# Global configuration state (shared across all threads)
+_agents_config: dict[str, Any] = {}
+_pages_config: dict[str, Any] = {}
+
+
+def load_configurations() -> None:
+    """Load configuration from YAML files."""
+    global _agents_config, _pages_config
+
+    try:
+        logger.info(f"Loading pages configuration from {PAGES_CONFIG_FILE}")
+        with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
+            pages_config = yaml.load(file, Loader=SafeLoader)
+        agents_config = pages_config.get("agents", {})
+
+        # Store in global variables
+        _agents_config = agents_config
+        _pages_config = pages_config
+
+    except (yaml.YAMLError, FileNotFoundError) as e:
+        logger.error(
+            f"Error loading pages configuration: {e}", exc_info=e, stack_info=True
+        )
+        # Store empty configs in global variables
+        _agents_config = {}
+        _pages_config = {}
+
+    # Clear the cache since the configuration data has changed
+    _extract_agents_from_sections.cache_clear()
+
+
+def get_available_agents(
+    user_roles: list[str] | None = None,
+) -> dict[str, dict[str, Any]]:
     """
-    Manages agent configuration and switching in Chainlit.
+    Get available agents based on user roles.
+
+    Parameters:
+    -----------
+    user_roles : Optional[List[str]]
+        List of user roles, defaults to None
+
+    Returns:
+    --------
+    Dict[str, Dict[str, Any]]
+        Dictionary of available agents with their configurations
     """
+    available_agents = {}
 
-    def __init__(self) -> None:
-        """Initialize the agent manager."""
-        self.agents_config: dict[str, Any] = {}
-        self.pages_config: dict[str, Any] = {}
-        self.current_agent: str | None = None
-        self.load_configurations()
+    if user_roles is None:
+        user_roles = []
 
-    def load_configurations(self) -> None:
-        """Load configuration from YAML files."""
-        try:
-            with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
-                self.pages_config = yaml.load(file, Loader=SafeLoader)
-            self.agents_config = self.pages_config.get("agents", {})
-        except (yaml.YAMLError, FileNotFoundError) as e:
-            logger.error(
-                f"Error loading pages configuration: {e}", exc_info=e, stack_info=True
-            )
-            self.agents_config = {}
-            self.pages_config = {}
+    logger.debug(f"Cache info: {_extract_agents_from_sections.cache_info()}")
 
-    def get_available_agents(
-        self, user_roles: list[str] | None = None
-    ) -> dict[str, dict[str, Any]]:
-        """
-        Get available agents based on user roles.
+    available_agents = _extract_agents_from_sections(tuple(user_roles))
 
-        Parameters:
-        -----------
-        user_roles : Optional[List[str]]
-            List of user roles, defaults to None
+    return available_agents
 
-        Returns:
-        --------
-        Dict[str, Dict[str, Any]]
-            Dictionary of available agents with their configurations
-        """
-        is_admin = user_roles and "admin" in user_roles
-        available_agents = {}
 
-        sections = self.pages_config.get("sections", {})
-        for section_name, pages in sections.items():
-            for page_config in pages:
-                if page_config.get("type") == "agent":
-                    # Skip admin-only pages for non-admins
-                    if page_config.get("admin_only", False) and not is_admin:
-                        continue
+@functools.lru_cache(maxsize=32)
+def _extract_agents_from_sections(
+    user_roles: tuple[str, ...]
+) -> dict[str, dict[str, Any]]:
+    global _agents_config, _pages_config
 
-                    agent_key = page_config["agent"]
-                    available_agents[agent_key] = {
-                        "title": page_config["title"],
-                        "icon": page_config["icon"],
-                        "header": page_config["header"],
-                        "subtitle": page_config["subtitle"],
-                        "section": section_name,
-                        "config": self.agents_config.get(agent_key, {}),
-                        "default": page_config.get("default", False),
-                    }
+    is_admin = "admin" in user_roles
+    sections = _pages_config.get("sections", {})
+    available_agents = {}
+    for section_name, pages in sections.items():
+        for page_config in pages:
+            if page_config.get("type") == "agent":
+                # Skip admin-only pages for non-admins
+                if page_config.get("admin_only", False) and not is_admin:
+                    continue
 
-        return available_agents
+                agent_key = page_config["agent"]
+                available_agents[agent_key] = {
+                    "title": page_config["title"],
+                    "icon": page_config["icon"],
+                    "header": page_config["header"],
+                    "subtitle": page_config["subtitle"],
+                    "section": section_name,
+                    "config": _agents_config.get(agent_key, {}),
+                    "default": page_config.get("default", False),
+                }
+    return available_agents
 
-    def get_agent_info(self, agent_key: str) -> dict[str, Any] | None:
-        """Get information about a specific agent."""
-        if agent_key in self.agents_config:
-            return self.agents_config[agent_key]
-        return None
 
-    def set_current_agent(self, agent_key: str) -> bool:
-        """
-        Set the current active agent.
+def get_agent_info(agent_key: str) -> dict[str, Any] | None:
+    """Get information about a specific agent."""
+    global _agents_config
+    if agent_key in _agents_config:
+        return _agents_config[agent_key]
+    return None
 
-        Parameters:
-        -----------
-        agent_key : str
-            The key of the agent to set as current
 
-        Returns:
-        --------
-        bool
-            True if agent was set successfully, False otherwise
-        """
-        if agent_key in self.agents_config:
-            self.current_agent = agent_key
-            return True
-        return False
+logger.info("Loading agent configurations")
+load_configurations()
+# Log the number of loaded agents
+logger.info(f"Loaded {len(_agents_config)} agents from configuration.")

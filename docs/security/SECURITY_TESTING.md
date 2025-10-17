@@ -231,7 +231,7 @@ class TestAuthorization:
 
         # Regular user
         regular_user = {"role": "user"}
-        manager = ChainlitAgentManager()
+        from agents import agent_manager as manager
 
         # Should not have access to admin-only agents
         # if that feature exists in your implementation

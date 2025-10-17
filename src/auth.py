@@ -24,7 +24,7 @@ AUTH_CONFIG_FILE = Path(__file__).parent / "config/auth-config.yaml"
 logger = get_logger(__name__)
 
 
-def _hash_password(password: str, salt: bytes | None = None) -> str:
+def _hash_password(password: str) -> str:
     """
     Hash a password using PBKDF2 with SHA-256.
 
@@ -32,16 +32,13 @@ def _hash_password(password: str, salt: bytes | None = None) -> str:
     -----------
     password : str
         The plain text password to hash
-    salt : bytes | None
-        Optional salt bytes. If None, a new random salt is generated
 
     Returns:
     --------
     str
         Base64 encoded string containing salt and hash, separated by '$'
     """
-    if salt is None:
-        salt = secrets.token_bytes(32)  # 32 bytes = 256 bits of salt
+    salt = os.urandom(32)  # 32 bytes = 256 bits of salt
 
     # Use PBKDF2 with SHA-256, 100,000 iterations (recommended by OWASP)
     password_hash = hashlib.pbkdf2_hmac(

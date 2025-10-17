@@ -19,5 +19,10 @@
     "__azurite_db*__.json": true,
     "__blobstorage__": true,
     "__queuestorage__": true
-  }
+  },
+  "bandit.cwd": "${workspaceFolder}/src",
+  "bandit.args": [
+    "-c",
+    "${workspaceFolder}/src/.bandit.yml"
+  ]
 }
