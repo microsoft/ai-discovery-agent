@@ -1,0 +1,50 @@
+name: Bandit Security Scan
+on:
+  workflow_dispatch:
+  push:
+    branches: [ "dev","main" ]
+    paths:
+      - "src/**"
+      - ".github/workflows/04-bandit-security.yml"
+  pull_request:
+    branches: [ "dev","main" ]
+    paths:
+      - "src/**"
+      - ".github/workflows/04-bandit-security.yml"
+  schedule:
+    - cron: '41 3 * * 1'
+permissions: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: bandit security scan (SARIF)
+        working-directory: src
+        if: always()
+        run: uv run bandit -c .bandit.yml -r -f sarif -o results.sarif . || true
+
+      - name: Upload SARIF file
+        if: (!cancelled())
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          # Path to SARIF file relative to the root of the repository
+          sarif_file: ${{github.workspace}}/src/results.sarif
+          # Optional category for the results
+          # Used to differentiate multiple results for one commit
+          category: bandit-scan
