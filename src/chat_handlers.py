@@ -9,7 +9,7 @@ Contains all Chainlit event handlers and message processing logic.
 
 import chainlit as cl
 from chainlit.types import ThreadDict
-from langchain.schema.runnable.config import RunnableConfig
+from langchain_core.runnables import RunnableConfig
 
 from agents import RESPONSE_TAG, agent_manager, agent_registry
 from agents.graph_agent import GraphAgent

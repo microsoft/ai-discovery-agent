@@ -33,10 +33,9 @@ import os
 from collections.abc import AsyncIterator
 from typing import Any
 
-from langchain.schema.runnable.config import RunnableConfig
 from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import AIMessage, BaseMessage, HumanMessage, SystemMessage
-from langchain_core.runnables import Runnable
+from langchain_core.runnables import Runnable, RunnableConfig
 
 from utils.cached_llm import create_llm
 from utils.logging_setup import get_logger
