@@ -55,6 +55,7 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' =
       defaultAction: 'Deny'
       bypass: 'AzureServices'
       virtualNetworkRules: []
+      ipRules: (clientIpAddress != '' && environment != 'prod') ? [{ value: clientIpAddress }] : []
     }
   }
 }
