@@ -25,6 +25,8 @@ param clientIpAddress string
 ])
 @description('Storage replication SKU')
 param storageSku string = 'Standard_LRS'
+param publicNetworkAccess string = 'Disabled'
+param tags object = {}
 
 // Storage account hosting conversation persistence container
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
@@ -47,7 +49,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
       }
       keySource: 'Microsoft.Storage'
     }
-    publicNetworkAccess: 'Disabled'
+    publicNetworkAccess: publicNetworkAccess
     networkAcls: {
       bypass: 'AzureServices'
       defaultAction: 'Deny'
@@ -56,6 +58,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
       ipRules: clientIpAddress == '' ? [] : [{ action: 'Allow', value: clientIpAddress }]
     }
   }
+  tags: tags
 }
 
 // Private endpoint (file subresource adequate for blob & file DNS resolution when needed)

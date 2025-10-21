@@ -17,11 +17,17 @@ echo "azd .env file loaded successfully."
 if [ -z "$GITHUB_SECRET" ]; then
     echo "Setting GitHub repository variables from environment..."
     GITHUB_REPOSITORY=$(gh repo view --json nameWithOwner -t "{{.nameWithOwner}}")
-    DEPLOYMENT_ENVIRONMENT="dev"
 
     echo "Creating or updating GitHub repo $GITHUB_REPOSITORY for environment: $DEPLOYMENT_ENVIRONMENT"
-    gh api --method PUT -H "Accept: application/vnd.github+json" "repos/${GITHUB_REPOSITORY}/environments/${DEPLOYMENT_ENVIRONMENT}"
-
+    result=$(gh api --method PUT -H "Accept: application/vnd.github+json" "repos/${GITHUB_REPOSITORY}/environments/${DEPLOYMENT_ENVIRONMENT}" 2>&1)
+    if [ $? -ne 0 ]; then
+        echo "Error creating/updating GitHub environment: $result"
+        if echo "$result" | grep -q "404"; then
+            echo "404 error is normal - you may not have permissions to create environments. This is expected in some configurations, just check if the variables were set correctly in the next steps."
+        fi
+    else
+        echo "GitHub environment $DEPLOYMENT_ENVIRONMENT created or updated successfully."
+    fi
     gh variable set AZURE_GH_FED_CLIENT_ID --body "$AZURE_GH_FED_CLIENT_ID" --env "$DEPLOYMENT_ENVIRONMENT"
     gh variable set AZURE_TENANT_ID --body "$AZURE_TENANT_ID" --env "$DEPLOYMENT_ENVIRONMENT"
     gh variable set AZURE_SUBSCRIPTION_ID --body "$AZURE_SUBSCRIPTION_ID" --env "$DEPLOYMENT_ENVIRONMENT"
@@ -29,18 +35,4 @@ if [ -z "$GITHUB_SECRET" ]; then
     gh variable set AZURE_LOCATION --body "$AZURE_LOCATION" --env "$DEPLOYMENT_ENVIRONMENT"
 else
     echo "GITHUB_SECRET is set, skipping GitHub variable configuration."
-fi
-
-
-# run only when $GITHUB_SECRET is not set to avoid overwriting secrets in GitHub Actions
-if [ -z "$GITHUB_SECRET" ]; then
-    # Enable public network access for development purposes
-    # This way private endpoints are enabled for production by default (Secure by Default)
-    # but during development we can access resources without private endpoints
-    echo "Enabling public network access for development..."
-    az storage account update --name "$STORAGE_ACCOUNT_NAME" --resource-group "$RESOURCE_GROUP_NAME" --public-network-access Enabled --default-action Allow -o table
-    az resource update --ids "/subscriptions/$AZURE_SUBSCRIPTION_ID/resourceGroups/$RESOURCE_GROUP_NAME/providers/Microsoft.CognitiveServices/accounts/$COGNITIVE_SERVICE_NAME" --set properties.publicNetworkAccess="Enabled" --set properties.networkAcls.defaultAction="Allow" -o table
-    echo "Public network access enabled."
-else
-    echo "GITHUB_SECRET is set, skipping development config."
 fi

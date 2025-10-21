@@ -7,6 +7,8 @@ Chat event handlers for AI Discovery Workshop Agent.
 Contains all Chainlit event handlers and message processing logic.
 """
 
+import asyncio
+
 import chainlit as cl
 from chainlit.types import ThreadDict
 from langchain_core.runnables import RunnableConfig
@@ -200,6 +202,26 @@ async def initialize_conversation(
         cl.user_session.set("current_conversation_id", None)
         return
 
+    loading_message = cl.Message("Loading conversation...")
+    await loading_message.send()
+    # Run the conversation initialization in the background to avoid blocking UI
+    asyncio.create_task(
+        _initialize_conversation_background(
+            user_id, agent_key, conversation_manager, loading_message=loading_message
+        )
+    )
+
+
+async def _initialize_conversation_background(
+    user_id: str,
+    agent_key: str,
+    conversation_manager: ConversationManager,
+    loading_message: cl.Message,
+) -> None:
+    """
+    Background task to initialize conversation without blocking the main UI thread.
+    This runs the I/O operations and then schedules UI updates.
+    """
     try:
         # Check if we should load an existing conversation or create a new one
         conversations = await conversation_manager.list_conversations(
@@ -242,6 +264,9 @@ async def initialize_conversation(
         # Fallback to in-memory storage
         cl.user_session.set("conversation_history", [])
         cl.user_session.set("current_conversation_id", None)
+    finally:
+        if loading_message:
+            await loading_message.remove()
 
 
 async def load_conversation_silently(

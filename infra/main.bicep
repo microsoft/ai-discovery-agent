@@ -6,11 +6,16 @@ targetScope = 'subscription'
 param name string
 param principalId string
 param principalType string = 'User'
-param repository string
+param repository string = 'microsoft/ai-discovery-agent'
 @minLength(1)
 @description('Primary location for all resources')
 param location string
 param clientIpAddress string
+@allowed([
+  'prod'
+  'dev'
+])
+param environment string
 
 var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var tags = { 'azd-env-name': name }
@@ -33,6 +38,7 @@ module resources 'resources.bicep' = {
     principalType: principalType
     repository: repository
     clientIpAddress: clientIpAddress
+    environment: environment
   }
 }
 
@@ -50,3 +56,4 @@ output STORAGE_ACCOUNT_NAME string = resources.outputs.STORAGE_ACCOUNT_NAME
 output COGNITIVE_SERVICE_NAME string = resources.outputs.COGNITIVE_SERVICE_NAME
 output APPINSIGHTS_INSTRUMENTATIONKEY string = resources.outputs.APPINSIGHTS_INSTRUMENTATIONKEY
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
+output DEPLOYMENT_ENVIRONMENT string = environment
