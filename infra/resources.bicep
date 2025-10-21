@@ -9,6 +9,9 @@ param principalId string
 param principalType string
 param repository string
 param clientIpAddress string
+param environment string = 'prod'
+
+var publicNetworkAccess = environment == 'prod' ? 'Disabled' : 'Enabled'
 
 var abbrs = loadJsonContent('./abbreviations.json')
 var siteConfig = {
@@ -47,7 +50,7 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' =
   properties: {
     customSubDomainName: '${abbrs.cognitiveServicesAccounts}${resourceToken}'
     disableLocalAuth: true
-    publicNetworkAccess: 'Disabled'
+    publicNetworkAccess: publicNetworkAccess
     networkAcls: {
       defaultAction: 'Deny'
       bypass: 'AzureServices'
@@ -466,6 +469,8 @@ module storage 'modules/storage.bicep' = {
     principalId: principalId
     principalType: principalType
     clientIpAddress: clientIpAddress
+    publicNetworkAccess: publicNetworkAccess
+    tags: tags
   }
 }
 
