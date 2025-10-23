@@ -10,7 +10,7 @@ param repository string = 'microsoft/ai-discovery-agent'
 @minLength(1)
 @description('Primary location for all resources')
 param location string
-param clientIpAddress string
+param clientIpAddress string = ''
 @allowed([
   'prod'
   'dev'
