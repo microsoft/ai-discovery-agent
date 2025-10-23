@@ -1,0 +1,96 @@
+name: CI - Compilation and Testing
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+  push:
+    branches-ignore:
+      - main # for main we run ci/cd
+      - dev
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - uses: pre-commit/action@v3.0.1
+
+      - name: compile
+        if: always()
+        run: uv run -m compileall src/
+        shell: bash
+
+      - name: Generate requirements.txt and test requirements.txt
+        if: always()
+        run: |
+          uv pip compile src/pyproject.toml -o src/requirements.txt
+          rm -rf src/.venv
+          python3 -m venv src/.venv
+          source src/.venv/bin/activate
+          cd src && uv pip install -r requirements.txt
+        shell: bash
+
+      - name: Run tests
+        if: always()
+        run: uv run pytest --junit-xml pytest.xml
+        working-directory: src
+
+      - name: bandit security scan (XML)
+        working-directory: src
+        if: always()
+        run: uv run bandit -c .bandit.yml -r -f xml -o bandit_test.xml .
+
+      - name: Upload Test Results
+        if: (!cancelled())
+        uses: actions/upload-artifact@v4
+        with:
+          name: CI Test Results
+          path: src/*test.xml
+
+  publish-ci-test-results:
+    name: "Publish CI Tests Results"
+    needs: [build-and-test]
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+
+      # only needed for private repository
+      contents: read
+
+      # only needed for private repository
+      issues: read
+    if: (!cancelled())
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: artifacts
+
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "artifacts/**/*.xml"

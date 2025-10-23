@@ -1,0 +1,288 @@
+name: Main CI/CD
+on:
+  workflow_dispatch:
+  push:
+    # Run when commits are pushed to mainline branch (main or master)
+    # Set this to the mainline branch you are using
+    branches:
+      - main
+      - dev
+    paths:
+      - "src/**"
+      - ".github/workflows/02-ci-cd.yml"
+      - "infra/**"
+      - "azure.yaml"
+
+concurrency:
+  group: cd-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: false # need the deployment to finish
+# GitHub Actions workflow to deploy to Azure using azd
+# To configure required secrets for connecting to Azure, simply run `azd pipeline config`
+
+# Set up permissions for deploying with secretless Azure federated credentials
+# https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build:
+    uses: ./.github/workflows/01-ci.yml
+    secrets: inherit
+    permissions:
+      checks: write
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+      # only needed for private repository
+      contents: read
+      # only needed for private repository
+      issues: read
+      actions: read
+      security-events: write
+  provision:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
+    env:
+      AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+    outputs:
+      WEB_APP_NAME: ${{ steps.provision.outputs.WEB_APP_NAME }}
+      RESOURCE_GROUP_NAME: ${{ steps.provision.outputs.RESOURCE_GROUP_NAME }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install azd
+        uses: Azure/setup-azd@v2.2.0
+
+      - name: Log in with Azure (Federated Credentials)
+        if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
+        run: |
+          azd auth login `
+            --client-id "$Env:AZURE_GH_FED_CLIENT_ID" `
+            --federated-credential-provider "github" `
+            --tenant-id "$Env:AZURE_TENANT_ID"
+        shell: pwsh
+
+      - name: Log in with Azure (Client Credentials)
+        if: ${{ env.AZURE_CREDENTIALS != '' }}
+        run: |
+          $info = $Env:AZURE_CREDENTIALS | ConvertFrom-Json -AsHashtable;
+          Write-Host "::add-mask::$($info.clientSecret)"
+
+          azd auth login `
+            --client-id "$($info.clientId)" `
+            --client-secret "$($info.clientSecret)" `
+            --tenant-id "$($info.tenantId)"
+        shell: pwsh
+
+      - name: Provision Infrastructure
+        id: provision
+        run: |
+          azd provision --no-prompt
+          APP_NAME=$(azd env get-value WEB_APP_NAME)
+          echo "RESOURCE_GROUP_NAME=$(azd env get-value RESOURCE_GROUP_NAME)" >> "$GITHUB_OUTPUT"
+          echo "WEB_APP_NAME=$APP_NAME" >> "$GITHUB_OUTPUT"
+        env:
+          AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
+          AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
+          AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+          AZURE_PRINCIPAL_TYPE: "ServicePrincipal"
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
+      url: ${{ steps.webapp-deploy.outputs.webapp-url }}
+    env:
+      AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      AUTH_CONFIG_YAML: ${{ secrets.AUTH_CONFIG_YAML }}
+    needs: [build, provision]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install azd
+        uses: Azure/setup-azd@v2.2.0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('src/uv.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-uv-
+
+      - name: Generate requirements.txt
+        run: uv pip compile src/pyproject.toml -o src/requirements.txt
+
+      - name: Log in with Azure (Federated Credentials)
+        uses: azure/login@v2
+        if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
+        with:
+          client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in with Azure (Client Credentials)
+        uses: azure/login@v2
+        if: ${{ env.AZURE_CREDENTIALS != '' }}
+        with:
+          creds: ${{ env.AZURE_CREDENTIALS }}
+
+      - name: Prepare deployment package
+        run: |
+          # Clean up unnecessary files to reduce deployment size
+          rm -rf src/.venv
+          find src -name "__pycache__" -type d -exec rm -rf {} + || true
+          find src -name "*.pyc" -delete || true
+          find src -name "*.egg-info" -type d -exec rm -rf {} + || true
+          rm -rf src/tests
+
+          # Create auth config
+          echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
+
+          # # Create .deployment file for faster Azure deployment
+          # echo "[config]" > src/.deployment
+          # echo "command = startup.sh" >> src/.deployment
+
+      - name: Deploy to Azure Web App staging slot
+        id: webapp-deploy
+        uses: azure/webapps-deploy@v3.0.6
+        with:
+          app-name: ${{ needs.provision.outputs.WEB_APP_NAME }}
+          slot-name: staging
+          package: "./src"
+
+      - name: Warmup staging slot
+        run: |
+          # Wait for deployment to complete
+          sleep 30
+
+          # Get staging slot URL
+          STAGING_URL="https://${{ needs.provision.outputs.WEB_APP_NAME }}-staging.azurewebsites.net"
+
+          # Warmup the application
+          echo "Warming up staging slot at $STAGING_URL"
+          for i in {1..5}; do
+            echo "Warmup attempt $i/5..."
+            curl -f -s -o /dev/null --connect-timeout 30 --max-time 60 "$STAGING_URL/health" || echo "Warmup attempt $i failed"
+            sleep 10
+          done
+
+          # Verify health endpoint
+          echo "Verifying health endpoint..."
+          curl -f --connect-timeout 30 --max-time 60 "$STAGING_URL/health"
+
+          echo "Staging slot warmed up successfully!"
+
+  # swap-to-production:
+  #   runs-on: ubuntu-latest
+  #   needs: [provision, deploy, config-settings]
+  #   environment:
+  #     name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
+  #   env:
+  #     AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
+  #     AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+  #     AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+  #     AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+  #   steps:
+  #     - name: Log in with Azure (Federated Credentials)
+  #       uses: azure/login@v2
+  #       if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
+  #       with:
+  #         client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
+  #         tenant-id: ${{ env.AZURE_TENANT_ID }}
+  #         subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+  #     - name: Log in with Azure (Client Credentials)
+  #       uses: azure/login@v2
+  #       if: ${{ env.AZURE_CREDENTIALS != '' }}
+  #       with:
+  #         creds: ${{ env.AZURE_CREDENTIALS }}
+
+  #     - name: Swap staging slot to production
+  #       run: |
+  #         echo "Swapping staging slot to production..."
+  #         az webapp deployment slot swap \
+  #           --name "${{ needs.provision.outputs.WEB_APP_NAME }}" \
+  #           --resource-group "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" \
+  #           --slot staging \
+  #           --target-slot production
+
+  #         echo "Slot swap completed successfully!"
+
+  #     - name: Verify production deployment
+  #       run: |
+  #         # Wait for swap to complete
+  #         sleep 30
+
+  #         # Get production URL
+  #         PROD_URL="https://${{ needs.provision.outputs.WEB_APP_NAME }}.azurewebsites.net"
+
+  #         # Verify health endpoint on production
+  #         echo "Verifying production deployment at $PROD_URL"
+  #         for i in {1..10}; do
+  #           if curl -f --connect-timeout 30 --max-time 60 "$PROD_URL/health"; then
+  #             echo "Production deployment verified successfully!"
+  #             exit 0
+  #           else
+  #             echo "Verification attempt $i/10 failed, retrying in 30 seconds..."
+  #             sleep 30
+  #           fi
+  #         done
+
+  #         echo "Production deployment verification failed!"
+  #         exit 1
+
+  config-settings:
+    runs-on: ubuntu-latest
+    needs: [provision, deploy]
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
+    env:
+      AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
+      PROD_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.PROD_OAUTH_GITHUB_CLIENT_ID }}
+      PROD_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.PROD_OAUTH_GITHUB_CLIENT_SECRET }}
+      STAGING_OAUTH_GITHUB_CLIENT_ID: ${{ secrets.STAGING_OAUTH_GITHUB_CLIENT_ID }}
+      STAGING_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}
+    steps:
+      - name: Log in with Azure (Federated Credentials)
+        uses: azure/login@v2
+        if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
+        with:
+          client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in with Azure (Client Credentials)
+        uses: azure/login@v2
+        if: ${{ env.AZURE_CREDENTIALS != '' }}
+        with:
+          creds: ${{ env.AZURE_CREDENTIALS }}
+
+      - name: Set environment variables in staging slot
+        if: ${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID != '' && env.STAGING_OAUTH_GITHUB_CLIENT_SECRET != '' }}
+        run: |
+          echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in staging slot"
+          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --slot staging --settings OAUTH_GITHUB_CLIENT_ID="${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID }}"
+          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --slot staging --settings OAUTH_GITHUB_CLIENT_SECRET="${{ env.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}"
+
+      - name: Set environment variables in prod slot
+        if: ${{ env.PROD_OAUTH_GITHUB_CLIENT_ID != '' && env.PROD_OAUTH_GITHUB_CLIENT_SECRET != '' }}
+        run: |
+          echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in prod slot"
+          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --settings OAUTH_GITHUB_CLIENT_ID="${{ env.PROD_OAUTH_GITHUB_CLIENT_ID }}"
+          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --settings OAUTH_GITHUB_CLIENT_SECRET="${{ env.PROD_OAUTH_GITHUB_CLIENT_SECRET }}"

@@ -1,0 +1,108 @@
+# Bandit Configuration for Python SAST
+# Documentation: https://bandit.readthedocs.io/
+
+# Exclusions
+exclude_dirs:
+  - .venv
+  - venv
+  - .pytest_cache
+  - __pycache__
+  - .git
+  - tests/fixtures
+
+# Skip specific tests
+# skips:
+#   - B101
+
+# Test severity levels to report
+# Options: LOW, MEDIUM, HIGH
+severity: MEDIUM
+
+# Confidence level threshold
+# Options: LOW, MEDIUM, HIGH
+confidence: MEDIUM
+
+# B101: assert_used - Allow assertions in test files
+assert_used:
+  skips: ["*_test.py", "*/test_*.py"]
+
+# Output format options
+# CLI default is text, CI/CD uses xml or json
+# Format is set via command line: -f xml, -f json, -f sarif
+# format: text
+
+# Tests to include (optional, default is all)
+# Uncomment to only run specific security checks
+# tests:
+#   - B201  # flask_debug_true
+#   - B301  # pickle
+#   - B302  # marshal
+#   - B303  # md5
+#   - B304  # insecure_cipher
+#   - B305  # insecure_cipher_mode
+#   - B306  # mktemp_q
+#   - B307  # eval
+#   - B308  # mark_safe
+#   - B309  # httpsconnection
+#   - B310  # urllib_urlopen
+#   - B311  # random
+#   - B312  # telnetlib
+#   - B313  # xml_bad_cElementTree
+#   - B314  # xml_bad_ElementTree
+#   - B315  # xml_bad_expatreader
+#   - B316  # xml_bad_expatbuilder
+#   - B317  # xml_bad_sax
+#   - B318  # xml_bad_minidom
+#   - B319  # xml_bad_pulldom
+#   - B320  # xml_bad_etree
+#   - B321  # ftplib
+#   - B323  # unverified_context
+#   - B324  # hashlib_new_insecure_functions
+#   - B325  # tempnam
+#   - B401  # import_telnetlib
+#   - B402  # import_ftplib
+#   - B403  # import_pickle
+#   - B404  # import_subprocess
+#   - B405  # import_xml_etree
+#   - B406  # import_xml_sax
+#   - B407  # import_xml_expat
+#   - B408  # import_xml_minidom
+#   - B409  # import_xml_pulldom
+#   - B410  # import_lxml
+#   - B411  # import_xmlrpclib
+#   - B412  # import_httpoxy
+#   - B413  # import_pycrypto
+#   - B501  # request_with_no_cert_validation
+#   - B502  # ssl_with_bad_version
+#   - B503  # ssl_with_bad_defaults
+#   - B504  # ssl_with_no_version
+#   - B505  # weak_cryptographic_key
+#   - B506  # yaml_load
+#   - B507  # ssh_no_host_key_verification
+#   - B601  # paramiko_calls
+#   - B602  # shell_injection
+#   - B603  # subprocess_without_shell_equals_true
+#   - B604  # any_other_function_with_shell_equals_true
+#   - B605  # start_process_with_a_shell
+#   - B606  # start_process_with_no_shell
+#   - B607  # start_process_with_partial_path
+#   - B608  # hardcoded_sql_expressions
+#   - B609  # linux_commands_wildcard_injection
+#   - B610  # django_extra_used
+#   - B611  # django_rawsql_used
+#   - B701  # jinja2_autoescape_false
+#   - B702  # use_of_mako_templates
+#   - B703  # django_mark_safe
+
+# Specific overrides per test (optional)
+# Example: Allow certain functions or modules
+# nosec comments in code are recommended instead
+# overrides:
+#   B404:
+#     - subprocess.run  # Allow subprocess.run with proper arguments
+
+# Plugin configuration
+# Enable/disable specific plugins if needed
+# plugins:
+#   - bandit.plugins.injection_sql
+#   - bandit.plugins.injection_shell

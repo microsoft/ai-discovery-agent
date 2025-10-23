@@ -1,0 +1,8 @@
+.env
+.azure.env
+.venv/*
+*.egg-info/*
+dist/*
+**/__pycache__/*
+pyproject.toml
+uv.lock

@@ -1,0 +1,67 @@
+name: PR Format Check
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions: {}
+
+jobs:
+  check-format:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pull-requests: write
+
+    steps:
+      - name: Checkout PR code
+        uses: actions/checkout@v5
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: 3.12
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Check if formatting is needed
+        id: format_check
+        run: |
+          # Install dependencies
+          uv sync --only-group dev --directory src
+          . src/.venv/bin/activate
+
+          # Run pre-commit to check if formatting is needed
+          set +e
+          uv run pre-commit run --all-files --show-diff-on-failure
+          format_needed=$?
+          set -e
+
+          if [ $format_needed -eq 0 ]; then
+            echo "formatting_needed=false" >> $GITHUB_OUTPUT
+            echo "No formatting changes needed"
+          else
+            echo "formatting_needed=true" >> $GITHUB_OUTPUT
+            echo "Formatting changes are needed"
+          fi
+
+      - name: Comment on PR if formatting needed
+        if: steps.format_check.outputs.formatting_needed == 'true'
+        uses: actions/github-script@v8
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: ${{ github.event.pull_request.number }},
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `🔧 **Formatting Issues Detected**
+
+              This PR has formatting issues that need to be fixed. You can:
+
+              1. **Auto-format**: Comment \`/format\` on this PR to automatically apply formatting fixes
+              2. **Manual fix**: Run \`uv run pre-commit run --all-files\` locally and commit the changes
+
+              The CI will update once formatting is applied.`
+            });
