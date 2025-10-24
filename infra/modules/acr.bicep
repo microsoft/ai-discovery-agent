@@ -5,7 +5,7 @@ param principalId string
 param principalType string
 
 // Ensure ACR name is at least 5 characters and only alphanumeric
-var acrName = 'cr${toLower(replace(resourceToken, '-', ''))}' 
+var acrName = 'cr${toLower(replace(resourceToken, '-', ''))}'
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: acrName
