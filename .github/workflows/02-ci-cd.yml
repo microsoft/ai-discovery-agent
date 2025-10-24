@@ -51,6 +51,8 @@ jobs:
     outputs:
       WEB_APP_NAME: ${{ steps.provision.outputs.WEB_APP_NAME }}
       RESOURCE_GROUP_NAME: ${{ steps.provision.outputs.RESOURCE_GROUP_NAME }}
+      AZURE_CONTAINER_REGISTRY_NAME: ${{ steps.provision.outputs.AZURE_CONTAINER_REGISTRY_NAME }}
+      AZURE_CONTAINER_REGISTRY_ENDPOINT: ${{ steps.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -84,8 +86,12 @@ jobs:
         run: |
           azd provision --no-prompt
           APP_NAME=$(azd env get-value WEB_APP_NAME)
+          ACR_NAME=$(azd env get-value AZURE_CONTAINER_REGISTRY_NAME)
+          ACR_ENDPOINT=$(azd env get-value AZURE_CONTAINER_REGISTRY_ENDPOINT)
           echo "RESOURCE_GROUP_NAME=$(azd env get-value RESOURCE_GROUP_NAME)" >> "$GITHUB_OUTPUT"
           echo "WEB_APP_NAME=$APP_NAME" >> "$GITHUB_OUTPUT"
+          echo "AZURE_CONTAINER_REGISTRY_NAME=$ACR_NAME" >> "$GITHUB_OUTPUT"
+          echo "AZURE_CONTAINER_REGISTRY_ENDPOINT=$ACR_ENDPOINT" >> "$GITHUB_OUTPUT"
         env:
           AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
           AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
@@ -96,7 +102,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
-      url: ${{ steps.webapp-deploy.outputs.webapp-url }}
+      url: ${{ steps.containerapp-deploy-staging.outputs.url }}
     env:
       AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -107,9 +113,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Install azd
-        uses: Azure/setup-azd@v2.2.0
 
       - name: Install uv
         uses: astral-sh/setup-uv@v7
@@ -141,7 +144,7 @@ jobs:
 
       - name: Prepare deployment package
         run: |
-          # Clean up unnecessary files to reduce deployment size
+          # Clean up unnecessary files to reduce image size
           rm -rf src/.venv
           find src -name "__pycache__" -type d -exec rm -rf {} + || true
           find src -name "*.pyc" -delete || true
@@ -151,28 +154,37 @@ jobs:
           # Create auth config
           echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
 
-          # # Create .deployment file for faster Azure deployment
-          # echo "[config]" > src/.deployment
-          # echo "command = startup.sh" >> src/.deployment
+      - name: Log in to Azure Container Registry
+        run: |
+          # Login to ACR using Azure CLI (works with both federated and service principal auth)
+          az acr login --name ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_NAME }}
 
-      - name: Deploy to Azure Web App staging slot
-        id: webapp-deploy
-        uses: azure/webapps-deploy@v3.0.6
+      - name: Build and push container image to registry
+        run: |
+          cd src
+          docker build -t ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/ai-discovery-agent:${{ github.sha }} .
+          docker tag ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/ai-discovery-agent:${{ github.sha }} ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/ai-discovery-agent:latest
+          docker push ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/ai-discovery-agent:${{ github.sha }}
+          docker push ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/ai-discovery-agent:latest
+
+      - name: Deploy to Container App (Staging)
+        id: containerapp-deploy-staging
+        uses: azure/container-apps-deploy-action@v1
         with:
-          app-name: ${{ needs.provision.outputs.WEB_APP_NAME }}
-          slot-name: staging
-          package: "./src"
+          containerAppName: ${{ needs.provision.outputs.WEB_APP_NAME }}-staging
+          resourceGroup: ${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}
+          imageToDeploy: ${{ needs.provision.outputs.AZURE_CONTAINER_REGISTRY_ENDPOINT }}/ai-discovery-agent:${{ github.sha }}
 
-      - name: Warmup staging slot
+      - name: Warmup staging app
         run: |
           # Wait for deployment to complete
           sleep 30
 
-          # Get staging slot URL
-          STAGING_URL="https://${{ needs.provision.outputs.WEB_APP_NAME }}-staging.azurewebsites.net"
+          # Get staging URL from the deployment output
+          STAGING_URL="${{ steps.containerapp-deploy-staging.outputs.url }}"
 
           # Warmup the application
-          echo "Warming up staging slot at $STAGING_URL"
+          echo "Warming up staging app at $STAGING_URL"
           for i in {1..5}; do
             echo "Warmup attempt $i/5..."
             curl -f -s -o /dev/null --connect-timeout 30 --max-time 60 "$STAGING_URL/health" || echo "Warmup attempt $i failed"
@@ -183,7 +195,7 @@ jobs:
           echo "Verifying health endpoint..."
           curl -f --connect-timeout 30 --max-time 60 "$STAGING_URL/health"
 
-          echo "Staging slot warmed up successfully!"
+          echo "Staging app warmed up successfully!"
 
   # swap-to-production:
   #   runs-on: ubuntu-latest
@@ -273,16 +285,20 @@ jobs:
         with:
           creds: ${{ env.AZURE_CREDENTIALS }}
 
-      - name: Set environment variables in staging slot
+      - name: Set environment variables in staging container app
         if: ${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID != '' && env.STAGING_OAUTH_GITHUB_CLIENT_SECRET != '' }}
         run: |
-          echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in staging slot"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --slot staging --settings OAUTH_GITHUB_CLIENT_ID="${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID }}"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --slot staging --settings OAUTH_GITHUB_CLIENT_SECRET="${{ env.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}"
+          echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in staging container app"
+          az containerapp update --name "${{ needs.provision.outputs.WEB_APP_NAME }}-staging" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" \
+            --set-env-vars "OAUTH_GITHUB_CLIENT_ID=${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID }}" "OAUTH_GITHUB_CLIENT_SECRET=secretref:oauth-github-client-secret-staging"
+          az containerapp secret set --name "${{ needs.provision.outputs.WEB_APP_NAME }}-staging" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" \
+            --secrets "oauth-github-client-secret-staging=${{ env.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}"
 
-      - name: Set environment variables in prod slot
+      - name: Set environment variables in prod container app
         if: ${{ env.PROD_OAUTH_GITHUB_CLIENT_ID != '' && env.PROD_OAUTH_GITHUB_CLIENT_SECRET != '' }}
         run: |
-          echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in prod slot"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --settings OAUTH_GITHUB_CLIENT_ID="${{ env.PROD_OAUTH_GITHUB_CLIENT_ID }}"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --settings OAUTH_GITHUB_CLIENT_SECRET="${{ env.PROD_OAUTH_GITHUB_CLIENT_SECRET }}"
+          echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in prod container app"
+          az containerapp update --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" \
+            --set-env-vars "OAUTH_GITHUB_CLIENT_ID=${{ env.PROD_OAUTH_GITHUB_CLIENT_ID }}" "OAUTH_GITHUB_CLIENT_SECRET=secretref:oauth-github-client-secret-prod"
+          az containerapp secret set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" \
+            --secrets "oauth-github-client-secret-prod=${{ env.PROD_OAUTH_GITHUB_CLIENT_SECRET }}"
