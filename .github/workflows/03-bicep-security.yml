@@ -83,7 +83,7 @@ jobs:
           category: bicep-scan
       - name: Upload Test Results
         if: (!cancelled())
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: Bicep Test Results
           path: bicep_results.xml
