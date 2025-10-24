@@ -5,7 +5,7 @@ services:
   web:
     project: ./src
     language: py
-    host: appservice
+    host: containerapp
 hooks:
   preprovision:
     windows:

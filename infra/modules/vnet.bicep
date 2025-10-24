@@ -35,34 +35,26 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
     }
     subnets: [
       {
-        name: 'app-subnet'
+        name: 'container-apps-subnet'
         properties: {
-          addressPrefix: '10.0.0.0/24'
+          addressPrefix: '10.0.0.0/23'
           natGateway: {
             id: natGateway.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
-          delegations: [
-            {
-              name: 'Microsoft.Web/serverFarms'
-              properties: {
-                serviceName: 'Microsoft.Web/serverFarms'
-              }
-            }
-          ]
         }
       }
       {
         name: 'private-subnet' //TODO: rename to private endpoint subnet
         properties: {
-          addressPrefix: '10.0.1.0/24'
+          addressPrefix: '10.0.2.0/24'
           privateEndpointNetworkPolicies: 'Disabled'
         }
       }
       {
         name: 'vm-subnet'
         properties: {
-          addressPrefix: '10.0.2.0/24'
+          addressPrefix: '10.0.3.0/24'
           privateEndpointNetworkPolicies: 'Disabled'
           natGateway: {
             id: natGateway.id
@@ -72,7 +64,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
       {
         name: 'ci-subnet'
         properties: {
-          addressPrefix: '10.0.3.0/24'
+          addressPrefix: '10.0.4.0/24'
           privateEndpointNetworkPolicies: 'Disabled'
           natGateway: {
             id: natGateway.id
@@ -93,7 +85,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
 
 output vnetId string = vnet.id
 output vnetName string = vnet.name
-output appSubnetId string = vnet.properties.subnets[0].id
+output containerAppSubnetId string = vnet.properties.subnets[0].id
 output privateSubnetId string = vnet.properties.subnets[1].id
 output vmSubnetId string = vnet.properties.subnets[2].id
 output ciSubnetId string = vnet.properties.subnets[3].id
