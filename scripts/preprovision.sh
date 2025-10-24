@@ -8,7 +8,7 @@ fi
 
 if [ -n "$WEB_APP_NAME" ]; then
     echo "Fetching OAUTH_ settings from Web App: $WEB_APP_NAME ..."
-    oauth_values=$(az webapp config appsettings list -n $WEB_APP_NAME -g $RESOURCE_GROUP_NAME --query "[] | [? contains(name,'OAUTH_')]")
+    oauth_values=$(az webapp config appsettings list -n "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME" --query "[] | [? contains(name,'OAUTH_')]")
     azd env set OAUTH_SETTINGS "$oauth_values"
 else
     echo "WEB_APP_NAME is not set. Skipping fetching OAUTH_ settings."
