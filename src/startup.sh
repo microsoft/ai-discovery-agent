@@ -58,7 +58,7 @@ python -c "import server, main; print('✓ All modules imported successfully')" 
 # Start the application with error handling
 echo "Starting uvicorn server..."
 exec python -m uvicorn server:app \
-    --host $HOST \
+    --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
     --timeout-keep-alive "$WORKER_TIMEOUT" \
