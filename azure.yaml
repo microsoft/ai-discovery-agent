@@ -8,44 +8,24 @@ services:
     host: appservice
 hooks:
   preprovision:
-    windows:
-      shell: pwsh
-      run: ./scripts/preprovision.ps1
-      interactive: true
-      continueOnError: false
     posix:
       shell: sh
       run: ./scripts/preprovision.sh
       interactive: true
       continueOnError: false
   postprovision:
-    windows:
-      shell: pwsh
-      run: ./scripts/map-env-vars.ps1
-      interactive: true
-      continueOnError: false
     posix:
       shell: sh
-      run: ./scripts/map-env-vars.sh
+      run: ./scripts/postprovision.sh
       interactive: true
       continueOnError: false
   predeploy:
-    windows:
-      shell: pwsh
-      run: ./scripts/predeploy.ps1
-      interactive: false
-      continueOnError: false
     posix:
       shell: sh
       run: ./scripts/predeploy.sh
       interactive: false
       continueOnError: false
   preinfradelete:
-    windows:
-      shell: pwsh
-      run: ./scripts/preinfradelete.ps1
-      interactive: true
-      continueOnError: true
     posix:
       shell: sh
       run: ./scripts/preinfradelete.sh
