@@ -135,10 +135,12 @@ Notes:
 
 In the [infra](./infra) folder, you can find the bicep template to deploy the application to Azure. It includes:
 
-- An Azure App Service to host the Chainlit application
-- An Azure App Service staging slot for safe deployments
-- An Azure OpenAI resource for AI model access with private endpoint security
-- An Azure Storage Account with private endpoint security
+- Azure Container Apps for hosting the Chainlit application
+- Separate Container Apps for production and staging environments
+- Azure Container Registry (ACR) for container image storage
+- Container Apps Environment for managing the apps
+- Azure OpenAI resource for AI model access with private endpoint security
+- Azure Storage Account with private endpoint security
 - Virtual Network (VNet) infrastructure for secure connectivity
 
 The infrastructure is **secure by default**, using private endpoints for both Azure OpenAI and Storage Account to ensure network isolation. During development, public network access is automatically enabled to facilitate local development and testing.
@@ -151,26 +153,26 @@ This has been developed with the Azure Developer CLI, which simplifies the deplo
 azd up
 ```
 
-### Production Deployment with Staging Slots
+### Production Deployment with Container Apps
 
 **Automated GitHub Actions Deployment**: When code is merged to the `main` branch, the GitHub Actions workflow automatically:
 
-1. **Provisions Infrastructure**: Uses `azd provision` to create or update Azure resources including the App Service with both production and staging slots
-2. **Deploys to Staging Slot**: Uses the Azure Web App Deploy action to deploy the application to the `staging` slot instead of directly to production
+1. **Provisions Infrastructure**: Uses `azd provision` to create or update Azure resources including Container Apps Environment, production and staging Container Apps, and Azure Container Registry
+2. **Builds Container Image**: Creates a Docker image from the application code and pushes it to Azure Container Registry
+3. **Deploys to Staging**: Deploys the container image to the staging Container App for testing
 
-This approach provides a safer deployment process where:
+This approach provides a faster and more reliable deployment process compared to App Service with Oryx build:
 
-- The staging slot receives the latest code changes
-- You can test the application in the staging environment before promoting to production
-- Manual slot swapping can be performed through the Azure Portal when ready for production
+- Consistent builds through containerization
+- Faster deployments without Oryx compilation issues
+- Separate staging Container App receives the latest code changes
+- Test the application in the staging environment before promoting to production
 
-**Manual Slot Management**: After the automated deployment to staging, you can:
-
-- Test the application at `https://your-app-name-staging.azurewebsites.net`
-- Swap slots through the Azure Portal to promote staging to production
-- Configure auto-swap if desired (not included in the current template)
-
-**Why Staging Slots?**: The Azure Developer CLI (`azd`) currently does not support deployment to specific App Service slots ([Azure/azure-dev#2373](https://github.com/Azure/azure-dev/issues/2373)). The GitHub Actions workflow works around this limitation by using the Azure Web App Deploy action directly for slot-specific deployments while still using `azd` for infrastructure provisioning.
+**Benefits over App Service**:
+- Eliminates Oryx build reliability issues (~30% failure rate)
+- Faster deployment times through pre-built containers
+- Better integration with modern DevOps practices
+- Consistent environments from development to production
 
 ## Architecture & Infrastructure
 
@@ -292,10 +294,12 @@ To enable automated deployment to Azure using GitHub Actions and managed identit
 The GitHub Actions workflow (`.github/workflows/02-ci-cd.yml`) runs automatically on pushes to the `main` branch and performs the following steps:
 
 1. **Build**: Compiles Python code to verify syntax
-2. **Provision**: Uses `azd provision` to create/update Azure infrastructure including App Service with staging slot
-3. **Deploy**: Uses Azure Web App Deploy action to deploy application code to the **staging slot** (not production)
+2. **Provision**: Uses `azd provision` to create/update Azure infrastructure including Container Apps Environment, Azure Container Registry, and production/staging Container Apps
+3. **Build Container**: Builds a Docker image from the application code
+4. **Push**: Pushes the container image to Azure Container Registry
+5. **Deploy**: Deploys the container image to the staging Container App for testing
 
-**Important**: The workflow deploys to the staging slot (`staging`) to provide a safe deployment process. You can test your changes at `https://your-app-name-staging.azurewebsites.net` and manually swap slots when ready for production.
+**Important**: The workflow deploys to the staging Container App to provide a safe deployment process. You can test your changes at the staging URL (provided in the workflow output) before promoting to production.
 
 ### Code Formatting Action
 
