@@ -3,7 +3,8 @@ FROM python:3.12-slim AS builder
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+    PYTHONUNBUFFERED=1 \
+    PYTHONIOENCODING=utf-8
 # Change the working directory to the `app` directory
 WORKDIR /app
 
@@ -22,7 +23,14 @@ WORKDIR /app
 
 # Copy the environment, but not the source code
 COPY --from=builder --chown=app:app /app/.venv /app/.venv
+EXPOSE 8000
 
+ENV WEB_CONCURRENCY=1 \
+    WORKER_TIMEOUT=1200 \
+    PORT=8000 \
+    HOST=0.0.0.0 \
+    LOG_LEVEL=info
+    
 ADD . .
 # Run the application
 CMD ["/app/startup.sh"]
