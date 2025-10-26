@@ -32,5 +32,8 @@ ENV WEB_CONCURRENCY=1 \
     LOG_LEVEL=info
     
 ADD . .
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
 # Run the application
 CMD ["/app/startup.sh"]
