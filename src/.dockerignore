@@ -1,0 +1,57 @@
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.env
+.azure.env
+.venv
+venv/
+ENV/
+
+# Development files
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+
+# Tests
+tests/
+
+# IDE
+.vscode/
+.idea/
+
+# Git
+.git
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Chainlit local data
+.chainlit/.langchain.db
+.files/
+
+# Azurite
+__azurite*
+__blob*
+
+# Config examples
+config/*-example.yaml
+
+# SARIF files
+*.sarif
+*_results.xml
+
+.bandit.yml
+
