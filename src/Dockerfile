@@ -30,7 +30,7 @@ ENV WEB_CONCURRENCY=1 \
     PORT=8000 \
     HOST=0.0.0.0 \
     LOG_LEVEL=info
-    
+
 ADD . .
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \

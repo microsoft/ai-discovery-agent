@@ -57,3 +57,5 @@ output COGNITIVE_SERVICE_NAME string = resources.outputs.COGNITIVE_SERVICE_NAME
 output APPINSIGHTS_INSTRUMENTATIONKEY string = resources.outputs.APPINSIGHTS_INSTRUMENTATIONKEY
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 output DEPLOYMENT_ENVIRONMENT string = environment
+output ACR_NAME string = resources.outputs.ACR_NAME
+output ACR_LOGIN_SERVER string = resources.outputs.ACR_LOGIN_SERVER
