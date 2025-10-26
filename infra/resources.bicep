@@ -257,6 +257,8 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
         WORKER_CONNECTIONS: '1000'
         WORKER_TIMEOUT: '1200'
 
+        LOG_LEVEL: 'debug'
+
         // Disable unused features for better performance
         WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'false'
         WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
