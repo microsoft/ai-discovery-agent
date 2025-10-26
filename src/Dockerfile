@@ -9,10 +9,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
 WORKDIR /app
 
 # Install dependencies
-RUN --mount=type=cache,target=/root/.cache/uv \
-    --mount=type=bind,source=uv.lock,target=uv.lock \
-    --mount=type=bind,source=pyproject.toml,target=pyproject.toml \
-    uv sync --locked --no-install-project --no-editable --no-dev
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --no-install-project --no-editable --no-dev
 
 FROM python:3.12-slim
 ENV VIRTUAL_ENV=/app/.venv
