@@ -42,6 +42,12 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-07-01' = {
             id: natGateway.id
           }
           privateEndpointNetworkPolicies: 'Disabled'
+          delegations:[{
+            name: 'Microsoft.App/environments'
+            properties: {
+              serviceName: 'Microsoft.App/environments'
+            }
+          }]
         }
       }
       {

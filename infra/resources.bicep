@@ -135,35 +135,29 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
   tags: union(tags, { 'azd-service-name': 'appinsights' })
 }
 
-// Storage account - simplified version for Container Apps
-resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' = {
-  name: substring('st${uniqueString(resourceGroup().id)}', 0, 15)
-  location: location
-  sku: {
-    name: 'Standard_LRS'
+
+// Encapsulated storage (account, container, private endpoint, role assignments)
+module storage 'modules/storage.bicep' = {
+  name: 'storage-deployment'
+  params: {
+    location: location
+    namePrefix: namePrefix
+    privateSubnetId: vnet.outputs.privateSubnetId
+    principalId: principalId
+    principalType: principalType
+    clientIpAddress: clientIpAddress
+    publicNetworkAccess: publicNetworkAccess
+    tags: tags
   }
-  kind: 'StorageV2'
-  properties: {
-    accessTier: 'Hot'
-    allowBlobPublicAccess: false
-    minimumTlsVersion: 'TLS1_2'
-    supportsHttpsTrafficOnly: true
-    publicNetworkAccess: publicNetworkAccess == 'Enabled' ? 'Enabled' : 'Disabled'
-    networkAcls: publicNetworkAccess == 'Enabled' ? {
-      defaultAction: 'Allow'
-    } : {
-      defaultAction: 'Deny'
-      bypass: 'AzureServices'
-      ipRules: (clientIpAddress != '') ? [{ value: clientIpAddress, action: 'Allow' }] : []
-    }
-  }
-  tags: union(tags, { 'azd-service-name': 'storage' })
 }
 
-resource storageContainer 'Microsoft.Storage/storageAccounts/blobServices/containers@2025-01-01' = {
-  name: '${storageAccount.name}/default/conversations'
-  properties: {
-    publicAccess: 'None'
+module containerAppRoleAssignments './modules/containerapprolassignments.bicep' = {
+  name: 'containerapp-role-assignments-${resourceToken}'
+  params: {
+    storageAccountName: storage.outputs.storageAccountName
+    azureOpenAIName: azureOpenAI.name
+    containerAppPrincipalId: containerApps.outputs.containerAppPrincipalId
+    containerAppStagingPrincipalId: containerApps.outputs.containerAppStagingPrincipalId
   }
 }
 
@@ -173,7 +167,7 @@ module storagePe './modules/privateendpoint.bicep' = if (publicNetworkAccess == 
   params: {
     location: location
     name: '${namePrefix}-storage-pe'
-    privateLinkServiceId: storageAccount.id
+    privateLinkServiceId: storage.outputs.storageAccountId
     subnetId: vnet.outputs.privateSubnetId
     targetSubResource: 'blob'
     vnetId: vnet.outputs.vnetId
@@ -184,77 +178,21 @@ module storagePe './modules/privateendpoint.bicep' = if (publicNetworkAccess == 
 module containerApps './modules/containerapp.bicep' = {
   name: 'containerapp-${resourceToken}'
   params: {
+    name: 'ca-${resourceToken}-app'
     location: location
-    namePrefix: namePrefix
-    resourceToken: resourceToken
     tags: tags
     containerAppSubnetId: vnet.outputs.containerAppSubnetId
     azureOpenAIEndpoint: 'https://${azureOpenAI.name}.openai.azure.com/'
     azureOpenAIApiVersion: '2025-01-01-preview'
-    storageAccountBlobEndpoint: storageAccount.properties.primaryEndpoints.blob
+    storageAccountBlobEndpoint: storage.outputs.storageAccountBlobEndpoint
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     acrName: acr.outputs.acrName
-    imageName: 'ai-discovery-agent'
-    imageTag: 'latest'
+    imageName: ''
   }
   dependsOn: [
     azureOpenAIModel
-    storageContainer
   ]
-}
-
-// Role assignment for local user to access storage
-resource storageRoleForUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: storageAccount
-  name: guid(storageAccount.id, principalId, 'StorageBlobDataContributor')
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe') // Storage Blob Data Contributor
-    principalId: principalId
-    principalType: principalType
-  }
-}
-
-// Role assignments for Container Apps to access Storage
-resource storageRoleForContainerApp 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: storageAccount
-  name: guid(storageAccount.id, containerApps.outputs.containerAppPrincipalId, 'StorageBlobDataContributor')
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe') // Storage Blob Data Contributor
-    principalId: containerApps.outputs.containerAppPrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource storageRoleForStagingContainerApp 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: storageAccount
-  name: guid(storageAccount.id, containerApps.outputs.containerAppStagingPrincipalId, 'StorageBlobDataContributor')
-  properties: {
-    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe') // Storage Blob Data Contributor
-    principalId: containerApps.outputs.containerAppStagingPrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Role assignments for Container Apps to access Azure OpenAI
-resource openAIRoleAssignmentForContainerApp 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: azureOpenAI
-  name: guid(azureOpenAI.id, containerApps.outputs.containerAppPrincipalId, resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'))
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
-    principalId: containerApps.outputs.containerAppPrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-resource openAIRoleAssignmentForStagingContainerApp 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: azureOpenAI
-  name: guid(azureOpenAI.id, containerApps.outputs.containerAppStagingPrincipalId, resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'))
-  properties: {
-    roleDefinitionId: resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd')
-    principalId: containerApps.outputs.containerAppStagingPrincipalId
-    principalType: 'ServicePrincipal'
-  }
 }
 
 resource openAIRoleAssignmentForLocalUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -336,9 +274,9 @@ output AZURE_CONTAINER_REGISTRY_ENDPOINT string = acr.outputs.acrLoginServer
 output AZURE_OPENAI_ENDPOINT string = 'https://${azureOpenAI.name}.openai.azure.com/'
 output AZURE_OPENAI_API_VERSION string = azureOpenAI.apiVersion
 output AZURE_GH_FED_CLIENT_ID string = federatedIdentity.outputs.clientId
-output AZURE_STORAGE_ACCOUNT_URL string = storageAccount.properties.primaryEndpoints.blob
+output AZURE_STORAGE_ACCOUNT_URL string = storage.outputs.storageAccountBlobEndpoint
 output CONVERSATION_TITLE_MODEL_DEPLOYMENT string = deployments[3].name
 output COGNITIVE_SERVICE_NAME string = azureOpenAI.name
-output STORAGE_ACCOUNT_NAME string = storageAccount.name
+output STORAGE_ACCOUNT_NAME string = storage.outputs.storageAccountName
 output APPINSIGHTS_INSTRUMENTATIONKEY string = applicationInsights.properties.InstrumentationKey
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = applicationInsights.properties.ConnectionString

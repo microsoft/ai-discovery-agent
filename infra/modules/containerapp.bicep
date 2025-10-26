@@ -1,6 +1,5 @@
 param location string
-param namePrefix string
-param resourceToken string
+param name string
 param tags object
 param containerAppSubnetId string
 param azureOpenAIEndpoint string
@@ -10,11 +9,10 @@ param applicationInsightsConnectionString string
 param logAnalyticsWorkspaceId string
 param acrName string
 param imageName string
-param imageTag string = 'latest'
 
 // Container Apps Environment
 resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' = {
-  name: '${namePrefix}-cae'
+  name: '${name}-cae'
   location: location
   tags: tags
   properties: {
@@ -40,7 +38,7 @@ resource containerAppEnvironment 'Microsoft.App/managedEnvironments@2024-03-01' 
 
 // Container App - Production
 resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'ca-${resourceToken}'
+  name: name
   location: location
   tags: union(tags, { 'azd-service-name': 'web' })
   identity: {
@@ -72,7 +70,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         {
           name: 'chainlit-auth-secret-prod'
-          value: base64('${resourceToken}-${guid(subscription().subscriptionId, resourceGroup().id, 'ca-${resourceToken}', 'prod')}')
+          value: base64('${name}-${guid(subscription().subscriptionId, resourceGroup().id, 'ca-${name}', 'prod')}')
         }
       ]
     }
@@ -80,7 +78,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: 'ai-discovery-agent'
-          image: '${acrName}.azurecr.io/${imageName}:${imageTag}'
+          image: !empty(imageName) ? imageName : 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: {
             cpu: json('1.0')
             memory: '2Gi'
@@ -187,7 +185,7 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
 
 // Container App - Staging
 resource containerAppStaging 'Microsoft.App/containerApps@2024-03-01' = {
-  name: 'ca-${resourceToken}-staging'
+  name: '${name}-staging'
   location: location
   tags: union(tags, { 'azd-service-name': 'web-staging' })
   identity: {
@@ -219,7 +217,7 @@ resource containerAppStaging 'Microsoft.App/containerApps@2024-03-01' = {
       secrets: [
         {
           name: 'chainlit-auth-secret-staging'
-          value: base64('${resourceToken}-${guid(subscription().subscriptionId, resourceGroup().id, 'ca-${resourceToken}', 'staging')}')
+          value: base64('${name}-${guid(subscription().subscriptionId, resourceGroup().id, 'ca-${name}', 'staging')}')
         }
       ]
     }
@@ -227,7 +225,7 @@ resource containerAppStaging 'Microsoft.App/containerApps@2024-03-01' = {
       containers: [
         {
           name: 'ai-discovery-agent'
-          image: '${acrName}.azurecr.io/${imageName}:${imageTag}'
+          image: !empty(imageName) ? imageName : 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
           resources: {
             cpu: json('1.0')
             memory: '2Gi'

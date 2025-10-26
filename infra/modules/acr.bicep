@@ -1,4 +1,6 @@
 param location string
+@minLength(3)
+@maxLength(22)
 param resourceToken string
 param tags object
 param principalId string
