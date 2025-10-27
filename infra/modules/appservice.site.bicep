@@ -14,8 +14,8 @@ param applicationInsightsConnectionString string
 
 
 var siteConfig = {
-  acrUseManagedIdentityCreds: true
   ftpsState: 'Disabled'
+  linuxFxVersion: 'sitecontainers'
   healthCheckPath: '/health'
   http20Enabled: true
   minTlsVersion: '1.2'
@@ -26,6 +26,7 @@ var siteConfig = {
   // Performance optimizations
   minimumElasticInstanceCount: 1
   numberOfWorkers: 1
+  acrUseManagedIdentityCreds: true
 }
 
 var sharedAppSettingsProperties = {
@@ -41,22 +42,21 @@ var sharedAppSettingsProperties = {
         WEBSITE_SWAP_WARMUP_PING_STATUSES: '200'
         WEBSITE_TIME_ZONE: 'UTC'
 
-        // Python optimization settings
-        PYTHONUNBUFFERED: '1'
-        PYTHONIOENCODING: 'utf-8'
-        PYTHONDONTWRITEBYTECODE: '1'
+        // // Python optimization settings
+        // PYTHONUNBUFFERED: '1'
+        // PYTHONIOENCODING: 'utf-8'
+        // PYTHONDONTWRITEBYTECODE: '1'
 
         // Application performance settings
         WEB_CONCURRENCY: '1'
         WORKER_CONNECTIONS: '1000'
         WORKER_TIMEOUT: '1200'
 
+        // Enable pulling images over VNet, needed for pulling using private endpoint
+        WEBSITE_PULL_IMAGE_OVER_VNET: 'true'
 
         // Disable unused features for better performance
-        WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'false'
         WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
-
-        DOCKER_REGISTRY_SERVER_URL: 'https://${acrLoginServer}'
       }
 
 var appSettingsProperties = union(sharedAppSettingsProperties, {
@@ -85,6 +85,7 @@ resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
     targetPort: '8000'
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
+    inheritAppSettingsAndConnectionStrings: true     
   }
 }
 
@@ -97,6 +98,7 @@ resource siteContainerStaging 'Microsoft.Web/sites/slots/sitecontainers@2024-11-
     targetPort: '8000'
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
+    inheritAppSettingsAndConnectionStrings: true
   }
 }
 
@@ -108,12 +110,13 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
   name: 'web-${resourceToken}'
   location: location
   tags: union(tags, { 'azd-service-name': 'web' })
-  kind: 'app,linux,container'
+  kind: 'app,linux'  
   properties: {
+    reserved: true
     serverFarmId: appServicePlanId
-    siteConfig: siteConfig
     httpsOnly: true
     virtualNetworkSubnetId: appSubnetId
+    siteConfig: siteConfig
   }
 
   identity: {
@@ -122,7 +125,7 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
 
   resource appSettings 'config' = {
     name: 'appsettings'
-    properties: appSettingsProperties
+    properties: appSettingsProperties    
   }
 
   resource slotConfigNames 'config' = {
@@ -174,6 +177,7 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
     location: location
     kind: 'app,linux'
     properties: {
+      reserved: true
       serverFarmId: appServicePlanId
       siteConfig: siteConfig
       httpsOnly: true

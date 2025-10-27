@@ -9,7 +9,7 @@ param sku object = {
 param tags object = {}
 
 
-resource appServicePlan 'Microsoft.Web/serverfarms@2022-03-01' = {
+resource appServicePlan 'Microsoft.Web/serverfarms@2024-11-01' = {
   //checkov:skip=CKV_AZURE_225
   name: 'app-${resourceToken}'
   location: location

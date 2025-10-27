@@ -9,6 +9,16 @@ dist/
 build/
 *.egg
 
+**/__pycache__
+**/*.py[cod]
+**/*$py.class
+**/*.so
+**/.Python
+**/*.egg-info/
+**/dist/
+**/build/
+**/*.egg
+
 # Virtual environments
 .env
 .azure.env
@@ -26,7 +36,8 @@ ENV/
 htmlcov/
 
 # Tests
-tests/
+tests
+tests/*
 
 # IDE
 .vscode/

@@ -23,7 +23,7 @@ hooks:
     posix:
       shell: sh
       run: ./scripts/predeploy.sh
-      interactive: false
+      interactive: true
       continueOnError: false
   preinfradelete:
     posix:
