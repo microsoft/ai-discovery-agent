@@ -9,10 +9,12 @@ param logAnalyticsWorkspaceId string
 param azureOpenAIName string
 param acrName string
 param acrLoginServer string
+param containerImageName string
 param applicationInsightsConnectionString string
 
 
 var siteConfig = {
+  acrUseManagedIdentityCreds: true
   ftpsState: 'Disabled'
   healthCheckPath: '/health'
   http20Enabled: true
@@ -53,6 +55,8 @@ var sharedAppSettingsProperties = {
         // Disable unused features for better performance
         WEBSITE_ENABLE_SYNC_UPDATE_SITE: 'false'
         WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
+
+        DOCKER_REGISTRY_SERVER_URL: 'https://${acrLoginServer}'
       }
 
 var appSettingsProperties = union(sharedAppSettingsProperties, {
@@ -60,7 +64,7 @@ var appSettingsProperties = union(sharedAppSettingsProperties, {
         OTEL_SERVICE_NAME: 'production'
 })
 
-var appSettingsPropertiesStaging = union(sharedAppSettingsProperties, {  
+var appSettingsPropertiesStaging = union(sharedAppSettingsProperties, {
         CHAINLIT_AUTH_SECRET: base64('${resourceToken}-${guid(subscription().subscriptionId,resourceGroup().id,web.name,'staging')}')
         OTEL_SERVICE_NAME: 'staging'
         LOG_LEVEL: 'debug'
@@ -77,7 +81,7 @@ resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
   name: 'main'
   properties: {
     isMain: true
-    image: '${acrLoginServer}/ai-discovery-agent:latest'
+    image: '${acrLoginServer}/${containerImageName}'
     targetPort: '8000'
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
@@ -89,7 +93,7 @@ resource siteContainerStaging 'Microsoft.Web/sites/slots/sitecontainers@2024-11-
   name: 'main'
   properties: {
     isMain: true
-    image: '${acrLoginServer}/ai-discovery-agent:latest'
+    image: '${acrLoginServer}/${containerImageName}'
     targetPort: '8000'
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
@@ -109,8 +113,8 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
     serverFarmId: appServicePlanId
     siteConfig: siteConfig
     httpsOnly: true
-    virtualNetworkSubnetId: appSubnetId    
-  }  
+    virtualNetworkSubnetId: appSubnetId
+  }
 
   identity: {
     type: 'SystemAssigned'

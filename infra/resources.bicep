@@ -10,6 +10,7 @@ param principalType string
 param repository string
 param clientIpAddress string
 param environment string = 'prod'
+param containerImageName string
 
 
 var publicNetworkAccess = environment == 'prod' ? 'Disabled' : 'Enabled'
@@ -123,6 +124,7 @@ module appServiceSite 'modules/appservice.site.bicep' = {
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
     azureOpenAIName: azureOpenAI.name
     applicationInsightsConnectionString: applicationInsights.properties.ConnectionString
+    containerImageName: containerImageName
   }
 }
 

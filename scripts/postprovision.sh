@@ -1,6 +1,7 @@
 #!/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+CONTAINER_IMAGE_NAME=${CONTAINER_IMAGE_NAME:-"aida:latest"}
 
 . "$SCRIPT_DIR/map-env-vars.sh"
 
@@ -29,4 +30,4 @@ fi
 . "$SCRIPT_DIR/enable-network.sh"
 
 # TODO: build container and push to ACR?
-az acr build --registry $ACR_NAME --image $CONTAINER_IMAGE_NAME:$CONTAINER_IMAGE_TAG ./src
+az acr build --registry $ACR_NAME --image $CONTAINER_IMAGE_NAME ./src

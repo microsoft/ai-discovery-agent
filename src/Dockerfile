@@ -20,7 +20,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
 WORKDIR /app
 
 # Copy the environment, but not the source code
-COPY --from=builder --chown=app:app /app/.venv /app/.venv
+COPY --from=builder /app/.venv /app/.venv
 EXPOSE 8000
 
 ENV WEB_CONCURRENCY=1 \
@@ -30,6 +30,7 @@ ENV WEB_CONCURRENCY=1 \
     LOG_LEVEL=info
 
 ADD . .
+RUN chmod +x /app/startup.sh
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
