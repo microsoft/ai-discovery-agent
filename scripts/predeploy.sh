@@ -13,7 +13,5 @@ echo "Building and pushing container image to ACR..."
 # rm -rf .ruff_cache
 # rm -rf .venv
 az acr build --registry $ACR_NAME --image $CONTAINER_IMAGE_NAME .
-az webapp config container set --name $WEB_APP_NAME --resource-group $RESOURCE_GROUP_NAME \
-    --docker-custom-image-name "$ACR_LOGIN_SERVER/$CONTAINER_IMAGE_NAME" \
-    --docker-registry-server-url "https://$ACR_LOGIN_SERVER" 
+
 az webapp restart --name $WEB_APP_NAME --resource-group $RESOURCE_GROUP_NAME    
