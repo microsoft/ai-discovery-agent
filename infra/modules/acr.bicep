@@ -49,7 +49,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
       defaultAction: publicNetworkAccess == 'Enabled' ? 'Allow' : 'Deny'
       ipRules: clientIpAddress == '' ? defaultRules : union([{ action: 'Allow', value: clientIpAddress }], defaultRules)
     }
-    // Enable anonymous pull for easier container access (optional, consider security implications)
+    // Anonymous pull is intentionally disabled for security reasons
     anonymousPullEnabled: false
     // Enable data endpoint authentication for improved security
     dataEndpointEnabled: true
