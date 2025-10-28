@@ -312,14 +312,14 @@ jobs:
   #     - name: Update production sidecar container
   #       run: |
   #         echo "Updating sidecar container in production slot..."
-          
+
   #         # Use the same image tag as staging - get it from staging slot
   #         STAGING_IMAGE=$(az rest --method GET \
   #           --url "https://management.azure.com/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}/providers/Microsoft.Web/sites/${{ needs.provision.outputs.WEB_APP_NAME }}/slots/staging/sitecontainers/main?api-version=2024-11-01" \
   #           --query "properties.image" --output tsv)
-          
+
   #         echo "Promoting image from staging to production: $STAGING_IMAGE"
-          
+
   #         # Update the main sidecar container in production slot
   #         az rest --method PUT \
   #           --url "https://management.azure.com/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}/providers/Microsoft.Web/sites/${{ needs.provision.outputs.WEB_APP_NAME }}/sitecontainers/main?api-version=2024-11-01" \
@@ -333,9 +333,9 @@ jobs:
   #               "inheritAppSettingsAndConnectionStrings": true
   #             }
   #           }'
-          
+
   #         echo "Production sidecar container updated successfully!"
-          
+
   #         # Restart production app to apply changes
   #         echo "Restarting production app..."
   #         az webapp restart \
