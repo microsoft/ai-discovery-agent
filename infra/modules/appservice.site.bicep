@@ -1,4 +1,3 @@
-
 param appServicePlanId string
 param resourceToken string
 param location string = resourceGroup().location
@@ -11,7 +10,6 @@ param acrName string
 param acrLoginServer string
 param containerImageName string
 param applicationInsightsConnectionString string
-
 
 var siteConfig = {
   ftpsState: 'Disabled'
@@ -30,47 +28,40 @@ var siteConfig = {
 }
 
 var sharedAppSettingsProperties = {
-        AZURE_OPENAI_ENDPOINT: 'https://${azureOpenAIName}.openai.azure.com/'
-        AZURE_OPENAI_API_VERSION: '2025-01-01-preview'
-        AZURE_STORAGE_ACCOUNT_URL: storageAccount.properties.primaryEndpoints.blob
-        APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
+  AZURE_OPENAI_ENDPOINT: 'https://${azureOpenAIName}.openai.azure.com/'
+  AZURE_OPENAI_API_VERSION: '2025-01-01-preview'
+  AZURE_STORAGE_ACCOUNT_URL: storageAccount.properties.primaryEndpoints.blob
+  APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
 
-        // Performance and warmup settings
-        WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '3'
-        WEBSITE_WARMUP_PATH: '/health'
-        WEBSITE_SWAP_WARMUP_PING_PATH: '/health'
-        WEBSITE_SWAP_WARMUP_PING_STATUSES: '200'
-        WEBSITE_TIME_ZONE: 'UTC'
+  // Performance and warmup settings
+  WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '3'
+  WEBSITE_WARMUP_PATH: '/health'
+  WEBSITE_SWAP_WARMUP_PING_PATH: '/health'
+  WEBSITE_SWAP_WARMUP_PING_STATUSES: '200'
+  WEBSITE_TIME_ZONE: 'UTC'
 
-        // // Python optimization settings
-        // PYTHONUNBUFFERED: '1'
-        // PYTHONIOENCODING: 'utf-8'
-        // PYTHONDONTWRITEBYTECODE: '1'
+  // Application performance settings
+  WEB_CONCURRENCY: '1'
+  WORKER_CONNECTIONS: '1000'
+  WORKER_TIMEOUT: '1200'
 
-        // Application performance settings
-        WEB_CONCURRENCY: '1'
-        WORKER_CONNECTIONS: '1000'
-        WORKER_TIMEOUT: '1200'
+  // Enable pulling images over VNet, needed for pulling using private endpoint
+  WEBSITE_PULL_IMAGE_OVER_VNET: 'true'
 
-        // Enable pulling images over VNet, needed for pulling using private endpoint
-        WEBSITE_PULL_IMAGE_OVER_VNET: 'true'
-
-        // Disable unused features for better performance
-        WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
-      }
+  // Disable unused features for better performance
+  WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
+}
 
 var appSettingsProperties = union(sharedAppSettingsProperties, {
-        CHAINLIT_AUTH_SECRET: base64('${resourceToken}-${guid(subscription().subscriptionId,resourceGroup().id,web.name,'prod')}')
-        OTEL_SERVICE_NAME: 'production'
+  CHAINLIT_AUTH_SECRET: base64('${resourceToken}-${guid(subscription().subscriptionId,resourceGroup().id,web.name,'prod')}')
+  OTEL_SERVICE_NAME: 'production'
 })
 
 var appSettingsPropertiesStaging = union(sharedAppSettingsProperties, {
-        CHAINLIT_AUTH_SECRET: base64('${resourceToken}-${guid(subscription().subscriptionId,resourceGroup().id,web.name,'staging')}')
-        OTEL_SERVICE_NAME: 'staging'
-        LOG_LEVEL: 'debug'
+  CHAINLIT_AUTH_SECRET: base64('${resourceToken}-${guid(subscription().subscriptionId,resourceGroup().id,web.name,'staging')}')
+  OTEL_SERVICE_NAME: 'staging'
+  LOG_LEVEL: 'debug'
 })
-
-
 
 resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing = {
   name: storageAccountName
@@ -85,7 +76,7 @@ resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
     targetPort: '8000'
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
-    inheritAppSettingsAndConnectionStrings: true     
+    inheritAppSettingsAndConnectionStrings: true
   }
 }
 
@@ -110,7 +101,7 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
   name: 'web-${resourceToken}'
   location: location
   tags: union(tags, { 'azd-service-name': 'web' })
-  kind: 'app,linux'  
+  kind: 'app,linux'
   properties: {
     reserved: true
     serverFarmId: appServicePlanId
@@ -125,7 +116,7 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
 
   resource appSettings 'config' = {
     name: 'appsettings'
-    properties: appSettingsProperties    
+    properties: appSettingsProperties
   }
 
   resource slotConfigNames 'config' = {
@@ -217,8 +208,6 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
     }
   }
 }
-
-
 
 resource diagnosticLogs_prod 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: '${web.name}-${resourceToken}'

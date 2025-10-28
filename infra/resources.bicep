@@ -12,11 +12,9 @@ param clientIpAddress string
 param environment string = 'prod'
 param containerImageName string
 
-
 var publicNetworkAccess = environment == 'prod' ? 'Disabled' : 'Enabled'
 
 var abbrs = loadJsonContent('./abbreviations.json')
-
 
 module vnet './modules/vnet.bicep' = {
   name: 'vnet-${resourceToken}'
@@ -139,7 +137,6 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2023-09
   tags: union(tags, { 'azd-service-name': 'loganalytics' })
 }
 
-
 resource openAIRoleAssignmentForLocalUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: azureOpenAI
   name: guid(azureOpenAI.id, principalId, resourceId('Microsoft.Authorization/roleDefinitions', '5e0bd9bd-7b93-4f28-af87-19fc36ad61bd'))
@@ -233,6 +230,7 @@ module acr 'modules/acr.bicep' = {
     publicNetworkAccess: publicNetworkAccess
     clientIpAddress: clientIpAddress
     privateSubnetId: vnet.outputs.privateSubnetId
+    logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
   }
 }
 

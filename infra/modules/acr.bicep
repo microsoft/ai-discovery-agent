@@ -7,14 +7,18 @@ param publicNetworkAccess string = 'Disabled'
 param clientIpAddress string
 @description('Subnet ID used for VM (provides VNet rule access to storage)')
 param privateSubnetId string
+@description('Log Analytics Workspace ID for diagnostic settings')
+param logAnalyticsWorkspaceId string = ''
 
-// Ensure ACR name is at least 5 characters and only alphanumeric
-var acrName = 'cr${toLower(replace(resourceToken, '-', ''))}'
+// Create ACR name with guaranteed minimum length of 5 characters
+var acrName = 'acreg${take(toLower(replace(resourceToken, '-', '')), 17)}' // Always starts with 'acreg' (5 chars)
 
-var defaultRules = [{
-  action: 'Allow'
-  value: '172.160.222.0/24'
-}]
+var defaultRules = [
+  {
+    action: 'Allow'
+    value: '172.160.222.0/24'
+  }
+]
 
 resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-preview' = {
   name: acrName
@@ -36,14 +40,43 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
         status: 'disabled'
       }
       retentionPolicy: {
-        days: 7
-        status: 'disabled'
+        days: 30 // Increased retention for better tracking of container images
+        status: 'enabled'
       }
     }
-    networkRuleSet:{
+    networkRuleSet: {
       defaultAction: publicNetworkAccess == 'Enabled' ? 'Allow' : 'Deny'
       ipRules: clientIpAddress == '' ? defaultRules : union([{ action: 'Allow', value: clientIpAddress }], defaultRules)
     }
+    // Enable anonymous pull for easier container access (optional, consider security implications)
+    anonymousPullEnabled: false
+    // Enable data endpoint authentication for improved security
+    dataEndpointEnabled: true
+  }
+}
+
+// Add diagnostic settings for ACR to monitor container operations
+resource acrDiagnosticSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = if (logAnalyticsWorkspaceId != '') {
+  name: 'acr-diagnostic-${resourceToken}'
+  scope: containerRegistry
+  properties: {
+    workspaceId: logAnalyticsWorkspaceId
+    logs: [
+      {
+        category: 'ContainerRegistryRepositoryEvents'
+        enabled: true
+      }
+      {
+        category: 'ContainerRegistryLoginEvents'
+        enabled: true
+      }
+    ]
+    metrics: [
+      {
+        category: 'AllMetrics'
+        enabled: true
+      }
+    ]
   }
 }
 

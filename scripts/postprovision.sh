@@ -27,5 +27,3 @@ else
 fi
 
 . "$SCRIPT_DIR/enable-network.sh"
-
-
