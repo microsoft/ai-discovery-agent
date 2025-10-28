@@ -64,7 +64,7 @@ jobs:
           fi
 
       - name: Upload format request artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: format-request
           path: format-request/
