@@ -7,6 +7,7 @@ param publicNetworkAccess string = 'Disabled'
 param clientIpAddress string
 @description('Subnet ID used for VM (provides VNet rule access to storage)')
 param privateSubnetId string
+param vnetId string
 @description('Log Analytics Workspace ID for diagnostic settings')
 param logAnalyticsWorkspaceId string = ''
 
@@ -88,7 +89,7 @@ module acrPrivateEndpoint './privateendpoint.bicep' = {
     privateLinkServiceId: containerRegistry.id
     subnetId: privateSubnetId
     targetSubResource: 'registry'
-    vnetId: substring(privateSubnetId, 0, lastIndexOf(privateSubnetId, '/subnets')) // derive vnet id if module expects it
+    vnetId: vnetId
   }
 }
 

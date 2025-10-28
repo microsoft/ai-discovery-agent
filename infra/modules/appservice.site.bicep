@@ -67,32 +67,6 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2025-01-01' existing 
   name: storageAccountName
 }
 
-resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
-  parent: web
-  name: 'main'
-  properties: {
-    isMain: true
-    image: '${acrLoginServer}/${containerImageName}'
-    targetPort: '8000'
-    authType: 'SystemIdentity'
-    userManagedIdentityClientId: 'SystemIdentity'
-    inheritAppSettingsAndConnectionStrings: true
-  }
-}
-
-resource siteContainerStaging 'Microsoft.Web/sites/slots/sitecontainers@2024-11-01' = {
-  parent: web::stagingSlot
-  name: 'main'
-  properties: {
-    isMain: true
-    image: '${acrLoginServer}/${containerImageName}'
-    targetPort: '8000'
-    authType: 'SystemIdentity'
-    userManagedIdentityClientId: 'SystemIdentity'
-    inheritAppSettingsAndConnectionStrings: true
-  }
-}
-
 resource web 'Microsoft.Web/sites@2024-11-01' = {
   //checkov:skip=CKV_AZURE_17
   //checkov:skip=CKV_AZURE_212
@@ -206,6 +180,32 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
         }
       }
     }
+  }
+}
+
+resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
+  parent: web
+  name: 'main'
+  properties: {
+    isMain: true
+    image: '${acrLoginServer}/${containerImageName}'
+    targetPort: '8000'
+    authType: 'SystemIdentity'
+    userManagedIdentityClientId: 'SystemIdentity'
+    inheritAppSettingsAndConnectionStrings: true
+  }
+}
+
+resource siteContainerStaging 'Microsoft.Web/sites/slots/sitecontainers@2024-11-01' = {
+  parent: web::stagingSlot
+  name: 'main'
+  properties: {
+    isMain: true
+    image: '${acrLoginServer}/${containerImageName}'
+    targetPort: '8000'
+    authType: 'SystemIdentity'
+    userManagedIdentityClientId: 'SystemIdentity'
+    inheritAppSettingsAndConnectionStrings: true
   }
 }
 

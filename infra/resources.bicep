@@ -231,6 +231,7 @@ module acr 'modules/acr.bicep' = {
     clientIpAddress: clientIpAddress
     privateSubnetId: vnet.outputs.privateSubnetId
     logAnalyticsWorkspaceId: logAnalyticsWorkspace.id
+    vnetId: vnet.outputs.vnetId
   }
 }
 

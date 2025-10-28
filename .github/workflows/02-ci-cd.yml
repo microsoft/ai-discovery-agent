@@ -157,6 +157,7 @@ jobs:
 
           # Set unique image tag with commit SHA for better traceability
           IMAGE_TAG="${{ steps.get-resources.outputs.CONTAINER_IMAGE_NAME }}:${GITHUB_SHA::8}-$(date +%s)"
+          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
           # Build image using ACR build (works with private ACR endpoints)
           az acr build \
@@ -165,7 +166,6 @@ jobs:
             --file src/Dockerfile \
             src/
 
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
           echo "Container image built and pushed: ${{ steps.get-resources.outputs.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
 
       - name: Update staging slot sidecar container
