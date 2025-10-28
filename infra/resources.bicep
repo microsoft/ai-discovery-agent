@@ -257,7 +257,7 @@ resource applicationInsights 'Microsoft.Insights/components@2020-02-02' = {
 }
 
 output WEB_URI string = 'https://${appServiceSite.outputs.defaultHostName}'
-output STAGING_URI string = 'https://${appServiceSite.outputs.stagingSlotDefaultHostName}/staging'
+output STAGING_URI string = 'https://${appServiceSite.outputs.stagingSlotDefaultHostName}'
 output WEB_APP_NAME string = appServiceSite.outputs.name
 output AZURE_OPENAI_ENDPOINT string = 'https://${azureOpenAI.name}.openai.azure.com/'
 output AZURE_OPENAI_API_VERSION string = azureOpenAI.apiVersion
