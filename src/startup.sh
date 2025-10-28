@@ -17,7 +17,7 @@ echo "Environment: ${OTEL_SERVICE_NAME:-unknown}"
 
 # Show environment variables (excluding sensitive ones)
 echo "Environment variables:"
-env | grep -E "^(AZURE|CHAINLIT|PYTHON|WEB_|WORKER_|WEBSITE_)" | grep -v -E "(SECRET|KEY|TOKEN)" | sort
+env | grep -E "^(AZURE|CHAINLIT|PYTHON|WEB_|WORKER_|WEBSITE_|OAUTH_)" | grep -v -E "(SECRET|KEY|TOKEN)" | sort
 
 echo "Contents of current directory:"
 ls -la
@@ -39,9 +39,12 @@ export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 WEB_CONCURRENCY=${WEB_CONCURRENCY:-1}
 WORKER_TIMEOUT=${WORKER_TIMEOUT:-1200}
 PORT=${PORT:-8000}
+HOST=${HOST:-"0.0.0.0"}
+LOG_LEVEL=${LOG_LEVEL:-"info"}
 
 echo "Starting application with the following settings:"
 echo "  - Port: $PORT"
+echo "  - Host: $HOST"
 echo "  - Workers: $WEB_CONCURRENCY"
 echo "  - Worker timeout: $WORKER_TIMEOUT seconds"
 
@@ -55,9 +58,9 @@ python -c "import server, main; print('✓ All modules imported successfully')" 
 # Start the application with error handling
 echo "Starting uvicorn server..."
 exec python -m uvicorn server:app \
-    --host 0.0.0.0 \
+    --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
     --timeout-keep-alive "$WORKER_TIMEOUT" \
     --access-log \
-    --log-level info
+    --log-level "$LOG_LEVEL"
