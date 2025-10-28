@@ -3,31 +3,38 @@
 # Container-based deployment script for Azure App Service with Sidecar containers
 # This script builds and pushes the container image to ACR, then updates the sidecar containers
 
-set -e  # Exit on any error
+set -euo pipefail  # Exit on any error, undefined variables, or pipe failures
+
+# Function to log messages
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+}
+
+# Function to handle errors
+error_exit() {
+    log "ERROR: $1"
+    exit 1
+}
 
 # Default values
-CONTAINER_IMAGE_NAME=${CONTAINER_IMAGE_NAME:-"aida"}
+CONTAINER_IMAGE_NAME="${CONTAINER_IMAGE_NAME:-aida}"
 API_VERSION="2024-11-01"
 
 # Check required environment variables
-if [ -z "$ACR_NAME" ]; then
-    echo "Error: ACR_NAME environment variable is required"
-    exit 1
+if [ -z "${ACR_NAME:-}" ]; then
+    error_exit "ACR_NAME environment variable is required"
 fi
 
-if [ -z "$WEB_APP_NAME" ]; then
-    echo "Error: WEB_APP_NAME environment variable is required"
-    exit 1
+if [ -z "${WEB_APP_NAME:-}" ]; then
+    error_exit "WEB_APP_NAME environment variable is required"
 fi
 
-if [ -z "$RESOURCE_GROUP_NAME" ]; then
-    echo "Error: RESOURCE_GROUP_NAME environment variable is required"
-    exit 1
+if [ -z "${RESOURCE_GROUP_NAME:-}" ]; then
+    error_exit "RESOURCE_GROUP_NAME environment variable is required"
 fi
 
-if [ -z "$AZURE_SUBSCRIPTION_ID" ]; then
-    echo "Error: AZURE_SUBSCRIPTION_ID environment variable is required"
-    exit 1
+if [ -z "${AZURE_SUBSCRIPTION_ID:-}" ]; then
+    error_exit "AZURE_SUBSCRIPTION_ID environment variable is required"
 fi
 
 # Generate unique image tag
@@ -35,31 +42,33 @@ TIMESTAMP=$(date +%s)
 GIT_SHA=${GITHUB_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo "local")}
 IMAGE_TAG="${CONTAINER_IMAGE_NAME}:$(echo "$GIT_SHA" | cut -c1-8)-${TIMESTAMP}"
 
-echo "Starting container-based deployment..."
-echo "Container Image: $IMAGE_TAG"
-echo "ACR: $ACR_NAME"
-echo "Web App: $WEB_APP_NAME"
-echo "Resource Group: $RESOURCE_GROUP_NAME"
+log "Starting container-based deployment..."
+log "Container Image: $IMAGE_TAG"
+log "ACR: $ACR_NAME"
+log "Web App: $WEB_APP_NAME"
+log "Resource Group: $RESOURCE_GROUP_NAME"
 
 # Change to source directory
 cd src
 
-echo "Building and pushing container image to ACR..."
+log "Building and pushing container image to ACR..."
 # Use ACR build to work with private endpoints
 az acr build \
     --registry "$ACR_NAME" \
     --image "$IMAGE_TAG" \
     --file Dockerfile \
-    .
+    . || error_exit "Failed to build container image in ACR"
 
 # Get ACR login server
-ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query loginServer --output tsv)
+ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query loginServer --output tsv) || error_exit "Failed to get ACR login server"
 FULL_IMAGE_NAME="${ACR_LOGIN_SERVER}/${IMAGE_TAG}"
 
-echo "Container image built and pushed: $FULL_IMAGE_NAME"
+log "Successfully built image: $FULL_IMAGE_NAME"
+
+log "Container image built and pushed: $FULL_IMAGE_NAME"
 
 # Update staging slot sidecar container
-echo "Updating sidecar container in staging slot..."
+log "Updating sidecar container in staging slot..."
 az rest --method PUT \
     --url "https://management.azure.com/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Web/sites/${WEB_APP_NAME}/slots/staging/sitecontainers/main?api-version=${API_VERSION}" \
     --body '{
@@ -71,39 +80,39 @@ az rest --method PUT \
             "userManagedIdentityClientId": "SystemIdentity",
             "inheritAppSettingsAndConnectionStrings": true
         }
-    }'
+    }' || error_exit "Failed to update staging sidecar container"
 
-echo "Staging sidecar container updated successfully!"
+log "Staging sidecar container updated successfully!"
 
 # Restart staging slot to apply changes
-echo "Restarting staging slot..."
+log "Restarting staging slot..."
 az webapp restart \
     --name "$WEB_APP_NAME" \
     --resource-group "$RESOURCE_GROUP_NAME" \
-    --slot staging
+    --slot staging || error_exit "Failed to restart staging slot"
 
 # Wait for staging to be ready
-echo "Waiting for staging slot to be ready..."
+log "Waiting for staging slot to be ready..."
 sleep 30
 
 # Verify staging deployment
 STAGING_URL="https://${WEB_APP_NAME}-staging.azurewebsites.net"
-echo "Verifying staging deployment at $STAGING_URL"
+log "Verifying staging deployment at $STAGING_URL"
 
 for i in {1..10}; do
-    echo "Health check attempt $i/10..."
+    log "Health check attempt $i/10..."
     if curl -f -s --connect-timeout 30 --max-time 60 "$STAGING_URL/health"; then
-        echo "Staging deployment verified successfully!"
+        log "Staging deployment verified successfully!"
         break
     else
-        echo "Health check attempt $i failed, retrying in 10 seconds..."
+        log "Health check attempt $i failed, retrying in 10 seconds..."
         sleep 10
     fi
 done
 
 # Optional: Update production slot as well
-if [ "$UPDATE_PRODUCTION" = "true" ]; then
-    echo "Updating sidecar container in production slot..."
+if [ "${UPDATE_PRODUCTION:-false}" = "true" ]; then
+    log "Updating sidecar container in production slot..."
     az rest --method PUT \
         --url "https://management.azure.com/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Web/sites/${WEB_APP_NAME}/sitecontainers/main?api-version=${API_VERSION}" \
         --body '{
@@ -115,37 +124,37 @@ if [ "$UPDATE_PRODUCTION" = "true" ]; then
                 "userManagedIdentityClientId": "SystemIdentity",
                 "inheritAppSettingsAndConnectionStrings": true
             }
-        }'
+        }' || error_exit "Failed to update production sidecar container"
 
-    echo "Production sidecar container updated successfully!"
+    log "Production sidecar container updated successfully!"
 
     # Restart production app to apply changes
-    echo "Restarting production app..."
+    log "Restarting production app..."
     az webapp restart \
         --name "$WEB_APP_NAME" \
-        --resource-group "$RESOURCE_GROUP_NAME"
+        --resource-group "$RESOURCE_GROUP_NAME" || error_exit "Failed to restart production app"
 
     # Verify production deployment
     echo "Waiting for production deployment to complete..."
     sleep 60
 
     PROD_URL="https://${WEB_APP_NAME}.azurewebsites.net"
-    echo "Verifying production deployment at $PROD_URL"
+    log "Verifying production deployment at $PROD_URL"
 
     for i in {1..15}; do
-        echo "Production health check attempt $i/15..."
+        log "Production health check attempt $i/15..."
         if curl -f -s --connect-timeout 30 --max-time 60 "$PROD_URL/health"; then
-            echo "Production deployment verified successfully!"
+            log "Production deployment verified successfully!"
             break
         else
-            echo "Production health check attempt $i failed, retrying in 30 seconds..."
+            log "Production health check attempt $i failed, retrying in 30 seconds..."
             sleep 30
         fi
     done
 fi
 
-echo "Container deployment completed successfully!"
-echo "Staging URL: $STAGING_URL"
-if [ "$UPDATE_PRODUCTION" = "true" ]; then
-    echo "Production URL: $PROD_URL"
+log "Container deployment completed successfully!"
+log "Staging URL: $STAGING_URL"
+if [ "${UPDATE_PRODUCTION:-false}" = "true" ]; then
+    log "Production URL: $PROD_URL"
 fi
