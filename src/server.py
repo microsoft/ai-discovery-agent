@@ -16,7 +16,8 @@ import os
 import uvicorn
 from chainlit.utils import mount_chainlit
 from dotenv import load_dotenv
-from fastapi import FastAPI, status
+from fastapi import FastAPI as FastAPIApp
+from fastapi import status
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
 
@@ -40,7 +41,7 @@ class HealthCheck(BaseModel):
 
 # FastAPI application instance for the AI Discovery Agent
 # Provides REST API endpoints and serves as the main server entry point
-app = FastAPI(
+app = FastAPIApp(
     title="AI Discovery Agent",
     description="FastAPI server for AI-powered workshop facilitation with Chainlit integration",
     version="1.0.0",

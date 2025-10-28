@@ -19,6 +19,7 @@ import yaml
 from yaml.loader import SafeLoader
 
 from utils.logging_setup import get_logger
+from utils.oauth_utils import should_disable_oauth, validate_oauth_prerequisites
 
 AUTH_CONFIG_FILE = Path(__file__).parent / "config/auth-config.yaml"
 
@@ -220,8 +221,16 @@ def is_oauth_enabled() -> bool:
     Returns:
     --------
     bool
-        True if any OAuth provider is configured, False otherwise
+        True if any OAuth provider is configured and network allows it, False otherwise
     """
+    # First check if OAuth is disabled due to network restrictions
+    if should_disable_oauth():
+        logger.warning(
+            "OAuth disabled due to network restrictions. VNet integration detected "
+            "with potential outbound connectivity issues to OAuth providers."
+        )
+        return False
+
     return any(
         [
             os.getenv("OAUTH_GITHUB_CLIENT_ID"),
@@ -237,3 +246,22 @@ def is_oauth_enabled() -> bool:
             # https://docs.chainlit.io/docs/authentication/oauth
         ]
     )
+
+
+async def check_auth_configuration() -> None:
+    """
+    Check authentication configuration at startup and log warnings if needed.
+    """
+    if not is_oauth_enabled():
+        logger.info(
+            "OAuth authentication is disabled. Using password authentication only."
+        )
+        return
+
+    # If OAuth is enabled, validate that it will actually work
+    oauth_error = await validate_oauth_prerequisites()
+    if oauth_error:
+        logger.error(f"OAuth configuration issue: {oauth_error}")
+        logger.info("Consider disabling OAuth or fixing network connectivity.")
+    else:
+        logger.info("OAuth authentication is enabled and should work correctly.")
