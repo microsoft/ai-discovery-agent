@@ -52,7 +52,6 @@ jobs:
       WEB_APP_NAME: ${{ steps.provision.outputs.WEB_APP_NAME }}
       RESOURCE_GROUP_NAME: ${{ steps.provision.outputs.RESOURCE_GROUP_NAME }}
       ACR_NAME: ${{ steps.provision.outputs.ACR_NAME }}
-      ACR_LOGIN_SERVER: ${{ steps.provision.outputs.ACR_LOGIN_SERVER }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -88,8 +87,6 @@ jobs:
           echo "WEB_APP_NAME=$(azd env get-value WEB_APP_NAME)" >> "$GITHUB_OUTPUT"
           echo "RESOURCE_GROUP_NAME=$(azd env get-value RESOURCE_GROUP_NAME)" >> "$GITHUB_OUTPUT"
           echo "ACR_NAME=$(azd env get-value ACR_NAME)" >> "$GITHUB_OUTPUT"
-          ACR_LOGIN_SERVER=$(az acr show --name $(azd env get-value ACR_NAME) --resource-group $(azd env get-value RESOURCE_GROUP_NAME) --query loginServer --output tsv)
-          echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
         env:
           AZURE_ENV_NAME: ${{ vars.AZURE_ENV_NAME }}
           AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
@@ -110,7 +107,6 @@ jobs:
       ACR_NAME: ${{ needs.provision.outputs.ACR_NAME }}
       RESOURCE_GROUP_NAME: ${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}
       WEB_APP_NAME: ${{ needs.provision.outputs.WEB_APP_NAME }}
-      ACR_LOGIN_SERVER: ${{ needs.provision.outputs.ACR_LOGIN_SERVER }}
       CONTAINER_IMAGE_NAME: "aida"
     needs: [build, provision]
     outputs:
@@ -136,9 +132,12 @@ jobs:
 
 
       - name: Prepare container build context
+        id: prepare
         run: |
           # Create auth config
           echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
+          ACR_LOGIN_SERVER=$(az acr show --name $(azd env get-value ${{ env.ACR_NAME }}) --resource-group $(azd env get-value ${{ env.RESOURCE_GROUP_NAME }}) --query loginServer --output tsv)
+          echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
       - name: Build and push container image to ACR
         run: |
           echo "Building container image using ACR Build..."
@@ -154,14 +153,14 @@ jobs:
             --file src/Dockerfile \
             src/
 
-          echo "Container image built and pushed: ${{ env.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
+          echo "Container image built and pushed: ${{ steps.prepare.outputs.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
 
       - name: Update staging slot sidecar container
         id: webapp-deploy
         run: |
           echo "Updating sidecar container in staging slot..."
 
-          FULL_IMAGE_NAME="${{ env.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
+          FULL_IMAGE_NAME="${{ steps.prepare.outputs.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
 
           # Update the main sidecar container in staging slot
           az rest --method PUT \
