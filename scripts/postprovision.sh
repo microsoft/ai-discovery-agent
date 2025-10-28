@@ -23,7 +23,7 @@ if [ -n "$OAUTH_SETTINGS_STAGING" ]; then
     az webapp config appsettings set -n $WEB_APP_NAME -g $RESOURCE_GROUP_NAME --slot staging --settings "@/tmp/${WEB_APP_NAME}_oauth_staging.json"
     rm "/tmp/${WEB_APP_NAME}_oauth_staging.json"
 else
-    echo "No OAUTH_SETTINGS found to apply."
+    echo "No OAUTH_SETTINGS found to apply for staging slot."
 fi
 
 . "$SCRIPT_DIR/enable-network.sh"
