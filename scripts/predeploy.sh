@@ -33,7 +33,7 @@ fi
 # Generate unique image tag
 TIMESTAMP=$(date +%s)
 GIT_SHA=${GITHUB_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo "local")}
-IMAGE_TAG="${CONTAINER_IMAGE_NAME}:${GIT_SHA::8}-${TIMESTAMP}"
+IMAGE_TAG="${CONTAINER_IMAGE_NAME}:$(echo "$GIT_SHA" | cut -c1-8)-${TIMESTAMP}"
 
 echo "Starting container-based deployment..."
 echo "Container Image: $IMAGE_TAG"
