@@ -1,17 +1,17 @@
 name: Azure Bicep Template Analysis
 on:
   push:
-    branches: [ "dev","main" ]
+    branches: ["dev", "main"]
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
   pull_request:
-    branches: [ "dev","main" ]
+    branches: ["dev", "main"]
     paths:
       - "infra/**"
       - ".github/workflows/03-bicep-security.yml"
   schedule:
-    - cron: '12 5 * * 1'
+    - cron: "12 5 * * 1"
   workflow_dispatch:
 permissions: {}
 
@@ -29,7 +29,8 @@ jobs:
       issues: read
       # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
       actions: read
-
+    outputs:
+      code-scanning-enabled: ${{ steps.check-code-scanning.outputs.enabled }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -77,12 +78,14 @@ jobs:
       # need code scanning activated to upload SARIF results to security tab
       - name: Upload SARIF Results to GitHub
         if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled == 'true')
+        id: upload-sarif-results
         uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: bicep_results.sarif
           category: bicep-scan
       - name: Upload Test Results
-        if: (!cancelled())
+        id: upload-test-results
+        if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled != 'true')
         uses: actions/upload-artifact@v5
         with:
           name: Bicep Test Results
@@ -103,7 +106,7 @@ jobs:
 
       # needed when the workflow needs to read issue information, regardless of repository visibility
       issues: read
-    if: (!cancelled())
+    if: (!cancelled() && needs.checkov-scan.outputs.code-scanning-enabled != 'true')
 
     steps:
       - name: Download Artifacts
