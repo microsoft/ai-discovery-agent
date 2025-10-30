@@ -42,7 +42,7 @@ jobs:
           directory: .
           output_format: sarif, junitxml, cli
           output_file_path: bicep_results.sarif,bicep_results.xml,console
-          config_file: .checkov.yaml # Use project-specific configuration
+          config_file: .checkov.yml # Use project-specific configuration
 
       # Check if code scanning is enabled in the repository
       - name: Check if Code Scanning is enabled
