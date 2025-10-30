@@ -30,11 +30,11 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
   }
   properties: {
     adminUserEnabled: false
-    publicNetworkAccess: 'Enabled'
+    publicNetworkAccess: clientIpAddress == '' ? 'Disabled': 'Enabled' // checkov:skip=CKV_AZURE_139: Justified: Conditional public network access based on client IP presence, used for development scenarios.
     networkRuleBypassOptions: 'AzureServices'
     policies: {
       quarantinePolicy: {
-        status: 'disabled'
+        status: 'enabled'
       }
       trustPolicy: {
         type: 'Notary'
