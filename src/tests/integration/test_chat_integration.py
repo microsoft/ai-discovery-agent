@@ -256,6 +256,7 @@ class TestMessageRoutingIntegration:
         # Patch Chainlit components and agent registry
         class DummyLCB:
             pass
+
         with (
             patch("chainlit.user_session") as mock_session,
             patch(
