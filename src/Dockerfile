@@ -17,11 +17,13 @@ ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
+RUN adduser --system --no-create-home nonroot && \
+    addgroup --system nonroot && usermod -a -G nonroot nonroot
+
 WORKDIR /app
 
 # Copy the environment, but not the source code
 COPY --from=builder /app/.venv /app/.venv
-EXPOSE 8000
 
 ENV WEB_CONCURRENCY=1 \
     WORKER_TIMEOUT=1200 \
@@ -29,10 +31,20 @@ ENV WEB_CONCURRENCY=1 \
     HOST=0.0.0.0 \
     LOG_LEVEL=info
 
-ADD . .
+COPY . .
 RUN chmod +x /app/startup.sh
+# Set permissions for config directory and create .files directory
+RUN chown nonroot:nonroot -R /app/config && \
+    mkdir /app/.files && \
+    chown nonroot:nonroot /app/.files && \
+    chmod 700 /app/.files && \
+    touch /app/.env && \
+    chown nonroot:nonroot /app/.env
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
+
+USER nonroot
+EXPOSE 8000
 # Run the application
 CMD ["/app/startup.sh"]

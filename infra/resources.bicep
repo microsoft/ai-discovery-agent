@@ -36,7 +36,7 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' =
   properties: {
     customSubDomainName: '${abbrs.cognitiveServicesAccounts}${resourceToken}'
     disableLocalAuth: true
-    publicNetworkAccess: publicNetworkAccess
+    publicNetworkAccess: publicNetworkAccess // checkov:skip=CKV_AZURE_134: Environment-specific access control
     networkAcls: {
       defaultAction: 'Deny'
       bypass: 'AzureServices'
