@@ -7,6 +7,8 @@ Integration tests for message routing and chat handling.
 Tests the interaction between chat handlers, agent manager, and session management.
 """
 
+from collections.abc import AsyncIterator
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import chainlit as cl
@@ -241,7 +243,9 @@ class TestMessageRoutingIntegration:
 
         # Dummy streaming agent that yields two chunks
         class DummyAgent:  # pragma: no cover - simple test double
-            async def astream(self, history, config):  # noqa: D401
+            async def astream(
+                self, history: list[dict[str, str]], config: object
+            ) -> AsyncIterator[Any]:
                 # Simulate token streaming
                 for token in ["Hello", " world"]:
                     # Yield an object with a .content attribute like LangChain messages
