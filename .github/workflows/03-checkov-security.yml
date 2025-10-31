@@ -1,15 +1,9 @@
-name: Azure Bicep Template Analysis
+name: Checkov Infra & Code Scanning
 on:
   push:
     branches: ["dev", "main"]
-    paths:
-      - "infra/**"
-      - ".github/workflows/03-bicep-security.yml"
   pull_request:
     branches: ["dev", "main"]
-    paths:
-      - "infra/**"
-      - ".github/workflows/03-bicep-security.yml"
   schedule:
     - cron: "12 5 * * 1"
   workflow_dispatch:
@@ -18,7 +12,7 @@ permissions: {}
 jobs:
   checkov-scan:
     runs-on: ubuntu-latest
-    name: Checkov Bicep Analysis
+    name: Checkov Analysis
     permissions:
       contents: read # Allows actions/checkout to fetch the code
       security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
