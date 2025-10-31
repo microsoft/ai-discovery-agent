@@ -293,7 +293,8 @@ class TestMessageRoutingIntegration:
                     self.content += token
                     return None
 
-                async def remove(self):  # used by initialize_conversation sometimes
+                async def remove(self):
+                    """Remove the message (no-op in tests)."""
                     return None
 
             mock_cl_message.side_effect = lambda *a, **kw: DummyCLMessage(*a, **kw)
