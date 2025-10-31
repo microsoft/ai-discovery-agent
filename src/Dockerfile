@@ -38,7 +38,7 @@ RUN chown nonroot:nonroot -R /app/config && \
     mkdir /app/.files && \
     chown nonroot:nonroot /app/.files && \
     chmod 700 /app/.files && \
-    touch .env && \
+    touch /app/.env && \
     chown nonroot:nonroot /app/.env
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
