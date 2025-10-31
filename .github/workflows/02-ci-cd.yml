@@ -130,13 +130,13 @@ jobs:
         with:
           creds: ${{ env.AZURE_CREDENTIALS }}
 
-
       - name: Prepare container build context
         id: prepare
         run: |
           # Create auth config
           echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
           ACR_LOGIN_SERVER=$(az acr show --name ${{ env.ACR_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --query loginServer --output tsv)
+
           echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
       - name: Build and push container image to ACR
         run: |
