@@ -269,6 +269,13 @@ class TestMessageRoutingIntegration:
             # Build a realistic Message mock that accumulates streamed tokens
             class DummyCLMessage(AsyncMock):  # pragma: no cover
                 def __init__(self, *args, **kwargs):  # noqa: D401
+                    """
+                    Initialize dummy Chainlit message for testing.
+
+                    Args:
+                        *args: Positional arguments.
+                        **kwargs: Keyword arguments, may include 'content'.
+                    """
                     super().__init__()
                     self.content = kwargs.get("content", "")
                     self.elements = []
