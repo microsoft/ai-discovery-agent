@@ -235,7 +235,7 @@ class TestMessageRoutingIntegration:
             def __enter__(self):
                 return self
 
-            def __exit__(self, exc_type, exc, tb):  # noqa: D401
+            def __exit__(self, exc_type, exc, tb):
                 return False
 
             async def send(self):  # mimic Chainlit Step .send()
