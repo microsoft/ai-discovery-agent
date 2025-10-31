@@ -274,6 +274,7 @@ class TestMessageRoutingIntegration:
                     self.elements = []
 
                 async def send(self):  # noqa: D401
+                    """Send the message (no-op in tests)."""
                     return None
 
                 async def stream_token(self, token: str):  # noqa: D401
