@@ -23,7 +23,7 @@ RUN adduser --system --no-create-home nonroot && \
 WORKDIR /app
 
 # Copy the environment, but not the source code
-COPY --from=builder --chown=nonroot:nonroot /app/.venv /app/.venv
+COPY --from=builder /app/.venv /app/.venv
 
 ENV WEB_CONCURRENCY=1 \
     WORKER_TIMEOUT=1200 \
@@ -31,9 +31,15 @@ ENV WEB_CONCURRENCY=1 \
     HOST=0.0.0.0 \
     LOG_LEVEL=info
 
-COPY --chown=nonroot:nonroot . .
+COPY . .
 RUN chmod +x /app/startup.sh
-RUN chown nonroot:nonroot /app
+# Set permissions for config directory and create .files directory
+RUN chown nonroot:nonroot -R /app/config && \
+    mkdir .files && \    
+    chown nonroot:nonroot /app/.files && \
+    chmod 700 /app/.files && \
+    touch .env && \
+    chown nonroot:nonroot /app/.env
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
