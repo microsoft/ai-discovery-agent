@@ -49,7 +49,6 @@ class AzureStorageConversationManager(ConversationManager):
         self.storage_manager = storage_manager
         self.openai_client = openai_client
 
-
     async def generate_conversation_title(self, messages: list[dict[str, str]]) -> str:
         """
         Generate a conversation title based on initial messages using Azure OpenAI.
