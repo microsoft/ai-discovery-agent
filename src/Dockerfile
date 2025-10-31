@@ -35,7 +35,7 @@ COPY . .
 RUN chmod +x /app/startup.sh
 # Set permissions for config directory and create .files directory
 RUN chown nonroot:nonroot -R /app/config && \
-    mkdir /app/.files && \    
+    mkdir /app/.files && \
     chown nonroot:nonroot /app/.files && \
     chmod 700 /app/.files && \
     touch .env && \
