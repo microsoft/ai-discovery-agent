@@ -49,14 +49,6 @@ class AzureStorageConversationManager(ConversationManager):
         self.storage_manager = storage_manager
         self.openai_client = openai_client
 
-    # def generate_conversation_id(self) -> str:
-    #     """
-    #     Generate a unique conversation ID.
-
-    #     Returns:
-    #         Unique conversation identifier
-    #     """
-    #     return str(uuid.uuid4())
 
     async def generate_conversation_title(self, messages: list[dict[str, str]]) -> str:
         """
