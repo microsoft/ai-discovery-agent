@@ -219,10 +219,10 @@ class TestMessageRoutingIntegration:
         }
 
         # Side effect handlers replicating Chainlit's session get/set
-        def session_get(key: str, default: object | None = None):  # type: ignore[override]
+        def session_get(key: str, default: object | None = None):
             return session_store.get(key, default)
 
-        def session_set(key: str, value: object):  # type: ignore[override]
+        def session_set(key: str, value: object):
             session_store[key] = value
 
         # Dummy Step context manager used by process_with_agent
@@ -254,13 +254,16 @@ class TestMessageRoutingIntegration:
         dummy_agent = DummyAgent()
 
         # Patch Chainlit components and agent registry
+        class DummyLCB:
+            pass
+
         with (
             patch("chainlit.user_session") as mock_session,
             patch(
                 "chat_handlers.agent_registry.get_agent", return_value=dummy_agent
             ) as mock_get_agent,
             patch("chainlit.Step", DummyStep),
-            patch("chainlit.LangchainCallbackHandler", type("DummyLCB", (), {})),
+            patch("chainlit.LangchainCallbackHandler", DummyLCB),
             patch("chainlit.Message") as mock_cl_message,
         ):
 
