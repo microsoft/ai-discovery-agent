@@ -35,7 +35,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
     networkRuleBypassOptions: 'AzureServices'
     policies: {
       quarantinePolicy: {
-        status: 'enabled'
+        status: 'disabled' // checkov:skip=CKV_AZURE_166: Quarantine is still under preview
       }
       trustPolicy: {
         type: 'Notary'
