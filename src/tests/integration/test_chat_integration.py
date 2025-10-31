@@ -217,7 +217,6 @@ class TestMessageRoutingIntegration:
 
                     # Act - This would call on_message but we need to mock more components
                     # For now, just verify the structure is testable
-                    pass
 
     def test_message_content_extraction(self, mock_message):
         """Test message content extraction."""
