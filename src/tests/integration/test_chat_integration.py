@@ -217,10 +217,10 @@ class TestMessageRoutingIntegration:
         }
 
         # Side effect handlers replicating Chainlit's session get/set
-        def session_get(key: str, default=None):  # type: ignore[override]
+        def session_get(key: str, default: object | None = None):  # type: ignore[override]
             return session_store.get(key, default)
 
-        def session_set(key: str, value):  # type: ignore[override]
+        def session_set(key: str, value: object):  # type: ignore[override]
             session_store[key] = value
 
         # Dummy Step context manager used by process_with_agent
