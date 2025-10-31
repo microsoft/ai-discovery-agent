@@ -261,7 +261,7 @@ class TestMessageRoutingIntegration:
             ) as mock_get_agent,
             patch("chainlit.Step", DummyStep),
             patch(
-                "chainlit.LangchainCallbackHandler", lambda: type("DummyLCB", (), {})()
+                "chainlit.LangchainCallbackHandler", type("DummyLCB", (), {})
             ),
             patch("chainlit.Message") as mock_cl_message,
         ):
