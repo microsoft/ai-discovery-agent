@@ -56,7 +56,6 @@ try:
         "AZURE_STORAGE_ACCOUNT_URL"
     ):
         _storage_manager = AzureStorageManager()
-        openai_client = None
         AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
         AZURE_OPENAI_API_VERSION = os.getenv(
             "AZURE_OPENAI_API_VERSION", "2025-04-01-preview"
