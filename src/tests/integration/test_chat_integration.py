@@ -278,6 +278,7 @@ class TestMessageRoutingIntegration:
                     return None
 
                 async def stream_token(self, token: str):  # noqa: D401
+                    """Accumulate streamed token into message content."""
                     self.content += token
                     return None
 
