@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import chainlit as cl
 import pytest
 
-from chat_handlers import on_chat_start, set_chat_profiles
+from chat_handlers import on_chat_start, set_chat_profiles, on_message
 from persistence.conversation_manager import DummyConversationManager
 from tests.fixtures.data import (
     create_mock_admin_user,
@@ -198,25 +198,105 @@ class TestMessageRoutingIntegration:
 
     async def test_message_routing_basic_flow(self, mock_message):
         """Test basic message routing flow."""
-        # This test would be more complex in a real implementation
-        # For now, we'll test the structure exists
+        # This test exercises the real on_message -> process_with_agent flow using
+        # patched Chainlit primitives and a dummy streaming agent.
 
-        with patch("chainlit.user_session") as mock_session:
-            # Mock session data
-            mock_session.get.return_value = {"current_agent": "facilitator"}
+        # Prepare a dummy user object
+        user = Mock(spec=cl.User)
+        user.identifier = "test-user"
+        user.metadata = {"roles": ["user"], "first_name": "Test"}
 
-            # Mock agent processing
-            with patch("chat_handlers.agent_registry") as mock_registry:
-                mock_agent = Mock()
-                mock_agent.astream = AsyncMock()
-                mock_registry.get_agent.return_value = mock_agent
+        # Store simulating chainlit.user_session internal key/value storage
+        session_store: dict[str, object] = {
+            "user": user,
+            "current_agent_key": "facilitator",
+            # start with empty conversation history
+            "conversation_history": [],
+            # dummy conversation id so saving logic can run without error
+            "current_conversation_id": "conv-1",
+        }
 
-                with patch("chainlit.Message") as mock_cl_message:
-                    mock_cl_message_instance = AsyncMock()
-                    mock_cl_message.return_value = mock_cl_message_instance
+        # Side effect handlers replicating Chainlit's session get/set
+        def session_get(key: str, default=None):  # type: ignore[override]
+            return session_store.get(key, default)
 
-                    # Act - This would call on_message but we need to mock more components
-                    # For now, just verify the structure is testable
+        def session_set(key: str, value):  # type: ignore[override]
+            session_store[key] = value
+
+        # Dummy Step context manager used by process_with_agent
+        class DummyStep:  # pragma: no cover - trivial helper
+            def __init__(self, name: str):
+                self.name = name
+                self.input = None
+                self.output = None
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, exc_type, exc, tb):  # noqa: D401
+                return False
+
+            async def send(self):  # mimic Chainlit Step .send()
+                return None
+
+        # Dummy streaming agent that yields two chunks
+        class DummyAgent:  # pragma: no cover - simple test double
+            async def astream(self, history, config):  # noqa: D401
+                # Simulate token streaming
+                for token in ["Hello", " world"]:
+                    # Yield an object with a .content attribute like LangChain messages
+                    yield type("Chunk", (), {"content": token})()
+
+        dummy_agent = DummyAgent()
+
+        # Patch Chainlit components and agent registry
+        with patch("chainlit.user_session") as mock_session, \
+            patch("chat_handlers.agent_registry.get_agent", return_value=dummy_agent) as mock_get_agent, \
+            patch("chainlit.Step", DummyStep), \
+            patch("chainlit.LangchainCallbackHandler", lambda: type("DummyLCB", (), {})()), \
+            patch("chainlit.Message") as mock_cl_message:
+
+            # Configure session get/set behaviour
+            mock_session.get.side_effect = session_get
+            mock_session.set.side_effect = session_set
+
+            # Build a realistic Message mock that accumulates streamed tokens
+            class DummyCLMessage(AsyncMock):  # pragma: no cover
+                def __init__(self, *args, **kwargs):  # noqa: D401
+                    super().__init__()
+                    self.content = kwargs.get("content", "")
+                    self.elements = []
+
+                async def send(self):  # noqa: D401
+                    return None
+
+                async def stream_token(self, token: str):  # noqa: D401
+                    self.content += token
+                    return None
+
+                async def remove(self):  # used by initialize_conversation sometimes
+                    return None
+
+            mock_cl_message.side_effect = lambda *a, **kw: DummyCLMessage(*a, **kw)
+
+            # Incoming user message fixture adaptation
+            mock_message.content = "Hi there"
+
+            # Act
+            await on_message(DummyConversationManager(), mock_message)
+
+            # Assert agent lookup occurred with current agent key
+            mock_get_agent.assert_called_once_with("facilitator")
+
+            # Conversation history should now contain user + assistant messages
+            history = session_store.get("conversation_history")
+            assert isinstance(history, list), "conversation_history should be a list"
+            assert len(history) == 2, "Expected two messages in history (user & assistant)"
+            assert history[0]["role"] == "user"
+            assert history[0]["content"] == "Hi there"
+            assert history[1]["role"] == "assistant"
+            # The assistant concatenated streamed tokens
+            assert history[1]["content"] == "Hello world"
 
     def test_message_content_extraction(self, mock_message):
         """Test message content extraction."""
