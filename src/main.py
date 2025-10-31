@@ -15,12 +15,12 @@ from dotenv import load_dotenv
 
 from auth import (
     is_oauth_enabled,
-    oauth_callback,  # noqa E402
+    oauth_callback,
     password_auth_callback,
 )
 from chat_handlers import (
     on_chat_resume,
-    on_chat_start,  # noqa E402
+    on_chat_start,
     on_message,
     set_chat_profiles,
 )
