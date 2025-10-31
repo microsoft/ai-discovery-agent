@@ -260,9 +260,7 @@ class TestMessageRoutingIntegration:
                 "chat_handlers.agent_registry.get_agent", return_value=dummy_agent
             ) as mock_get_agent,
             patch("chainlit.Step", DummyStep),
-            patch(
-                "chainlit.LangchainCallbackHandler", type("DummyLCB", (), {})
-            ),
+            patch("chainlit.LangchainCallbackHandler", type("DummyLCB", (), {})),
             patch("chainlit.Message") as mock_cl_message,
         ):
 
