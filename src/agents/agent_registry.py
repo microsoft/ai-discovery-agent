@@ -158,7 +158,6 @@ class AgentRegistry:
             logger.exception("Error creating agent for key '%s': %s", agent_key, e)
             raise
 
-
     def all(self) -> dict:
         """
         Retrieve all agent definitions.
