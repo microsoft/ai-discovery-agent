@@ -12,7 +12,7 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import chainlit as cl
 import pytest
 
-from chat_handlers import on_chat_start, set_chat_profiles, on_message
+from chat_handlers import on_chat_start, on_message, set_chat_profiles
 from persistence.conversation_manager import DummyConversationManager
 from tests.fixtures.data import (
     create_mock_admin_user,
@@ -250,11 +250,17 @@ class TestMessageRoutingIntegration:
         dummy_agent = DummyAgent()
 
         # Patch Chainlit components and agent registry
-        with patch("chainlit.user_session") as mock_session, \
-            patch("chat_handlers.agent_registry.get_agent", return_value=dummy_agent) as mock_get_agent, \
-            patch("chainlit.Step", DummyStep), \
-            patch("chainlit.LangchainCallbackHandler", lambda: type("DummyLCB", (), {})()), \
-            patch("chainlit.Message") as mock_cl_message:
+        with (
+            patch("chainlit.user_session") as mock_session,
+            patch(
+                "chat_handlers.agent_registry.get_agent", return_value=dummy_agent
+            ) as mock_get_agent,
+            patch("chainlit.Step", DummyStep),
+            patch(
+                "chainlit.LangchainCallbackHandler", lambda: type("DummyLCB", (), {})()
+            ),
+            patch("chainlit.Message") as mock_cl_message,
+        ):
 
             # Configure session get/set behaviour
             mock_session.get.side_effect = session_get
@@ -291,7 +297,9 @@ class TestMessageRoutingIntegration:
             # Conversation history should now contain user + assistant messages
             history = session_store.get("conversation_history")
             assert isinstance(history, list), "conversation_history should be a list"
-            assert len(history) == 2, "Expected two messages in history (user & assistant)"
+            assert (
+                len(history) == 2
+            ), "Expected two messages in history (user & assistant)"
             assert history[0]["role"] == "user"
             assert history[0]["content"] == "Hi there"
             assert history[1]["role"] == "assistant"
