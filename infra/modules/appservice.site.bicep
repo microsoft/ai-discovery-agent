@@ -48,7 +48,7 @@ var sharedAppSettingsProperties = {
   // Enable pulling images over VNet, needed for pulling using private endpoint
   WEBSITE_PULL_IMAGE_OVER_VNET: 'true'
 
-  // Disable unused features for better performance
+  // Used for shared storage mount
   WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
 }
 
@@ -183,6 +183,14 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
   }
 }
 
+var volumeMounts=[
+      {
+        containerMountPath: '/app/config/auth-config.yaml'
+        volumeSubPath: 'site/wwwroot/secrets/auth-config.yaml'
+        readOnly: false
+      }
+    ]
+
 resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
   parent: web
   name: 'main'
@@ -193,6 +201,7 @@ resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
     inheritAppSettingsAndConnectionStrings: true
+    volumeMounts: volumeMounts
   }
 }
 
@@ -206,6 +215,7 @@ resource siteContainerStaging 'Microsoft.Web/sites/slots/sitecontainers@2024-11-
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
     inheritAppSettingsAndConnectionStrings: true
+    volumeMounts: volumeMounts
   }
 }
 

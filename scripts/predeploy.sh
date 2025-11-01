@@ -41,6 +41,8 @@ fi
 TIMESTAMP=$(date +%s)
 GIT_SHA=${GITHUB_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo "local")}
 IMAGE_TAG="${CONTAINER_IMAGE_NAME}:$(echo "$GIT_SHA" | cut -c1-8)-${TIMESTAMP}"
+IMAGE_TAG_LATEST="${CONTAINER_IMAGE_NAME}:latest"
+IMAGE_TAG_RUN_ID="${CONTAINER_IMAGE_NAME}:run-{{.Run.ID}}"
 
 log "Starting container-based deployment..."
 log "Container Image: $IMAGE_TAG"
@@ -56,6 +58,8 @@ log "Building and pushing container image to ACR..."
 az acr build \
     --registry "$ACR_NAME" \
     --image "$IMAGE_TAG" \
+    --image "$IMAGE_TAG_LATEST" \
+    --image "$IMAGE_TAG_RUN_ID" \
     --file Dockerfile \
     . || error_exit "Failed to build container image in ACR"
 
