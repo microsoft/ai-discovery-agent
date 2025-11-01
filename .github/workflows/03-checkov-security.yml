@@ -4,7 +4,7 @@ on:
     branches: ["dev", "main"]
     paths:
       - "infra/**"
-      - ".github/workflows/03-bicep-security.yml"
+      - ".github/workflows/03-checkov-security.yml"
   pull_request:
     branches: ["dev", "main"]
   schedule:
