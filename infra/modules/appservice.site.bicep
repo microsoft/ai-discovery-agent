@@ -183,13 +183,6 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
   }
 }
 
-var volumeMounts=[
-      {
-        containerMountPath: '/app/config/auth-config.yaml'
-        volumeSubPath: 'site/wwwroot/secrets/auth-config.yaml'
-        readOnly: false
-      }
-    ]
 
 resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
   parent: web
@@ -201,7 +194,6 @@ resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
     inheritAppSettingsAndConnectionStrings: true
-    volumeMounts: volumeMounts
   }
 }
 
@@ -215,7 +207,6 @@ resource siteContainerStaging 'Microsoft.Web/sites/slots/sitecontainers@2024-11-
     authType: 'SystemIdentity'
     userManagedIdentityClientId: 'SystemIdentity'
     inheritAppSettingsAndConnectionStrings: true
-    volumeMounts: volumeMounts
   }
 }
 
