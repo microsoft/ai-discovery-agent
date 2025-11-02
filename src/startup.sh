@@ -66,6 +66,12 @@ if [ -f /home/site/wwwroot/secrets/auth-config.yaml ]; then
         echo "ERROR: /app/config is not writable!"
         exit 1
     fi
+    # Check if /app/config/auth-config.yaml exists as a regular file (not a symlink)
+    if [ -f /app/config/auth-config.yaml ] && [ ! -L /app/config/auth-config.yaml ]; then
+        echo "ERROR: /app/config/auth-config.yaml exists as a regular file and will NOT be overwritten to avoid data loss."
+        echo "Please remove or backup the file before running this script."
+        exit 1
+    fi
     # Attempt to create the symlink
     ln -sf /home/site/wwwroot/secrets/auth-config.yaml /app/config/auth-config.yaml
     if [ $? -ne 0 ]; then
