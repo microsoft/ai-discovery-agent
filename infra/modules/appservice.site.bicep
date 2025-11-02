@@ -48,7 +48,7 @@ var sharedAppSettingsProperties = {
   // Enable pulling images over VNet, needed for pulling using private endpoint
   WEBSITE_PULL_IMAGE_OVER_VNET: 'true'
 
-  // Disable unused features for better performance
+  // Used for shared storage mount
   WEBSITES_ENABLE_APP_SERVICE_STORAGE: 'true'
 }
 
@@ -182,6 +182,7 @@ resource web 'Microsoft.Web/sites@2024-11-01' = {
     }
   }
 }
+
 
 resource siteContainer 'Microsoft.Web/sites/sitecontainers@2024-11-01' = {
   parent: web

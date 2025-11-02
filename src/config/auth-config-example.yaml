@@ -1,5 +1,5 @@
 # Example configuration file for the AIDC Facilitator application auth
-# Change the password and rename the file to config.yaml
+# Change the password and rename the file to auth-config.yaml
 # It will be automatically hashed during the first run
 
 credentials:
@@ -9,8 +9,8 @@ credentials:
       last_name: Doe
       password: admin-pass
       roles:
-      - admin
+        - admin
     attendee:
       password: attendee-pass
       roles:
-      - user
+        - user
