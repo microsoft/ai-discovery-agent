@@ -198,9 +198,10 @@ EOF
     else
       echo "," >> "$JSON_OUTPUT"
     fi
-    # Escape double quotes in file path if any
-    local escaped_file="${file//\"/\\\"}"
-    echo -n "    {\"path\": \"${escaped_file}\", \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
+    # Properly escape file path for JSON using jq
+    local escaped_file
+    escaped_file=$(echo -n "$file" | jq -R .)
+    echo -n "    {\"path\": ${escaped_file}, \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
   done
 
   # Close JSON structure
