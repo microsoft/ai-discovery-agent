@@ -211,22 +211,22 @@ EOF
     "python": {
       "extension": ".py",
       "syntax": "# ",
-      "example": "# Copyright (c) Microsoft Corporation.\\n# Licensed under the MIT license."
+      "example": "# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license."
     },
     "javascript": {
       "extension": ".js, .ts, .jsx, .tsx",
       "syntax": "// ",
-      "example": "// Copyright (c) Microsoft Corporation.\\n// Licensed under the MIT license."
+      "example": "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license."
     },
     "html": {
       "extension": ".html",
       "syntax": "<!-- -->",
-      "example": "<!-- Copyright (c) Microsoft Corporation. -->\\n<!-- Licensed under the MIT license. -->"
+      "example": "<!-- Copyright (c) Microsoft Corporation. -->\n<!-- Licensed under the MIT license. -->"
     },
     "css": {
       "extension": ".css",
       "syntax": "/* */",
-      "example": "/* Copyright (c) Microsoft Corporation. */\\n/* Licensed under the MIT license. */"
+      "example": "/* Copyright (c) Microsoft Corporation. */\n/* Licensed under the MIT license. */"
     }
   }
 }
