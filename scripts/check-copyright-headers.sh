@@ -190,19 +190,24 @@ generate_json_output() {
   "failed_files": [
 EOF
 
-  # Add failed files as JSON array
-  local first=true
-  for file in "${missing_files[@]}"; do
-    if [ "$first" = true ]; then
-      first=false
-    else
-      echo "," >> "$JSON_OUTPUT"
-    fi
-    # Properly escape file path for JSON using jq
-    local escaped_file
-    escaped_file=$(echo -n "$file" | jq -R .)
-    echo -n "    {\"path\": ${escaped_file}, \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
-  done
+  if [ ${#missing_files[@]} -eq 0 ]; then
+    # Output empty array
+    echo "" >> "$JSON_OUTPUT"
+  else
+    # Add failed files as JSON array
+    local first=true
+    for file in "${missing_files[@]}"; do
+      if [ "$first" = true ]; then
+        first=false
+      else
+        echo "," >> "$JSON_OUTPUT"
+      fi
+      # Properly escape file path for JSON using jq
+      local escaped_file
+      escaped_file=$(echo -n "$file" | jq -R .)
+      echo -n "    {\"path\": ${escaped_file}, \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
+    done
+  fi
 
   # Close JSON structure
   cat >> "$JSON_OUTPUT" << EOF
