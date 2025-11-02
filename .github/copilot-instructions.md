@@ -86,6 +86,12 @@ class ChainlitAgentManager:
 
 Format all code according to [Black](https://black.readthedocs.io/en/stable/) guidelines. Use line length of 88 characters and ensure proper spacing.
 
+### 5. **General Linting Rules**
+
+Follow [Ruff](https://ruff.rs/) linting rules as specified in the `pyproject.toml` file. Address all warnings and errors reported by Ruff before committing code.
+
+Ensure that pre-commit rules are followed, including import sorting, unused imports removal, and code complexity checks.
+
 ## Project-Specific Development Guidelines
 
 ### Copyright and Licensing
