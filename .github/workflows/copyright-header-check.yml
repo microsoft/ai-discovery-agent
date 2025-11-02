@@ -45,7 +45,7 @@ jobs:
             for file in $files; do
               # Check if file has both required headers
               if ! grep -q "^# Copyright (c) Microsoft Corporation\." "$file" || \
-                 ! grep -q "^# Licensed under the MIT license\." "$file"; then
+                 ! grep -q "^# Licensed under the MIT License\." "$file"; then
                 missing_files+=("$file")
                 echo -e "${RED}✗${NC} $file - Missing copyright header"
               else
@@ -67,7 +67,7 @@ jobs:
             for file in $files; do
               # Check if file has both required headers
               if ! grep -q "^// Copyright (c) Microsoft Corporation\." "$file" || \
-                 ! grep -q "^// Licensed under the MIT license\." "$file"; then
+                 ! grep -q "^// Licensed under the MIT License\." "$file"; then
                 missing_files+=("$file")
                 echo -e "${RED}✗${NC} $file - Missing copyright header"
               else
@@ -89,7 +89,7 @@ jobs:
             for file in $files; do
               # Check if file has both required headers
               if ! grep -q "<!-- Copyright (c) Microsoft Corporation\. -->" "$file" || \
-                 ! grep -q "<!-- Licensed under the MIT license\. -->" "$file"; then
+                 ! grep -q "<!-- Licensed under the MIT License\. -->" "$file"; then
                 missing_files+=("$file")
                 echo -e "${RED}✗${NC} $file - Missing copyright header"
               else
@@ -111,7 +111,7 @@ jobs:
             for file in $files; do
               # Check if file has both required headers
               if ! grep -q "/\* Copyright (c) Microsoft Corporation\. \*/" "$file" || \
-                 ! grep -q "/\* Licensed under the MIT license\. \*/" "$file"; then
+                 ! grep -q "/\* Licensed under the MIT License\. \*/" "$file"; then
                 missing_files+=("$file")
                 echo -e "${RED}✗${NC} $file - Missing copyright header"
               else
@@ -142,12 +142,12 @@ jobs:
             echo ""
             echo "Required headers:"
             echo "  Python:     # Copyright (c) Microsoft Corporation."
-            echo "              # Licensed under the MIT license."
+            echo "              # Licensed under the MIT License."
             echo "  JS/TS/JSX/TSX: // Copyright (c) Microsoft Corporation."
-            echo "                 // Licensed under the MIT license."
+            echo "                 // Licensed under the MIT License."
             echo "  HTML:       <!-- Copyright (c) Microsoft Corporation. -->"
-            echo "              <!-- Licensed under the MIT license. -->"
+            echo "              <!-- Licensed under the MIT License. -->"
             echo "  CSS:        /* Copyright (c) Microsoft Corporation. */"
-            echo "              /* Licensed under the MIT license. */"
+            echo "              /* Licensed under the MIT License. */"
             exit 1
           fi
