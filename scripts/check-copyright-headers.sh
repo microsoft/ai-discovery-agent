@@ -191,20 +191,20 @@ generate_json_output() {
 EOF
 
   # Add failed files as JSON array
-  local first=true
+  local failed_files_json=""
   for file in "${missing_files[@]}"; do
-    if [ "$first" = true ]; then
-      first=false
-    else
-      echo "," >> "$JSON_OUTPUT"
-    fi
     # Escape double quotes in file path if any
     local escaped_file="${file//\"/\\\"}"
-    echo -n "    {\"path\": \"${escaped_file}\", \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
+    if [ -n "$failed_files_json" ]; then
+      failed_files_json+=",\n"
+    fi
+    failed_files_json+="    {\"path\": \"${escaped_file}\", \"message\": \"Missing copyright header\"}"
   done
 
-  # Close JSON structure
-  cat >> "$JSON_OUTPUT" << EOF
+  # Output failed_files array
+  if [ -n "$failed_files_json" ]; then
+    echo -e "$failed_files_json" >> "$JSON_OUTPUT"
+  fi
 
   ],
   "header_examples": {
