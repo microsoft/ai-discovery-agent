@@ -192,7 +192,7 @@ EOF
 
   if [ ${#missing_files[@]} -eq 0 ]; then
     # Output empty array
-    echo "" >> "$JSON_OUTPUT"
+    # (No output needed; leave array empty)
   else
     # Add failed files as JSON array
     local first=true
