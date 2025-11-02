@@ -78,6 +78,7 @@ if [ -f /home/site/wwwroot/secrets/auth-config.yaml ]; then
         echo "ERROR: Failed to create symlink for auth-config.yaml!"
         exit 1
     fi
+    echo "✓ Successfully linked auth-config.yaml"
 else
     echo "No auth-config.yaml found in secrets directory."
 fi
