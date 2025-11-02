@@ -1,0 +1,153 @@
+name: Copyright Header Check
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check-headers:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Check Copyright Headers
+        shell: bash
+        run: |
+          #!/bin/bash
+          set -e
+          
+          # Colors for output
+          RED='\033[0;31m'
+          GREEN='\033[0;32m'
+          YELLOW='\033[1;33m'
+          NC='\033[0m' # No Color
+          
+          echo "Checking copyright headers in src/ directory..."
+          echo ""
+          
+          # Arrays to store files with missing headers
+          declare -a missing_files=()
+          
+          # Function to check Python files
+          check_python_files() {
+            local files=$(find src -type f -name "*.py")
+            
+            if [ -z "$files" ]; then
+              return
+            fi
+            
+            echo "Checking Python files..."
+            for file in $files; do
+              # Check if file has both required headers
+              if ! grep -q "^# Copyright (c) Microsoft Corporation\." "$file" || \
+                 ! grep -q "^# Licensed under the MIT license\." "$file"; then
+                missing_files+=("$file")
+                echo -e "${RED}✗${NC} $file - Missing copyright header"
+              else
+                echo -e "${GREEN}✓${NC} $file"
+              fi
+            done
+          }
+          
+          # Function to check JavaScript/TypeScript files
+          check_js_ts_files() {
+            local files=$(find src -type f \( -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" \))
+            
+            if [ -z "$files" ]; then
+              return
+            fi
+            
+            echo ""
+            echo "Checking JavaScript/TypeScript files..."
+            for file in $files; do
+              # Check if file has both required headers
+              if ! grep -q "^// Copyright (c) Microsoft Corporation\." "$file" || \
+                 ! grep -q "^// Licensed under the MIT license\." "$file"; then
+                missing_files+=("$file")
+                echo -e "${RED}✗${NC} $file - Missing copyright header"
+              else
+                echo -e "${GREEN}✓${NC} $file"
+              fi
+            done
+          }
+          
+          # Function to check HTML files
+          check_html_files() {
+            local files=$(find src -type f -name "*.html")
+            
+            if [ -z "$files" ]; then
+              return
+            fi
+            
+            echo ""
+            echo "Checking HTML files..."
+            for file in $files; do
+              # Check if file has both required headers
+              if ! grep -q "<!-- Copyright (c) Microsoft Corporation\. -->" "$file" || \
+                 ! grep -q "<!-- Licensed under the MIT license\. -->" "$file"; then
+                missing_files+=("$file")
+                echo -e "${RED}✗${NC} $file - Missing copyright header"
+              else
+                echo -e "${GREEN}✓${NC} $file"
+              fi
+            done
+          }
+          
+          # Function to check CSS files
+          check_css_files() {
+            local files=$(find src -type f -name "*.css")
+            
+            if [ -z "$files" ]; then
+              return
+            fi
+            
+            echo ""
+            echo "Checking CSS files..."
+            for file in $files; do
+              # Check if file has both required headers
+              if ! grep -q "/\* Copyright (c) Microsoft Corporation\. \*/" "$file" || \
+                 ! grep -q "/\* Licensed under the MIT license\. \*/" "$file"; then
+                missing_files+=("$file")
+                echo -e "${RED}✗${NC} $file - Missing copyright header"
+              else
+                echo -e "${GREEN}✓${NC} $file"
+              fi
+            done
+          }
+          
+          # Run all checks
+          check_python_files
+          check_js_ts_files
+          check_html_files
+          check_css_files
+          
+          echo ""
+          echo "================================================"
+          
+          # Report results
+          if [ ${#missing_files[@]} -eq 0 ]; then
+            echo -e "${GREEN}✓ All files have the required copyright headers!${NC}"
+            exit 0
+          else
+            echo -e "${RED}✗ Found ${#missing_files[@]} file(s) missing copyright headers:${NC}"
+            echo ""
+            for file in "${missing_files[@]}"; do
+              echo "  - $file"
+            done
+            echo ""
+            echo "Required headers:"
+            echo "  Python:     # Copyright (c) Microsoft Corporation."
+            echo "              # Licensed under the MIT license."
+            echo "  JS/TS/JSX/TSX: // Copyright (c) Microsoft Corporation."
+            echo "                 // Licensed under the MIT license."
+            echo "  HTML:       <!-- Copyright (c) Microsoft Corporation. -->"
+            echo "              <!-- Licensed under the MIT license. -->"
+            echo "  CSS:        /* Copyright (c) Microsoft Corporation. */"
+            echo "              /* Licensed under the MIT license. */"
+            exit 1
+          fi
