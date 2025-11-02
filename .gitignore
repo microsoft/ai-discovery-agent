@@ -225,3 +225,4 @@ __blob*
 
 *.sarif
 *_results.xml
+copyright-header-check.xml

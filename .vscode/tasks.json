@@ -20,6 +20,13 @@
       "group": "build"
     },
     {
+      "label": "check-copyright-headers",
+      "type": "shell",
+      "command": "./scripts/check-copyright-headers.sh",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
       "label": "build",
       "type": "shell",
       "command": "uv build --directory src",

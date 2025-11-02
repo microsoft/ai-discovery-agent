@@ -1,3 +1,6 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """Unit tests for the AgentRegistry class."""
 
 from unittest.mock import MagicMock, patch
