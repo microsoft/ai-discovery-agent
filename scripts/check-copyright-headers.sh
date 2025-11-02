@@ -14,8 +14,9 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 
-# Output file for junit.xml
+# Output files
 JUNIT_OUTPUT="${PROJECT_ROOT}/copyright-header-check.xml"
+JSON_OUTPUT="${PROJECT_ROOT}/copyright-header-check.json"
 
 echo "Checking copyright headers in src/ directory..."
 echo ""
@@ -171,8 +172,72 @@ EOF
   echo "JUnit XML report generated: $JUNIT_OUTPUT"
 }
 
-# Generate junit.xml report
+# Function to generate JSON output
+generate_json_output() {
+  local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
+  local passed=$((total_files - ${#missing_files[@]}))
+  local failed=${#missing_files[@]}
+
+  # Start JSON structure
+  cat > "$JSON_OUTPUT" << EOF
+{
+  "timestamp": "${timestamp}",
+  "summary": {
+    "total_files": ${total_files},
+    "passed": ${passed},
+    "failed": ${failed}
+  },
+  "failed_files": [
+EOF
+
+  # Add failed files as JSON array
+  local first=true
+  for file in "${missing_files[@]}"; do
+    if [ "$first" = true ]; then
+      first=false
+    else
+      echo "," >> "$JSON_OUTPUT"
+    fi
+    # Escape double quotes in file path if any
+    local escaped_file="${file//\"/\\\"}"
+    echo -n "    {\"path\": \"${escaped_file}\", \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
+  done
+
+  # Close JSON structure
+  cat >> "$JSON_OUTPUT" << EOF
+
+  ],
+  "header_examples": {
+    "python": {
+      "extension": ".py",
+      "syntax": "# ",
+      "example": "# Copyright (c) Microsoft Corporation.\\n# Licensed under the MIT license."
+    },
+    "javascript": {
+      "extension": ".js, .ts, .jsx, .tsx",
+      "syntax": "// ",
+      "example": "// Copyright (c) Microsoft Corporation.\\n// Licensed under the MIT license."
+    },
+    "html": {
+      "extension": ".html",
+      "syntax": "<!-- -->",
+      "example": "<!-- Copyright (c) Microsoft Corporation. -->\\n<!-- Licensed under the MIT license. -->"
+    },
+    "css": {
+      "extension": ".css",
+      "syntax": "/* */",
+      "example": "/* Copyright (c) Microsoft Corporation. */\\n/* Licensed under the MIT license. */"
+    }
+  }
+}
+EOF
+
+  echo "JSON report generated: $JSON_OUTPUT"
+}
+
+# Generate reports
 generate_junit_xml
+generate_json_output
 
 echo "================================================"
 
