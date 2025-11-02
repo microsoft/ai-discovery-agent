@@ -41,6 +41,70 @@ jobs:
           check_name: "Copyright Header Check Results"
           comment_title: "Copyright Header Check Results"
 
+      - name: Add PR Review Comments for Failed Files
+        if: github.event_name == 'pull_request' && steps.copyright-check.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const xml2js = require('xml2js');
+
+            // Read and parse the JUnit XML file
+            const xmlContent = fs.readFileSync('copyright-header-check.xml', 'utf8');
+            const parser = new xml2js.Parser();
+            const result = await parser.parseStringPromise(xmlContent);
+
+            // Extract failed test cases
+            const testcases = result.testsuites.testsuite[0].testcase || [];
+            const failedFiles = testcases
+              .filter(tc => tc.failure)
+              .map(tc => ({
+                path: tc.$.name,
+                message: tc.failure[0].$.message
+              }));
+
+            if (failedFiles.length === 0) {
+              console.log('No failed files found in test results');
+              return;
+            }
+
+            // Create review comments for each failed file
+            const comments = failedFiles.map(file => ({
+              path: file.path,
+              line: 1,
+              side: 'RIGHT',
+              body: `⚠️ **${file.message}**\n\nThis file is missing the required copyright and license headers.\n\nPlease add the following at the top of the file:\n\`\`\`\n# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license.\n\`\`\`\n\n*(Adjust comment syntax based on file type: \`#\` for Python, \`//\` for JS/TS, \`<!-- -->\` for HTML, \`/* */\` for CSS)*`
+            }));
+
+            // Post review with comments
+            try {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                event: 'COMMENT',
+                body: `## Copyright Header Check Failed\n\nFound ${failedFiles.length} file(s) missing required copyright headers. Please review the comments on each file.`,
+                comments: comments
+              });
+              console.log(`Successfully posted review with ${comments.length} comments`);
+            } catch (error) {
+              console.error('Error posting review:', error);
+              // If review fails, try posting individual comments
+              for (const comment of comments) {
+                try {
+                  await github.rest.pulls.createReviewComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: context.issue.number,
+                    commit_id: context.payload.pull_request.head.sha,
+                    ...comment
+                  });
+                } catch (commentError) {
+                  console.error(`Failed to comment on ${comment.path}:`, commentError.message);
+                }
+              }
+            }
+
       - name: Fail if headers are missing
         if: steps.copyright-check.outcome == 'failure'
         run: exit 1
