@@ -51,8 +51,27 @@ echo "  - Worker timeout: $WORKER_TIMEOUT seconds"
 # Link auth-config.yaml from secrets directory if it exists when running
 # inside Azure App Service
 if [ -f /home/site/wwwroot/secrets/auth-config.yaml ]; then
-    echo "Linking auth-config.yaml from secrets directory..."
+    echo "Preparing to link auth-config.yaml from secrets directory..."
+    # Ensure /app/config exists
+    if [ ! -d /app/config ]; then
+        echo "Directory /app/config does not exist. Creating it..."
+        mkdir -p /app/config
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to create /app/config directory!"
+            exit 1
+        fi
+    fi
+    # Check if /app/config is writable
+    if [ ! -w /app/config ]; then
+        echo "ERROR: /app/config is not writable!"
+        exit 1
+    fi
+    # Attempt to create the symlink
     ln -sf /home/site/wwwroot/secrets/auth-config.yaml /app/config/auth-config.yaml
+    if [ $? -ne 0 ]; then
+        echo "ERROR: Failed to create symlink for auth-config.yaml!"
+        exit 1
+    fi
 else
     echo "No auth-config.yaml found in secrets directory."
 fi
