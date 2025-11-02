@@ -82,7 +82,7 @@ check_file_type() {
   for file in $files; do
     local relative_file="${file#${PROJECT_ROOT}/}"
     total_files=$((total_files + 1))
-    
+
     # Check if file has both required headers
     if ! grep -q "$copyright_pattern" "$file" || \
        ! grep -q "$license_pattern" "$file"; then
@@ -106,10 +106,10 @@ generate_junit_xml() {
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
   local passed=$((total_files - ${#missing_files[@]}))
   local failed=${#missing_files[@]}
-  
+
   # Calculate execution time (approximate)
   local time="0.0"
-  
+
   # Create junit.xml file
   cat > "$JUNIT_OUTPUT" << EOF
 <?xml version="1.0" encoding="UTF-8"?>
@@ -127,11 +127,11 @@ EOF
       -path "*/.ruff_cache" -prune -o \
       -path "*.egg-info" -prune -o \
       -type f -name "$pattern" -print 2>/dev/null)
-    
+
     for file in $files; do
       local relative_file="${file#${PROJECT_ROOT}/}"
       local is_missing=false
-      
+
       # Check if this file is in the missing_files array
       for missing in "${missing_files[@]}"; do
         if [[ "$missing" == "$relative_file" ]]; then
@@ -139,7 +139,7 @@ EOF
           break
         fi
       done
-      
+
       if $is_missing; then
         # Generate failure test case
         cat >> "$JUNIT_OUTPUT" << EOF
@@ -161,13 +161,13 @@ EOF
       fi
     done
   done
-  
+
   # Close the XML structure
   cat >> "$JUNIT_OUTPUT" << EOF
   </testsuite>
 </testsuites>
 EOF
-  
+
   echo "JUnit XML report generated: $JUNIT_OUTPUT"
 }
 
