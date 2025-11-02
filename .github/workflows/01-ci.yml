@@ -160,7 +160,7 @@ jobs:
             const jsonContent = fs.readFileSync('copyright-header-check.json', 'utf8');
             const checkResults = JSON.parse(jsonContent);
 
-            const failedFiles = checkResults.failed_files.map(f => f.path);
+            const failedFiles = (checkResults.failed_files || []).map(f => f.path);
 
             if (!failedFiles || failedFiles.length === 0) {
               console.log('No failed files found');
