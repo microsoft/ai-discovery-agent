@@ -67,3 +67,5 @@ config/*-example.yaml
 *_results.xml
 
 .bandit.yml
+
+**/auth-config.yaml

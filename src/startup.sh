@@ -48,12 +48,14 @@ echo "  - Host: $HOST"
 echo "  - Workers: $WEB_CONCURRENCY"
 echo "  - Worker timeout: $WORKER_TIMEOUT seconds"
 
-# Validate Python modules can be imported
-# echo "Validating Python modules..."
-# python -c "import server, main; print('✓ All modules imported successfully')" || {
-#     echo "ERROR: Failed to import required modules"
-#     exit 1
-# }
+# Link auth-config.yaml from secrets directory if it exists when running
+# inside Azure App Service
+if [ -f /home/site/wwwroot/secrets/auth-config.yaml ]; then
+    echo "Linking auth-config.yaml from secrets directory..."
+    ln -sf /home/site/wwwroot/secrets/auth-config.yaml /app/config/auth-config.yaml
+else
+    echo "No auth-config.yaml found in secrets directory."
+fi
 
 # Start the application with error handling
 echo "Starting uvicorn server..."

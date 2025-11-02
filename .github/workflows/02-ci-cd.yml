@@ -133,8 +133,11 @@ jobs:
       - name: Prepare container build context
         id: prepare
         run: |
-          # Create auth config
-          echo "${AUTH_CONFIG_YAML}" > src/config/auth-config.yaml
+          # Create auth config and upload to staging slot
+          echo "${AUTH_CONFIG_YAML}" > /tmp/auth-config.yaml
+          az webapp deploy --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.WEB_APP_NAME }} --slot staging --src-path /tmp/auth-config.yaml --type=static --target-path /secrets/auth-config.yaml
+
+          # Get ACR login server
           ACR_LOGIN_SERVER=$(az acr show --name ${{ env.ACR_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --query loginServer --output tsv)
 
           echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
