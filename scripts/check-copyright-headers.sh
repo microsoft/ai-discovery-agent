@@ -174,6 +174,13 @@ EOF
 
 # Function to generate JSON output
 generate_json_output() {
+  # Check if jq is available
+  if ! command -v jq &> /dev/null; then
+    echo -e "${RED}Error: jq is required for JSON generation but is not installed.${NC}"
+    echo "Please install jq: https://jqlang.github.io/jq/download/"
+    exit 1
+  fi
+
   local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%S")
   local passed=$((total_files - ${#missing_files[@]}))
   local failed=${#missing_files[@]}
@@ -191,8 +198,8 @@ generate_json_output() {
 EOF
 
   if [ ${#missing_files[@]} -eq 0 ]; then
-    # Output empty array
-    # (No output needed; leave array empty)
+    # Output empty array - no content needed
+    :
   else
     # Add failed files as JSON array
     local first=true
