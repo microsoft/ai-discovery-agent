@@ -20,6 +20,9 @@ jobs:
     permissions:
       contents: read
       actions: read
+      checks: write
+      pull-requests: write
+      issues: read
 
     steps:
       - name: Checkout
@@ -34,6 +37,12 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - uses: pre-commit/action@v3.0.1
+
+      - name: Check Copyright Headers
+        id: copyright-check
+        shell: bash
+        run: ./scripts/check-copyright-headers.sh
+        continue-on-error: true
 
       - name: compile
         if: always()
@@ -65,7 +74,165 @@ jobs:
         uses: actions/upload-artifact@v5
         with:
           name: CI Test Results
-          path: src/*test.xml
+          path: |
+            src/*test.xml
+            copyright-header-check.xml
+
+      - name: Add PR Review Comments for Failed Files
+        if: github.event_name == 'pull_request' && steps.copyright-check.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read and parse the JUnit XML file using regex (no external dependencies)
+            const xmlContent = fs.readFileSync('copyright-header-check.xml', 'utf8');
+
+            // Extract failed test cases using regex
+            const testcasePattern = /<testcase name="([^"]+)"[^>]*>(.*?)<\/testcase>/gs;
+            const failurePattern = /<failure message="([^"]+)"/;
+
+            const failedFiles = [];
+            let match;
+
+            while ((match = testcasePattern.exec(xmlContent)) !== null) {
+              const testcaseName = match[1];
+              const testcaseContent = match[2];
+
+              // Check if this testcase has a failure
+              const failureMatch = failurePattern.exec(testcaseContent);
+              if (failureMatch) {
+                failedFiles.push({
+                  path: testcaseName,
+                  message: failureMatch[1]
+                });
+              }
+            }
+
+            if (failedFiles.length === 0) {
+              console.log('No failed files found in test results');
+              return;
+            }
+
+            console.log(`Found ${failedFiles.length} files with missing headers`);
+
+            // Create review comments for each failed file
+            const comments = failedFiles.map(file => ({
+              path: file.path,
+              line: 1,
+              side: 'RIGHT',
+              body: `⚠️ **${file.message}**\n\nThis file is missing the required copyright and license headers.\n\nPlease add the following at the top of the file:\n\`\`\`\n# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license.\n\`\`\`\n\n*(Adjust comment syntax based on file type: \`#\` for Python, \`//\` for JS/TS, \`<!-- -->\` for HTML, \`/* */\` for CSS)*`
+            }));
+
+            // Post review with comments
+            try {
+              await github.rest.pulls.createReview({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: context.issue.number,
+                event: 'COMMENT',
+                body: `## Copyright Header Check Failed\n\nFound ${failedFiles.length} file(s) missing required copyright headers. Please review the comments on each file.`,
+                comments: comments
+              });
+              console.log(`Successfully posted review with ${comments.length} comments`);
+            } catch (error) {
+              console.error('Error posting review:', error);
+              // If review fails, try posting individual comments
+              for (const comment of comments) {
+                try {
+                  await github.rest.pulls.createReviewComment({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                    pull_number: context.issue.number,
+                    commit_id: context.payload.pull_request.head.sha,
+                    ...comment
+                  });
+                } catch (commentError) {
+                  console.error(`Failed to comment on ${comment.path}:`, commentError.message);
+                }
+              }
+            }
+
+      - name: Post PR Comment with File List
+        if: github.event_name == 'pull_request' && steps.copyright-check.outcome == 'failure'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            // Read and parse the JUnit XML file using regex
+            const xmlContent = fs.readFileSync('copyright-header-check.xml', 'utf8');
+
+            // Extract failed test cases using regex
+            const testcasePattern = /<testcase name="([^"]+)"[^>]*>(.*?)<\/testcase>/gs;
+            const failurePattern = /<failure message="([^"]+)"/;
+
+            const failedFiles = [];
+            let match;
+
+            while ((match = testcasePattern.exec(xmlContent)) !== null) {
+              const testcaseName = match[1];
+              const testcaseContent = match[2];
+
+              // Check if this testcase has a failure
+              const failureMatch = failurePattern.exec(testcaseContent);
+              if (failureMatch) {
+                failedFiles.push(testcaseName);
+              }
+            }
+
+            if (failedFiles.length === 0) {
+              console.log('No failed files found');
+              return;
+            }
+
+            // Create a formatted list of files
+            const fileList = failedFiles.map(file => `- \`${file}\``).join('\n');
+
+            // Determine the appropriate comment syntax examples based on file types
+            const hasPython = failedFiles.some(f => f.endsWith('.py'));
+            const hasJsTs = failedFiles.some(f => f.endsWith('.js') || f.endsWith('.ts') || f.endsWith('.jsx') || f.endsWith('.tsx'));
+            const hasHtml = failedFiles.some(f => f.endsWith('.html'));
+            const hasCss = failedFiles.some(f => f.endsWith('.css'));
+
+            let examplesSection = '\n### Required Headers by File Type\n\n';
+
+            if (hasPython) {
+              examplesSection += '**Python files (.py):**\n```python\n# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license.\n```\n\n';
+            }
+            if (hasJsTs) {
+              examplesSection += '**JavaScript/TypeScript files (.js, .ts, .jsx, .tsx):**\n```javascript\n// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license.\n```\n\n';
+            }
+            if (hasHtml) {
+              examplesSection += '**HTML files (.html):**\n```html\n<!-- Copyright (c) Microsoft Corporation. -->\n<!-- Licensed under the MIT license. -->\n```\n\n';
+            }
+            if (hasCss) {
+              examplesSection += '**CSS files (.css):**\n```css\n/* Copyright (c) Microsoft Corporation. */\n/* Licensed under the MIT license. */\n```\n\n';
+            }
+
+            // Post a general comment to the PR
+            const commentBody = `## ⚠️ Copyright Header Check Failed
+
+            Found **${failedFiles.length} file(s)** missing required copyright and license headers.
+
+            ### Files that need to be updated:
+
+            ${fileList}
+            ${examplesSection}
+            Please add the appropriate copyright header at the top of each file listed above.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+
+            console.log(`Posted PR comment listing ${failedFiles.length} files`);
+
+      - name: Fail if headers are missing
+        if: steps.copyright-check.outcome == 'failure'
+        run: exit 1
 
   publish-ci-test-results:
     name: "Publish CI Tests Results"
