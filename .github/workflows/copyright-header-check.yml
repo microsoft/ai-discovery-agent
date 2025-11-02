@@ -61,7 +61,7 @@ jobs:
             while ((match = testcasePattern.exec(xmlContent)) !== null) {
               const testcaseName = match[1];
               const testcaseContent = match[2];
-              
+
               // Check if this testcase has a failure
               const failureMatch = failurePattern.exec(testcaseContent);
               if (failureMatch) {
@@ -136,7 +136,7 @@ jobs:
             while ((match = testcasePattern.exec(xmlContent)) !== null) {
               const testcaseName = match[1];
               const testcaseContent = match[2];
-              
+
               // Check if this testcase has a failure
               const failureMatch = failurePattern.exec(testcaseContent);
               if (failureMatch) {
