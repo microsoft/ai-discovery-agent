@@ -91,7 +91,7 @@ log "Staging sidecar container updated successfully!"
 # Sending auth config if it exists
 if [ -f ./config/auth-config.yaml ]; then
     log "Uploading auth-config.yaml to staging slot..."
-    az webapp deploy --resource-group "$RESOURCE_GROUP_NAME" --name "$WEB_APP_NAME" --slot staging --src-path ./config/auth-config.yaml --type=static --target-path /secrets/auth-config.yaml
+    az webapp deploy --resource-group "$RESOURCE_GROUP_NAME" --name "$WEB_APP_NAME" --slot staging --src-path ./config/auth-config.yaml --type=static --target-path /secrets/auth-config.yaml || error_exit "Failed to upload auth-config.yaml"
 fi
 
 # Restart staging slot to apply changes
