@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ai-discovery-agent"
-version = "0.7.0"
+version = "0.7.1"
 description = "AI Discovery Agent"
 authors = [{ name = "jmservera" }]
 readme = "README.md"
@@ -39,7 +39,7 @@ dependencies = [
 dev = [
     "black==25.9.0",
     "pre-commit>=3.8.0",
-    "ruff==0.14.1",
+    "ruff==0.14.2",
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
     "pytest-asyncio>=0.23.0",

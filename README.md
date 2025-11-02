@@ -1,6 +1,6 @@
 [![CI - Compilation and Testing](https://github.com/microsoft/ai-discovery-agent/actions/workflows/01-ci.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/01-ci.yml)
 [![CD](https://github.com/microsoft/ai-discovery-agent/actions/workflows/02-ci-cd.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/02-ci-cd.yml)
-[![SFI](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-bicep-security.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-bicep-security.yml)
+[![SFI](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-checkov-security.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-checkov-security.yml)
 
 # Welcome to Aida, the AI Discovery Agent and Workshop Facilitator
 

@@ -1,11 +1,11 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
 name: ai-discovery-agent
-services:
-  web:
-    project: ./src
-    language: py
-    host: appservice
+# services:
+# web:
+#   project: ./src
+#   language: py
+#   host: appservice
 hooks:
   preprovision:
     posix:
@@ -23,7 +23,7 @@ hooks:
     posix:
       shell: sh
       run: ./scripts/predeploy.sh
-      interactive: false
+      interactive: true
       continueOnError: false
   preinfradelete:
     posix:

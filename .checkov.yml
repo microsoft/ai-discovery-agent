@@ -38,6 +38,10 @@ output-file-path: bicep_results.sarif,bicep_results.xml,console
 # Framework-specific settings
 framework:
   - bicep
+  - dockerfile
+  - arm
+  - github_actions
+  - github_configuration
 
 # External modules
 download-external-modules: true
@@ -49,32 +53,32 @@ download-external-modules: true
 # quiet: true
 
 # Specific checks to always run (high-priority security checks)
-check:
-  # Network Security
-  - CKV_AZURE_35  # Network Security Group allows all traffic
-  - CKV_AZURE_12  # Network Security Group allows unrestricted ingress
+# check:
+#   # Network Security
+#   - CKV_AZURE_35 # Network Security Group allows all traffic
+#   - CKV_AZURE_12 # Network Security Group allows unrestricted ingress
 
-  # Storage Security
-  - CKV_AZURE_33  # Storage account uses HTTPS only
-  - CKV_AZURE_35  # Storage account default network access is denied
-  - CKV_AZURE_36  # Storage account public blob access is disabled
-  - CKV_AZURE_43  # Storage account encryption enabled
+#   # Storage Security
+#   - CKV_AZURE_33 # Storage account uses HTTPS only
+#   - CKV_AZURE_35 # Storage account default network access is denied
+#   - CKV_AZURE_36 # Storage account public blob access is disabled
+#   - CKV_AZURE_43 # Storage account encryption enabled
 
-  # App Service Security
-  - CKV_AZURE_13  # App Service uses HTTPS only
-  - CKV_AZURE_16  # App Service uses latest TLS version
-  - CKV_AZURE_18  # App Service has managed identity
-  - CKV_AZURE_78  # App Service FTP deployments are disabled
+#   # App Service Security
+#   - CKV_AZURE_13 # App Service uses HTTPS only
+#   - CKV_AZURE_16 # App Service uses latest TLS version
+#   - CKV_AZURE_18 # App Service has managed identity
+#   - CKV_AZURE_78 # App Service FTP deployments are disabled
 
-  # Azure OpenAI / Cognitive Services
-  - CKV_AZURE_131 # Cognitive Services local auth is disabled
-  - CKV_AZURE_132 # Cognitive Services customer-managed key encryption
+#   # Azure OpenAI / Cognitive Services
+#   - CKV_AZURE_131 # Cognitive Services local auth is disabled
+#   - CKV_AZURE_132 # Cognitive Services customer-managed key encryption
 
-  # Identity & Access
-  - CKV_AZURE_107 # Role assignments use AAD groups or service principals
+#   # Identity & Access
+#   - CKV_AZURE_107 # Role assignments use AAD groups or service principals
 
-  # Monitoring & Logging
-  - CKV_AZURE_37  # Log retention is set properly
+#   # Monitoring & Logging
+#   - CKV_AZURE_37 # Log retention is set properly
 
 # Ignore specific resources (if needed)
 # skip-path:
@@ -92,7 +96,6 @@ check:
 
 # Secrets scanning
 enable-secret-scan-all-files: true
-
 # Policy metadata filtering
 # Skip checks that don't apply to Azure
 # skip-framework:

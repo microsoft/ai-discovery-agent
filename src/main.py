@@ -15,12 +15,12 @@ from dotenv import load_dotenv
 
 from auth import (
     is_oauth_enabled,
-    oauth_callback,  # noqa E402
+    oauth_callback,
     password_auth_callback,
 )
 from chat_handlers import (
     on_chat_resume,
-    on_chat_start,  # noqa E402
+    on_chat_start,
     on_message,
     set_chat_profiles,
 )
@@ -56,7 +56,6 @@ try:
         "AZURE_STORAGE_ACCOUNT_URL"
     ):
         _storage_manager = AzureStorageManager()
-        openai_client = None
         AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
         AZURE_OPENAI_API_VERSION = os.getenv(
             "AZURE_OPENAI_API_VERSION", "2025-04-01-preview"
