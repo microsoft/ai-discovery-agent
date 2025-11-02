@@ -191,42 +191,42 @@ generate_json_output() {
 EOF
 
   # Add failed files as JSON array
-  local failed_files_json=""
+  local first=true
   for file in "${missing_files[@]}"; do
+    if [ "$first" = true ]; then
+      first=false
+    else
+      echo "," >> "$JSON_OUTPUT"
+    fi
     # Escape double quotes in file path if any
     local escaped_file="${file//\"/\\\"}"
-    if [ -n "$failed_files_json" ]; then
-      failed_files_json+=",\n"
-    fi
-    failed_files_json+="    {\"path\": \"${escaped_file}\", \"message\": \"Missing copyright header\"}"
+    echo -n "    {\"path\": \"${escaped_file}\", \"message\": \"Missing copyright header\"}" >> "$JSON_OUTPUT"
   done
 
-  # Output failed_files array
-  if [ -n "$failed_files_json" ]; then
-    echo -e "$failed_files_json" >> "$JSON_OUTPUT"
-  fi
+  # Close JSON structure
+  cat >> "$JSON_OUTPUT" << EOF
 
   ],
   "header_examples": {
     "python": {
       "extension": ".py",
       "syntax": "# ",
-      "example": "# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license."
+      "example": "# Copyright (c) Microsoft Corporation.\\n# Licensed under the MIT license."
     },
     "javascript": {
       "extension": ".js, .ts, .jsx, .tsx",
       "syntax": "// ",
-      "example": "// Copyright (c) Microsoft Corporation.\n// Licensed under the MIT license."
+      "example": "// Copyright (c) Microsoft Corporation.\\n// Licensed under the MIT license."
     },
     "html": {
       "extension": ".html",
       "syntax": "<!-- -->",
-      "example": "<!-- Copyright (c) Microsoft Corporation. -->\n<!-- Licensed under the MIT license. -->"
+      "example": "<!-- Copyright (c) Microsoft Corporation. -->\\n<!-- Licensed under the MIT license. -->"
     },
     "css": {
       "extension": ".css",
       "syntax": "/* */",
-      "example": "/* Copyright (c) Microsoft Corporation. */\n/* Licensed under the MIT license. */"
+      "example": "/* Copyright (c) Microsoft Corporation. */\\n/* Licensed under the MIT license. */"
     }
   }
 }
