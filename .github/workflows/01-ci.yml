@@ -101,12 +101,18 @@ jobs:
             console.log(`Found ${failedFiles.length} files with missing headers`);
 
             // Create review comments for each failed file
-            const comments = failedFiles.map(file => ({
-              path: file.path,
-              line: 1,
-              side: 'RIGHT',
-              body: `⚠️ **${file.message}**\n\nThis file is missing the required copyright and license headers.\n\nPlease add the following at the top of the file:\n\`\`\`\n# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license.\n\`\`\`\n\n*(Adjust comment syntax based on file type: \`#\` for Python, \`//\` for JS/TS, \`<!-- -->\` for HTML, \`/* */\` for CSS)*`
-            }));
+            const comments = failedFiles.map(file => {
+              // Get the correct header example for this file, fallback to generic if missing
+              const headerExample = (checkResults.header_examples && checkResults.header_examples[file.path])
+                ? checkResults.header_examples[file.path]
+                : "# Copyright (c) Microsoft Corporation.\n# Licensed under the MIT license.";
+              return {
+                path: file.path,
+                line: 1,
+                side: 'RIGHT',
+                body: `⚠️ **${file.message}**\n\nThis file is missing the required copyright and license headers.\n\nPlease add the following at the top of the file:\n\`\`\`\n${headerExample}\n\`\`\``
+              };
+            });
 
             // Post review with comments
             try {
