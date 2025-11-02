@@ -5,6 +5,7 @@ This project is an AI-powered workshop facilitation system built with Chainlit t
 ## Project Overview
 
 **Core Technologies:**
+
 - **Chainlit**: Web-based chat interface framework
 - **Azure OpenAI**: AI model integration (GPT-4o, GPT-4o-mini, embeddings)
 - **LangGraph & LangChain**: Agent orchestration and workflow management
@@ -12,6 +13,7 @@ This project is an AI-powered workshop facilitation system built with Chainlit t
 - **Azure Infrastructure**: Deployment using Bicep templates
 
 **Key Components:**
+
 - Multi-agent system with configurable personas
 - Workshop facilitation through structured 12-step process
 - Authentication system (password-based and OAuth)
@@ -21,10 +23,12 @@ This project is an AI-powered workshop facilitation system built with Chainlit t
 ## Code Quality and Style Guidelines
 
 ### 1. **Type Annotations**
+
 All function arguments and return values must be explicitly typed using Python's type
 hints. Use the built-in generic types (`dict`, `list`, `tuple`, etc.) instead of the
 deprecated `typing.Dict`, `typing.List`, and similar aliases. This aligns with the
 project's Black and Ruff configuration:
+
 ```python
 from typing import Any, Optional
 
@@ -43,14 +47,18 @@ def get_agent_keys(agent_ids: list[str]) -> list[str]:
 ```
 
 ### 2. **Pythonic Code**
+
 Always prefer idiomatic Python patterns, especially for:
+
 - **File operations**: Use `pathlib.Path` instead of `os.path`
 - **Configuration loading**: Use context managers for file operations
 - **Data processing**: Use comprehensions and built-in functions
 - **Async operations**: Proper async/await patterns for Chainlit handlers
 
 ### 3. **Documentation Standards**
+
 Every class and method requires clear docstrings following PEP 257:
+
 ```python
 class ChainlitAgentManager:
     """
@@ -75,29 +83,49 @@ class ChainlitAgentManager:
 ```
 
 ### 4. **Black Linter Compliance**
+
 Format all code according to [Black](https://black.readthedocs.io/en/stable/) guidelines. Use line length of 88 characters and ensure proper spacing.
 
 ## Project-Specific Development Guidelines
 
+### Copyright and Licensing
+
+All code contributions must include the following copyright header:
+
+```
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the MIT License. See LICENSE in the project root for license information.
+```
+
+For example, in each Python file, include the following at the top:
+
+```python
+# Copyright (c) Microsoft Corporation. All rights reserved.
+# Licensed under the MIT License. See LICENSE in the project root for license information.
+```
+
 ### 5. **Agent Configuration Management**
+
 When working with agent configurations, follow these patterns:
 
 **Single Agent Configuration:**
+
 ```yaml
 agents:
   facilitator:
     persona: prompts/facilitator_persona.md
-    document: prompts/workshop_guide.md  # Optional single document
+    document: prompts/workshop_guide.md # Optional single document
     model: gpt-4o
     temperature: 0.7
 ```
 
 **Multi-Document Agent Configuration:**
+
 ```yaml
 agents:
   expert_advisor:
     persona: prompts/expert_persona.md
-    documents:  # Multiple documents for broader knowledge
+    documents: # Multiple documents for broader knowledge
       - prompts/domain_knowledge.md
       - prompts/best_practices.md
     model: gpt-4o-mini
@@ -105,6 +133,7 @@ agents:
 ```
 
 **Graph Agent Configuration:**
+
 ```yaml
 agents:
   routing_agent:
@@ -119,9 +148,11 @@ agents:
 ```
 
 ### 6. **Chainlit Integration Patterns**
+
 Follow these patterns when working with Chainlit:
 
 **Session Management:**
+
 ```python
 import chainlit as cl
 
@@ -140,6 +171,7 @@ async def main(message: cl.Message) -> None:
 ```
 
 **Agent Navigation:**
+
 ```python
 async def handle_agent_command(command: str) -> None:
     """Handle agent switching commands like !facilitator or !expert."""
@@ -151,22 +183,27 @@ async def handle_agent_command(command: str) -> None:
 ```
 
 ### 7. **Configuration File Management**
+
 When modifying configuration files:
 
 **YAML Schema Validation:**
+
 - Always validate against `pages.schema.json`
 - Use YAML language server comments: `# yaml-language-server: $schema=./pages.schema.json`
 - Test configuration changes with example files before applying
 
 **Environment Configuration:**
+
 - Use `.env` files for sensitive configuration (Azure OpenAI keys)
 - Keep example files updated (`auth-config-example.yaml`, `pages-example.yaml`)
 - Document required environment variables in README
 
 ### 8. **Azure OpenAI Integration**
+
 When working with AI models:
 
 **Model Configuration:**
+
 ```python
 # Use environment variables for Azure OpenAI configuration
 AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
@@ -177,6 +214,7 @@ SUPPORTED_MODELS = ["gpt-4o", "gpt-4o-mini", "o4-mini", "text-embedding-ada-002"
 ```
 
 **Error Handling:**
+
 ```python
 async def call_azure_openai(messages: List[Dict], model: str) -> str:
     """Call Azure OpenAI with proper error handling."""
@@ -193,9 +231,11 @@ async def call_azure_openai(messages: List[Dict], model: str) -> str:
 ```
 
 ### 9. **Workshop Facilitation Logic**
+
 When implementing workshop-related features:
 
 **12-Step Process Management:**
+
 ```python
 class WorkshopStep(Enum):
     """Enumeration of workshop steps."""
@@ -209,6 +249,7 @@ async def validate_step_completion(current_step: WorkshopStep, user_input: str) 
 ```
 
 **Persona Management:**
+
 ```python
 def load_persona_prompt(persona_path: str) -> str:
     """Load persona prompt with proper error handling."""
@@ -220,9 +261,11 @@ def load_persona_prompt(persona_path: str) -> str:
 ```
 
 ### 10. **Mermaid Diagram Support**
+
 When implementing diagram features:
 
 **Diagram Generation:**
+
 ```python
 def generate_mermaid_workflow(steps: List[str]) -> str:
     """Generate Mermaid diagram for workshop workflow."""
@@ -235,14 +278,17 @@ def generate_mermaid_workflow(steps: List[str]) -> str:
 ```
 
 ### 11. **Azure Deployment Considerations**
+
 When modifying infrastructure or deployment:
 
 **Bicep Template Updates:**
+
 - Update model deployments in `infra/resources.bicep` when adding new AI models
 - Ensure environment variables are properly configured in App Service settings
 - Test deployment changes with `azd provision` before committing
 
 **GitHub Actions:**
+
 - Maintain required secrets and variables as documented in README
 - Test federated authentication setup for secure deployment
 
@@ -251,6 +297,7 @@ When modifying infrastructure or deployment:
 Currently, this project doesn't have a formal testing framework. When adding tests:
 
 **Recommended Testing Structure:**
+
 ```
 tests/
 ├── unit/
@@ -266,6 +313,7 @@ tests/
 ```
 
 **Mock External Dependencies:**
+
 ```python
 # Mock Azure OpenAI calls in tests
 @patch('openai.AsyncClient')
@@ -277,6 +325,7 @@ async def test_agent_response(mock_client):
 ## Documentation Requirements
 
 ### 12. **Documentation Updates**
+
 When making changes, ensure corresponding documentation is updated:
 
 - **README.md**: Update installation, configuration, and usage instructions
@@ -285,6 +334,7 @@ When making changes, ensure corresponding documentation is updated:
 - **Deployment Guides**: Update Azure deployment and GitHub Actions documentation
 
 ### 13. **Code Comments**
+
 Add comments for complex workshop logic, AI model interactions, and configuration parsing:
 
 ```python
