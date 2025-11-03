@@ -10,8 +10,8 @@ from langchain.chat_models.base import BaseChatModel
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from pydantic import SecretStr
 
-from utils.credentials import get_azure_credential
-from utils.logging_setup import get_logger
+from aida.utils.credentials import get_azure_credential
+from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

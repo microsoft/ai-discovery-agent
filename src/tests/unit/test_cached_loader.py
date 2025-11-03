@@ -5,13 +5,13 @@
 
 from unittest.mock import mock_open, patch
 
-from utils.cached_loader import load_prompt_files
+from aida.utils.cached_loader import load_prompt_files
 
 
 class TestCachedLoader:
     """Test cases for cached_loader module functions."""
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_single_file(self, mock_file_open):
         """Test loading a single prompt file."""
         # Setup mock to return different content for persona and guardrails files
@@ -27,7 +27,7 @@ class TestCachedLoader:
         assert "Guardrails content" in result[0]
         assert mock_file_open.call_count == 2  # persona + guardrails
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_with_documents_string(self, mock_file_open):
         """Test loading persona with single document as string."""
         mock_file_open.side_effect = [
@@ -44,7 +44,7 @@ class TestCachedLoader:
         assert "Document content" in result[1]
         assert mock_file_open.call_count == 3  # persona + guardrails + document
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_with_documents_frozenset(self, mock_file_open):
         """Test loading persona with multiple documents as frozenset."""
         mock_file_open.side_effect = [
@@ -66,7 +66,7 @@ class TestCachedLoader:
         assert any("Document 2 content" in content for content in document_contents)
         assert mock_file_open.call_count == 4  # persona + guardrails + 2 documents
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_no_documents(self, mock_file_open):
         """Test loading only persona file with no documents."""
         mock_file_open.side_effect = [
@@ -81,7 +81,7 @@ class TestCachedLoader:
         assert "Guardrails content" in result[0]
         assert mock_file_open.call_count == 2  # persona + guardrails
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_file_not_found(self, mock_file_open):
         """Test handling of file not found error."""
         mock_file_open.side_effect = FileNotFoundError("File not found")
@@ -92,7 +92,7 @@ class TestCachedLoader:
         except FileNotFoundError:
             pass  # Expected behavior
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_read_error(self, mock_file_open):
         """Test handling of file read error."""
         mock_file_open.side_effect = OSError("Cannot read file")
@@ -103,7 +103,7 @@ class TestCachedLoader:
         except OSError:
             pass  # Expected behavior
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_empty_file(self, mock_file_open):
         """Test loading empty file."""
         mock_file_open.side_effect = [
@@ -117,7 +117,7 @@ class TestCachedLoader:
         assert "Guardrails content" in result[0]
         assert mock_file_open.call_count == 2
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_whitespace_only_file(self, mock_file_open):
         """Test loading file with only whitespace."""
         mock_file_open.side_effect = [
@@ -131,7 +131,7 @@ class TestCachedLoader:
         assert "   \n\t  \n  " in result[0]  # Should preserve whitespace
         assert "Guardrails content" in result[0]
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_utf8_encoding(self, mock_file_open):
         """Test that files are read with UTF-8 encoding."""
         mock_file_open.side_effect = [
@@ -148,7 +148,7 @@ class TestCachedLoader:
             mock_file_open.call_args_list[0][0][0], encoding="utf-8"
         )
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_empty_documents_frozenset(self, mock_file_open):
         """Test loading with empty frozenset of documents."""
         mock_file_open.side_effect = [
@@ -163,7 +163,7 @@ class TestCachedLoader:
         assert "Guardrails content" in result[0]
         assert mock_file_open.call_count == 2
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_document_format(self, mock_file_open):
         """Test that documents are wrapped in <documents> tags."""
         mock_file_open.side_effect = [
@@ -177,7 +177,7 @@ class TestCachedLoader:
         assert len(result) == 2
         assert "<documents>Document content</documents>" in result[1]
 
-    @patch("utils.cached_loader.open", new_callable=mock_open)
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
     def test_load_prompt_files_document_load_error_handling(self, mock_file_open):
         """Test that document loading errors are handled gracefully."""
         mock_file_open.side_effect = [

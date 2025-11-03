@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agents.graph_agent import AgentState, GraphAgent
+from aida.agents.graph_agent import AgentState, GraphAgent
 
 
 class TestGraphAgent:
@@ -99,7 +99,7 @@ class TestGraphAgent:
         assert hasattr(agent, "_get_azure_chat_openai")
         assert hasattr(agent, "astream")
 
-    @patch("agents.graph_agent.StateGraph")
+    @patch("aida.agents.graph_agent.StateGraph")
     def test_create_chain_workflow_creation(
         self, mock_state_graph, sample_agents_config
     ):
@@ -145,7 +145,7 @@ class TestGraphAgent:
         assert chain1 is chain2
         assert mock_workflow.compile.call_count == 1  # Should not compile again
 
-    @patch("agents.graph_agent.StateGraph")
+    @patch("aida.agents.graph_agent.StateGraph")
     def test_create_chain_error_handling(self, mock_state_graph, sample_agents_config):
         """Test error handling in chain creation."""
         # Mock StateGraph to raise an exception
@@ -158,7 +158,7 @@ class TestGraphAgent:
             model="gpt-4o",
         )
 
-        with patch("agents.graph_agent.logger") as mock_logger:
+        with patch("aida.agents.graph_agent.logger") as mock_logger:
             with pytest.raises(Exception, match="Failed to create workflow"):
                 agent.create_chain()
 
@@ -182,7 +182,7 @@ class TestGraphAgent:
             mock_get_llm.return_value = mock_llm
 
             # Mock the chain's invoke method to return the mock response
-            with patch("agents.graph_agent.ChatPromptTemplate") as mock_template:
+            with patch("aida.agents.graph_agent.ChatPromptTemplate") as mock_template:
                 mock_prompt = MagicMock()
                 mock_template.from_messages.return_value = mock_prompt
 
@@ -224,7 +224,7 @@ class TestGraphAgent:
             mock_get_llm.return_value = mock_llm
 
             # Mock the chain's invoke method to return the mock response
-            with patch("agents.graph_agent.ChatPromptTemplate") as mock_template:
+            with patch("aida.agents.graph_agent.ChatPromptTemplate") as mock_template:
                 mock_prompt = MagicMock()
                 mock_template.from_messages.return_value = mock_prompt
 
@@ -281,7 +281,9 @@ class TestGraphAgent:
                 mock_get_llm.return_value = mock_llm
 
                 # Mock the chain's invoke method to return the mock response
-                with patch("agents.graph_agent.ChatPromptTemplate") as mock_template:
+                with patch(
+                    "aida.agents.graph_agent.ChatPromptTemplate"
+                ) as mock_template:
                     mock_prompt = MagicMock()
                     mock_template.from_messages.return_value = mock_prompt
 
@@ -297,7 +299,7 @@ class TestGraphAgent:
 
                     assert result["decision"] == case["expected"]
 
-    @patch("agents.agent_registry.agent_registry.get_agent")
+    @patch("aida.agents.agent_registry.agent_registry.get_agent")
     def test_agent_node_success(self, mock_get_agent, sample_agents_config):
         """Test successful _agent_node execution."""
         agent = GraphAgent(
@@ -331,7 +333,7 @@ class TestGraphAgent:
 
         assert result["output"] == "Agent response"
 
-    @patch("agents.agent_registry.agent_registry.get_agent")
+    @patch("aida.agents.agent_registry.agent_registry.get_agent")
     def test_agent_node_agent_not_found(self, mock_get_agent, sample_agents_config):
         """Test _agent_node when agent is not found."""
         agent = GraphAgent(
@@ -351,7 +353,7 @@ class TestGraphAgent:
             "output": "",
         }
 
-        with patch("agents.graph_agent.logger") as mock_logger:
+        with patch("aida.agents.graph_agent.logger") as mock_logger:
             with pytest.raises(
                 ValueError, match="Agent nonexistent_agent not found in registry"
             ):

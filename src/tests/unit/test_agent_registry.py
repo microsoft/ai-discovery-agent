@@ -7,7 +7,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agents.agent_registry import AgentRegistry
+from aida.agents.agent_registry import AgentRegistry
 
 
 class TestAgentRegistry:
@@ -16,7 +16,7 @@ class TestAgentRegistry:
     @pytest.fixture
     def registry(self):
         """Create a fresh AgentRegistry instance for each test."""
-        with patch("agents.agent_registry.PAGES_FILE") as mock_file:
+        with patch("aida.agents.agent_registry.PAGES_FILE") as mock_file:
             mock_file.exists.return_value = True
             with patch("builtins.open", create=True) as mock_open:
                 mock_open.return_value.__enter__.return_value.read.return_value = (
@@ -35,7 +35,7 @@ class TestAgentRegistry:
         }
 
         with patch.object(registry, "get", return_value=sample_config):
-            with patch("agents.agent_registry.SingleAgent") as mock_single_agent:
+            with patch("aida.agents.agent_registry.SingleAgent") as mock_single_agent:
                 mock_instance = MagicMock()
                 mock_single_agent.return_value = mock_instance
 
@@ -60,7 +60,7 @@ class TestAgentRegistry:
         }
 
         with patch.object(registry, "get", return_value=sample_config):
-            with patch("agents.agent_registry.SingleAgent") as mock_single_agent:
+            with patch("aida.agents.agent_registry.SingleAgent") as mock_single_agent:
                 mock_instance = MagicMock()
                 mock_single_agent.return_value = mock_instance
 
@@ -88,7 +88,7 @@ class TestAgentRegistry:
         }
 
         with patch.object(registry, "get", return_value=sample_config):
-            with patch("agents.agent_registry.GraphAgent") as mock_graph_agent:
+            with patch("aida.agents.agent_registry.GraphAgent") as mock_graph_agent:
                 mock_instance = MagicMock()
                 mock_graph_agent.return_value = mock_instance
 
@@ -155,7 +155,7 @@ class TestAgentRegistry:
         config_no_model = {"persona": "prompts/test.md"}
 
         with patch.object(registry, "get", return_value=config_no_model):
-            with patch("agents.agent_registry.SingleAgent") as mock_single:
+            with patch("aida.agents.agent_registry.SingleAgent") as mock_single:
                 mock_single.return_value = MagicMock()
 
                 registry.get_agent("test")

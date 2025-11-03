@@ -3,14 +3,14 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "ai-discovery-agent"
+name = "aida"
 version = "0.7.1"
 description = "AI Discovery Agent"
 authors = [{ name = "jmservera" }]
 readme = "README.md"
 requires-python = ">=3.12"
 license-files = ["LICEN[CS]E*"]
-urls = { "homepage" = "https://github.com/jmservera/ai-discovery-agent", "repository" = "https://github.com/jmservera/ai-discovery-agent", "documentation" = "https://github.com/jmservera/ai-discovery-agent/blob/main/README.md" }
+urls = { "homepage" = "https://github.com/microsoft/ai-discovery-agent", "repository" = "https://github.com/microsoft/ai-discovery-agent", "documentation" = "https://github.com/microsoft/ai-discovery-agent/blob/main/README.md" }
 classifiers = [
     "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
@@ -33,6 +33,9 @@ dependencies = [
     "azure-monitor-opentelemetry>=1.8.1",
     "opentelemetry-instrumentation-fastapi>=0.58b0",
 ]
+
+[project.scripts]
+aida = "aida.__main__:main"
 
 [dependency-groups]
 # Development / tooling dependencies (not included in runtime requirements compilation)
@@ -75,7 +78,7 @@ ignore = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["agents", "config", "prompts", "public"]
+exclude = ["tests*"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"

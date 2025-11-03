@@ -16,7 +16,7 @@ import chainlit as cl
 import pytest
 import yaml
 
-from auth import is_oauth_enabled, password_auth_callback
+from aida.utils.auth import is_oauth_enabled, password_auth_callback
 from tests.fixtures.data import SAMPLE_AUTH_CONFIG
 
 
@@ -35,7 +35,7 @@ class TestAuthenticationIntegration:
     async def test_password_auth_flow_with_real_file(self, temp_auth_config):
         """Test password authentication with actual file operations."""
         # Patch the AUTH_CONFIG_FILE to point to our temp file
-        with patch("auth.AUTH_CONFIG_FILE", Path(temp_auth_config)):
+        with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(temp_auth_config)):
             # Test successful authentication
             result = await password_auth_callback("testuser", "testpass")
 
@@ -48,7 +48,9 @@ class TestAuthenticationIntegration:
     async def test_password_auth_flow_missing_config(self):
         """Test authentication when config file is missing."""
         # Patch to non-existent file
-        with patch("auth.AUTH_CONFIG_FILE", Path("/nonexistent/path/auth.yaml")):
+        with patch(
+            "aida.utils.auth.AUTH_CONFIG_FILE", Path("/nonexistent/path/auth.yaml")
+        ):
             result = await password_auth_callback("testuser", "testpass")
             assert result is None
 
@@ -82,7 +84,7 @@ class TestAuthenticationErrorHandling:
             f.write("invalid: yaml: content: [")  # Invalid YAML
             f.flush()
 
-            with patch("auth.AUTH_CONFIG_FILE", Path(f.name)):
+            with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(f.name)):
                 result = await password_auth_callback("testuser", "testpass")
                 assert result is None
 
@@ -97,7 +99,7 @@ class TestAuthenticationErrorHandling:
             yaml.dump(config_without_creds, f)
             f.flush()
 
-            with patch("auth.AUTH_CONFIG_FILE", Path(f.name)):
+            with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(f.name)):
                 result = await password_auth_callback("testuser", "testpass")
                 assert result is None
 
@@ -110,7 +112,7 @@ class TestAuthenticationErrorHandling:
             yaml.dump({}, f)
             f.flush()
 
-            with patch("auth.AUTH_CONFIG_FILE", Path(f.name)):
+            with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(f.name)):
                 result = await password_auth_callback("testuser", "testpass")
                 assert result is None
 

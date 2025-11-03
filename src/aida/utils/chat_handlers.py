@@ -13,12 +13,12 @@ import chainlit as cl
 from chainlit.types import ThreadDict
 from langchain_core.runnables import RunnableConfig
 
-from agents import RESPONSE_TAG, agent_manager, agent_registry
-from agents.graph_agent import GraphAgent
-from persistence import ConversationManager
-from utils.config import load_program_info
-from utils.logging_setup import get_logger
-from utils.mermaid import extract_mermaid
+from aida.agents import RESPONSE_TAG, agent_manager, agent_registry
+from aida.agents.graph_agent import GraphAgent
+from aida.persistence import ConversationManager
+from aida.utils.config import load_program_info
+from aida.utils.logging_setup import get_logger
+from aida.utils.mermaid import extract_mermaid
 
 logger = get_logger(__name__)
 

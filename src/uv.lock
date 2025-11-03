@@ -8,7 +8,7 @@ resolution-markers = [
 ]
 
 [[package]]
-name = "ai-discovery-agent"
+name = "aida"
 version = "0.7.1"
 source = { editable = "." }
 dependencies = [

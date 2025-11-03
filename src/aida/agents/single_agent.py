@@ -21,8 +21,8 @@ from langchain_core.runnables import Runnable
 from langgraph.graph.message import add_messages
 from typing_extensions import TypedDict
 
-from utils.cached_loader import load_prompt_files
-from utils.logging_setup import get_logger
+from aida.utils.cached_loader import load_prompt_files
+from aida.utils.logging_setup import get_logger
 
 from .agent import Agent
 
@@ -104,7 +104,7 @@ class SingleAgent(Agent):
         CompiledStateGraph
             A compiled state graph representing the agent's workflow.
         """
-        from agents import RESPONSE_TAG
+        from . import RESPONSE_TAG
 
         if self._chain is None:
             start_prompt = ChatPromptTemplate.from_messages(
