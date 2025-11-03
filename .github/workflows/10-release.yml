@@ -2,13 +2,14 @@ name: Release Pipeline
 
 on:
   pull_request:
-    types: [opened, synchronize, reopened, closed]
+    types: [opened, synchronize, reopened]
     branches:
       - main
       - dev
   push:
     branches:
       - main
+      - dev
 
 concurrency:
   group: release-${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -77,6 +78,15 @@ jobs:
           # Check if tag exists
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists"
+            
+            # For main branch, require a new semantic version
+            if [ "$BRANCH" == "main" ]; then
+              echo "Error: Tag $TAG already exists for main branch"
+              echo "Please update the version in pyproject.toml to a new semantic version"
+              exit 1
+            fi
+            
+            # For dev branch, allow patch releases
             PATCH_TAG="${TAG}-patch-$(date +%Y%m%d%H%M%S)"
 
             # Check if patch tag also exists
@@ -214,18 +224,28 @@ jobs:
             echo "tag=$TAG" >> "$GITHUB_OUTPUT"
             echo "⚠️  Warning: Tag $TAG already exists!"
 
-            # Check if patch tag also exists
-            PATCH_TAG="$TAG-patch"
-            if git rev-parse "$PATCH_TAG" >/dev/null 2>&1; then
-              echo "patch_tag_exists=true" >> "$GITHUB_OUTPUT"
-              echo "❌ Error: Both $TAG and $PATCH_TAG already exist!"
+            # For main branch, this is an error - require version update
+            if [ "$BRANCH" == "main" ]; then
+              echo "version_update_required=true" >> "$GITHUB_OUTPUT"
+              echo "❌ Error: Tag $TAG already exists for main branch!"
+              echo "A new semantic version is required for main branch releases."
             else
-              echo "patch_tag_exists=false" >> "$GITHUB_OUTPUT"
-              echo "ℹ️  A patch tag $PATCH_TAG will be created instead"
+              # For dev branch, check if patch tag also exists
+              PATCH_TAG="$TAG-patch"
+              if git rev-parse "$PATCH_TAG" >/dev/null 2>&1; then
+                echo "patch_tag_exists=true" >> "$GITHUB_OUTPUT"
+                echo "version_update_required=true" >> "$GITHUB_OUTPUT"
+                echo "❌ Error: Both $TAG and $PATCH_TAG already exist!"
+              else
+                echo "patch_tag_exists=false" >> "$GITHUB_OUTPUT"
+                echo "version_update_required=false" >> "$GITHUB_OUTPUT"
+                echo "ℹ️  A patch tag $PATCH_TAG will be created instead"
+              fi
             fi
           else
             echo "tag_exists=false" >> "$GITHUB_OUTPUT"
             echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "version_update_required=false" >> "$GITHUB_OUTPUT"
             echo "✓ Tag $TAG is available"
           fi
 
@@ -256,17 +276,23 @@ jobs:
             const branch = '${{ steps.get_version.outputs.branch }}';
             const tag = '${{ steps.check_existing_tag.outputs.tag }}';
             const tagExists = '${{ steps.check_existing_tag.outputs.tag_exists }}' === 'true';
+            const versionUpdateRequired = '${{ steps.check_existing_tag.outputs.version_update_required }}' === 'true';
             const patchTagExists = '${{ steps.check_existing_tag.outputs.patch_tag_exists }}' === 'true';
 
             let statusIcon = '✅';
             let statusMessage = 'Ready to release';
             let warningSection = '';
 
-            if (patchTagExists) {
+            if (versionUpdateRequired) {
               statusIcon = '❌';
               statusMessage = 'Cannot release - version update required';
-              warningSection = `\n## ⚠️ Action Required\n\n**Both \`${tag}\` and \`${tag}-patch\` tags already exist!**\n\nYou must update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
-            } else if (tagExists) {
+              
+              if (branch === 'main') {
+                warningSection = `\n## ⚠️ Action Required\n\n**Tag \`${tag}\` already exists!**\n\nFor main branch releases, you must use a new semantic version. Patch releases are not allowed for production releases.\n\nPlease update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
+              } else if (patchTagExists) {
+                warningSection = `\n## ⚠️ Action Required\n\n**Both \`${tag}\` and \`${tag}-patch\` tags already exist!**\n\nYou must update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
+              }
+            } else if (tagExists && branch === 'dev') {
               statusIcon = '⚠️';
               statusMessage = 'Tag exists - patch release will be created';
               warningSection = `\n## ⚠️ Notice\n\nTag \`${tag}\` already exists. When merged, a \`${tag}-patch\` tag will be created instead.\n\nConsider updating the version in \`src/pyproject.toml\` to create a clean release.\n`;
@@ -287,9 +313,10 @@ jobs:
             The release pipeline will:
             1. ✅ Build the package with \`uv build\`
             2. ✅ Sign the tar.gz with sigstore
-            3. ✅ Create a GitHub release with tag \`${tag}\`${tagExists && !patchTagExists ? '-patch' : ''}
+            3. ✅ Create a GitHub release with tag \`${tag}\`${tagExists && branch === 'dev' && !versionUpdateRequired ? '-patch' : ''}
             4. ✅ Upload signed artifacts
             ${branch === 'dev' ? '\n> **Note**: Dev releases are marked as prerelease.' : ''}
+            ${branch === 'main' ? '\n> **Note**: Main branch releases require unique semantic versions. Patch releases are not allowed.' : ''}
             `;
 
             github.rest.issues.createComment({
