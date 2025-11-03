@@ -231,7 +231,7 @@ jobs:
               echo "A new semantic version is required for main branch releases."
             else
               # For dev branch, check if patch tag also exists
-              PATCH_TAG="$TAG-patch"
+                PATCH_TAG="${TAG}-patch-$(date +%Y%m%d%H%M%S)"
               if git rev-parse "$PATCH_TAG" >/dev/null 2>&1; then
                 echo "patch_tag_exists=true" >> "$GITHUB_OUTPUT"
                 echo "version_update_required=true" >> "$GITHUB_OUTPUT"
