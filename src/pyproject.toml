@@ -78,6 +78,7 @@ ignore = [
 
 [tool.setuptools.packages.find]
 where = ["."]
+exclude = ["tests*"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
