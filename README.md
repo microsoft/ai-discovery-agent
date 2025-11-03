@@ -1,6 +1,7 @@
 [![CI - Compilation and Testing](https://github.com/microsoft/ai-discovery-agent/actions/workflows/01-ci.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/01-ci.yml)
 [![CD](https://github.com/microsoft/ai-discovery-agent/actions/workflows/02-ci-cd.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/02-ci-cd.yml)
 [![SFI](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-checkov-security.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-checkov-security.yml)
+[![Release](https://github.com/microsoft/ai-discovery-agent/actions/workflows/10-release.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/10-release.yml)
 
 # Welcome to Aida, the AI Discovery Agent and Workshop Facilitator
 
@@ -332,6 +333,8 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+For information about the release process, see the [Release Process documentation](docs/RELEASE_PROCESS.md).
 
 ## Trademarks
 
