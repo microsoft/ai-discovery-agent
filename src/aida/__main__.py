@@ -85,7 +85,7 @@ def main() -> None:
     # Using configurable HOST from environment variable for security
     # In production, set HOST=0.0.0.0 to bind to all interfaces when needed
     logger.info(f"Starting uvicorn server on {HOST}:{PORT}")
-    uvicorn.run("server:app", host=HOST, port=PORT)
+    uvicorn.run("aida.__main__:app", host=HOST, port=PORT)
 
 
 if __name__ == "__main__":

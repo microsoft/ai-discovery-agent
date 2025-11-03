@@ -1,31 +1,14 @@
-# Welcome to the AI Discovery Workshop assistant! 🚀🤖
+# Welcome to Chainlit! 🚀🤖
 
-This is a Chainlit app that helps you with the AI discovery workshop.
+Hi there, Developer! 👋 We're excited to have you on board. Chainlit is a powerful tool designed to help you prototype, debug and share applications built on top of LLMs.
 
-## About This Assistant
+## Useful Links 🔗
 
-This AI-powered assistant is designed to facilitate AI Discovery Workshops, helping teams explore and implement artificial intelligence solutions in their organizations. Our multi-agent system provides expert guidance through a structured 12-step workshop process.
+- **Documentation:** Get started with our comprehensive [Chainlit Documentation](https://docs.chainlit.io) 📚
+- **Discord Community:** Join our friendly [Chainlit Discord](https://discord.gg/k73SQ3FyUh) to ask questions, share your projects, and connect with other developers! 💬
 
-### 🎯 Key Features
+We can't wait to see what you create with Chainlit! Happy coding! 💻😊
 
-- **Expert Facilitation**: Navigate through workshop activities with AI-powered guidance
-- **Multi-Agent Support**: Access different AI personas specialized in various aspects of AI implementation
-- **Structured Approach**: Follow a proven 12-step methodology for AI discovery
-- **Interactive Exercises**: Engage with hands-on activities tailored to your organization's needs
-- **Visual Workflows**: Generate Mermaid diagrams to visualize your AI implementation journey
+## Welcome screen
 
-### 🤝 How It Works
-
-1. **Start a Conversation**: Simply type your questions or describe your AI challenges
-2. **Get Expert Guidance**: Our AI agents will guide you through relevant workshop activities
-4. **Track Progress**: Follow the structured workshop steps from understanding your business to implementation planning
-
-### 💡 Workshop Topics Covered
-
-- Understanding business objectives and AI opportunities
-- Identifying use cases and prioritizing initiatives
-- Assessing technical requirements and data readiness
-- Building implementation roadmaps
-- Addressing governance and ethical considerations
-
-Ready to begin your AI discovery journey? Just type your first question or ask for help to get started!
+To modify the welcome screen, edit the `chainlit.md` file at the root of your project. If you do not want a welcome screen, just leave this file empty.
