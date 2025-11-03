@@ -44,7 +44,7 @@ def load_program_info() -> str:
     """
     program_info = ""
     try:
-        with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as f:
+        with open(Path(__file__).parent.parent.parent / "pyproject.toml", "rb") as f:
             info = tomllib.load(f)
             # Extract all fields from the [project] section
             project_info = info.get("project", {})

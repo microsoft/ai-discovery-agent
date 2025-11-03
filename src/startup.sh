@@ -23,7 +23,7 @@ echo "Contents of current directory:"
 ls -la
 
 # Verify essential files exist
-for file in "server.py" "main.py"; do
+for file in "server.py" "aida/__main__.py"; do
     if [ ! -f "$file" ]; then
         echo "ERROR: Required file $file not found!"
         exit 1

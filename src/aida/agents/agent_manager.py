@@ -10,7 +10,7 @@ from yaml import SafeLoader
 
 from aida.utils.logging_setup import get_logger
 
-PAGES_CONFIG_FILE = Path(__file__).parent.parent / "config/pages.yaml"
+PAGES_CONFIG_FILE = Path(__file__).parent.parent.parent / "config/pages.yaml"
 
 logger = get_logger(__name__)
 
