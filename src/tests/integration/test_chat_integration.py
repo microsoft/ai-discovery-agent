@@ -260,7 +260,7 @@ class TestMessageRoutingIntegration:
         with (
             patch("chainlit.user_session") as mock_session,
             patch(
-                "chat_handlers.agent_registry.get_agent", return_value=dummy_agent
+                "aida.utils.chat_handlers.agent_registry.get_agent", return_value=dummy_agent
             ) as mock_get_agent,
             patch("chainlit.Step", DummyStep),
             patch("chainlit.LangchainCallbackHandler", DummyLCB),
