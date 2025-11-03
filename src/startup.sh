@@ -85,7 +85,7 @@ fi
 
 # Start the application with error handling
 echo "Starting uvicorn server..."
-exec python -m uvicorn server:app \
+exec python -m uvicorn --factory aida:create_app \
     --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
