@@ -136,7 +136,7 @@ async def start():
 
 
 @cl.on_message
-async def msg(message: cl.Message):
+async def main(message: cl.Message):
     """Handle incoming messages."""
     await on_message(get_conversation_manager(), message)
 
