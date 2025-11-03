@@ -1,0 +1,117 @@
+name: Checkov Infra & Code Scanning
+on:
+  push:
+    branches: ["dev", "main"]
+    paths:
+      - "infra/**"
+      - ".github/workflows/03-checkov-security.yml"
+  pull_request:
+    branches: ["dev", "main"]
+  schedule:
+    - cron: "12 5 * * 1"
+  workflow_dispatch:
+permissions: {}
+
+jobs:
+  checkov-scan:
+    runs-on: ubuntu-latest
+    name: Checkov Analysis
+    permissions:
+      contents: read # Allows actions/checkout to fetch the code
+      security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
+      checks: write
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+      # only needed for private repository
+      issues: read
+      # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
+      actions: read
+    outputs:
+      code-scanning-enabled: ${{ steps.check-code-scanning.outputs.enabled }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Run Checkov Action
+        id: checkov
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          output_format: sarif, junitxml, cli
+          output_file_path: bicep_results.sarif,bicep_results.xml,console
+          config_file: .checkov.yml # Use project-specific configuration
+
+      # Check if code scanning is enabled in the repository
+      - name: Check if Code Scanning is enabled
+        id: check-code-scanning
+        if: (!cancelled())
+        uses: actions/github-script@v8
+        with:
+          script: |
+            try {
+              // Check if code scanning is enabled by querying the GitHub API
+              await github.rest.codeScanning.listAlertsForRepo({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                per_page: 1
+              });
+
+              // If we reach here, code scanning is enabled
+              core.setOutput('enabled', 'true');
+              console.log('✅ Code scanning is enabled in this repository');
+
+            } catch (error) {
+              if (error.status === 404) {
+                core.setOutput('enabled', 'false');
+                console.log('⚠️ Code scanning is not enabled in this repository');
+                console.log('💡 To enable code scanning, go to Settings > Security & analysis > Code scanning');
+              } else {
+                core.setOutput('enabled', 'false');
+                console.log(`❌ Unable to determine code scanning status: ${error.message}`);
+                console.log(`Status: ${error.status}`);
+              }
+            }
+
+      # need code scanning activated to upload SARIF results to security tab
+      - name: Upload SARIF Results to GitHub
+        if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled == 'true')
+        id: upload-sarif-results
+        uses: github/codeql-action/upload-sarif@v4
+        with:
+          sarif_file: bicep_results.sarif
+          category: bicep-scan
+      - name: Upload Test Results
+        id: upload-test-results
+        if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled != 'true')
+        uses: actions/upload-artifact@v5
+        with:
+          name: Bicep Test Results
+          path: bicep_results.xml
+
+  publish-infra-test-results:
+    name: "Publish Infra Tests Results"
+    needs: checkov-scan
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+
+      # only needed unless run with comment_mode: off
+      pull-requests: write
+
+      # Required for actions/checkout to fetch code in any repository type (public or private)
+      contents: read
+
+      # needed when the workflow needs to read issue information, regardless of repository visibility
+      issues: read
+    if: (!cancelled() && needs.checkov-scan.outputs.code-scanning-enabled != 'true')
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts
+
+      - name: Publish Infra Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: "artifacts/**/*.xml"

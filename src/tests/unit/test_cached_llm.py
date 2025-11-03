@@ -1,10 +1,13 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """Unit tests for the cached_llm module."""
 
 import os
 from unittest.mock import MagicMock, patch
 from urllib.parse import urlparse
 
-from utils.cached_llm import create_llm
+from aida.utils.cached_llm import create_llm
 
 
 class TestCachedLLM:
@@ -19,7 +22,7 @@ class TestCachedLLM:
                 "AZURE_ENV_NAME": "test-env",
             },
         ):
-            with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+            with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
                 mock_instance = MagicMock()
                 mock_chat_openai.return_value = mock_instance
 
@@ -45,7 +48,7 @@ class TestCachedLLM:
     def test_create_llm_local_development_127_0_0_1(self):
         """Test LLM creation for 127.0.0.1 development environment."""
         with patch.dict(os.environ, {"AZURE_OPENAI_DEPLOYMENT": "local-model"}):
-            with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+            with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
                 mock_instance = MagicMock()
                 mock_chat_openai.return_value = mock_instance
 
@@ -71,7 +74,7 @@ class TestCachedLLM:
     def test_create_llm_local_domain_environment(self):
         """Test LLM creation for .local domain development environment."""
         with patch.dict(os.environ, {"AZURE_OPENAI_DEPLOYMENT": "dev-model"}):
-            with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+            with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
                 mock_instance = MagicMock()
                 mock_chat_openai.return_value = mock_instance
 
@@ -93,7 +96,7 @@ class TestCachedLLM:
 
     def test_create_llm_localhost_domain_environment(self):
         """Test LLM creation for .localhost domain development environment."""
-        with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+        with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
             mock_instance = MagicMock()
             mock_chat_openai.return_value = mock_instance
 
@@ -111,7 +114,7 @@ class TestCachedLLM:
     def test_create_llm_default_model_when_not_set(self):
         """Test LLM creation uses default model when AZURE_OPENAI_DEPLOYMENT not set."""
         with patch.dict(os.environ, {}, clear=True):
-            with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+            with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
                 mock_instance = MagicMock()
                 mock_chat_openai.return_value = mock_instance
 
@@ -127,8 +130,8 @@ class TestCachedLLM:
                 assert call_kwargs["model"] == "llama-2-13b-chat"  # Default model
                 assert result == mock_instance
 
-    @patch("utils.cached_llm.get_bearer_token_provider")
-    @patch("utils.cached_llm.get_azure_credential")
+    @patch("aida.utils.cached_llm.get_bearer_token_provider")
+    @patch("aida.utils.cached_llm.get_azure_credential")
     def test_create_llm_azure_production_environment(
         self, mock_get_credential, mock_token_provider
     ):
@@ -137,7 +140,7 @@ class TestCachedLLM:
         mock_get_credential.return_value = mock_credential
         mock_token_provider.return_value = MagicMock()
 
-        with patch("utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
+        with patch("aida.utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
             mock_instance = MagicMock()
             mock_azure_openai.return_value = mock_instance
 
@@ -168,8 +171,8 @@ class TestCachedLLM:
             )
             assert result == mock_instance
 
-    @patch("utils.cached_llm.get_bearer_token_provider")
-    @patch("utils.cached_llm.get_azure_credential")
+    @patch("aida.utils.cached_llm.get_bearer_token_provider")
+    @patch("aida.utils.cached_llm.get_azure_credential")
     def test_create_llm_azure_with_none_temperature(
         self, mock_get_credential, mock_token_provider
     ):
@@ -178,7 +181,7 @@ class TestCachedLLM:
         mock_get_credential.return_value = mock_credential
         mock_token_provider.return_value = MagicMock()
 
-        with patch("utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
+        with patch("aida.utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
             mock_instance = MagicMock()
             mock_azure_openai.return_value = mock_instance
 
@@ -195,8 +198,8 @@ class TestCachedLLM:
             assert call_kwargs["tags"] is None
             assert result == mock_instance
 
-    @patch("utils.cached_llm.get_bearer_token_provider")
-    @patch("utils.cached_llm.get_azure_credential")
+    @patch("aida.utils.cached_llm.get_bearer_token_provider")
+    @patch("aida.utils.cached_llm.get_azure_credential")
     def test_create_llm_azure_with_none_deployment(
         self, mock_get_credential, mock_token_provider
     ):
@@ -205,7 +208,7 @@ class TestCachedLLM:
         mock_get_credential.return_value = mock_credential
         mock_token_provider.return_value = MagicMock()
 
-        with patch("utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
+        with patch("aida.utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
             mock_instance = MagicMock()
             mock_azure_openai.return_value = mock_instance
 
@@ -223,7 +226,7 @@ class TestCachedLLM:
 
     def test_create_llm_ipv6_localhost(self):
         """Test LLM creation for IPv6 localhost."""
-        with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+        with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
             mock_instance = MagicMock()
             mock_chat_openai.return_value = mock_instance
 
@@ -240,7 +243,7 @@ class TestCachedLLM:
 
     def test_create_llm_caching_behavior(self):
         """Test that create_llm uses caching decorator."""
-        with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+        with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
             mock_instance = MagicMock()
             mock_chat_openai.return_value = mock_instance
 
@@ -282,10 +285,12 @@ class TestCachedLLM:
         ]
 
         for endpoint, should_be_local in test_cases:
-            with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
-                with patch("utils.cached_llm.AzureChatOpenAI") as mock_azure_openai:
-                    with patch("utils.cached_llm.get_bearer_token_provider"):
-                        with patch("utils.cached_llm.get_azure_credential"):
+            with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+                with patch(
+                    "aida.utils.cached_llm.AzureChatOpenAI"
+                ) as mock_azure_openai:
+                    with patch("aida.utils.cached_llm.get_bearer_token_provider"):
+                        with patch("aida.utils.cached_llm.get_azure_credential"):
                             mock_chat_openai.return_value = MagicMock()
                             mock_azure_openai.return_value = MagicMock()
 
@@ -304,12 +309,12 @@ class TestCachedLLM:
                                 mock_chat_openai.assert_not_called()
                                 mock_azure_openai.assert_called_once()
 
-    @patch("utils.cached_llm.logger")
+    @patch("aida.utils.cached_llm.logger")
     def test_create_llm_logging(self, mock_logger):
         """Test that appropriate logging occurs for Azure environment."""
-        with patch("utils.cached_llm.get_bearer_token_provider"):
-            with patch("utils.cached_llm.get_azure_credential"):
-                with patch("utils.cached_llm.AzureChatOpenAI"):
+        with patch("aida.utils.cached_llm.get_bearer_token_provider"):
+            with patch("aida.utils.cached_llm.get_azure_credential"):
+                with patch("aida.utils.cached_llm.AzureChatOpenAI"):
                     create_llm(
                         endpoint="https://production.openai.azure.com",
                         api_version="2023-12-01-preview",
@@ -331,7 +336,7 @@ class TestCachedLLM:
 
     def test_create_llm_multiple_tags(self):
         """Test LLM creation with single tag becomes list."""
-        with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+        with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
             mock_instance = MagicMock()
             mock_chat_openai.return_value = mock_instance
 
@@ -350,7 +355,7 @@ class TestCachedLLM:
     def test_create_llm_secret_str_api_key(self):
         """Test that API key is properly wrapped in SecretStr for local environments."""
         with patch.dict(os.environ, {"AZURE_ENV_NAME": "test-secret"}):
-            with patch("utils.cached_llm.ChatOpenAI") as mock_chat_openai:
+            with patch("aida.utils.cached_llm.ChatOpenAI") as mock_chat_openai:
                 mock_instance = MagicMock()
                 mock_chat_openai.return_value = mock_instance
 

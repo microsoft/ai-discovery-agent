@@ -8,9 +8,9 @@ from typing import Any
 import yaml
 from yaml import SafeLoader
 
-from utils.logging_setup import get_logger
+from aida.utils.logging_setup import get_logger
 
-PAGES_CONFIG_FILE = Path(__file__).parent.parent / "config/pages.yaml"
+PAGES_CONFIG_FILE = Path(__file__).parent.parent.parent / "config/pages.yaml"
 
 logger = get_logger(__name__)
 
@@ -77,7 +77,7 @@ def get_available_agents(
 
 @functools.lru_cache(maxsize=32)
 def _extract_agents_from_sections(
-    user_roles: tuple[str, ...]
+    user_roles: tuple[str, ...],
 ) -> dict[str, dict[str, Any]]:
     global _agents_config, _pages_config
 

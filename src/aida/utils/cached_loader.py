@@ -17,11 +17,11 @@ from pathlib import Path
 
 import chainlit as cl
 
-from utils.logging_setup import get_logger
+from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
-BASE_PATH = Path(__file__).parent.parent
+BASE_PATH = Path(__file__).parent.parent.parent
 
 
 @cl.cache

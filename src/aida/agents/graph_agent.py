@@ -31,7 +31,7 @@ from langchain_core.runnables import Runnable
 from langgraph.graph import END, StateGraph
 from langgraph.graph.message import add_messages
 
-from utils.logging_setup import get_logger
+from aida.utils.logging_setup import get_logger
 
 from .agent import Agent
 

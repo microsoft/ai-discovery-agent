@@ -1,9 +1,12 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """Unit tests for the conversation_manager module."""
 
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from persistence.conversation_manager import (
+from aida.persistence.conversation_manager import (
     AzureStorageConversationManager,
     DummyConversationManager,
 )
@@ -39,7 +42,7 @@ class TestAzureStorageConversationManager:
         manager = AzureStorageConversationManager(storage_manager=self.mock_storage)
         messages = [{"role": "user", "content": "Hello, I need help with Python"}]
 
-        with patch("persistence.conversation_manager.datetime") as mock_datetime:
+        with patch("aida.persistence.conversation_manager.datetime") as mock_datetime:
             mock_datetime.now.return_value.strftime.return_value = "2024-01-01 10:00"
             title = await manager.generate_conversation_title(messages)
 

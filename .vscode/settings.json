@@ -6,10 +6,7 @@
       "source.organizeImports": "always"
     }
   },
-  "isort.args": [
-    "--profile",
-    "black"
-  ],
+  "isort.args": ["--profile", "black"],
   "python.analysis.typeCheckingMode": "standard",
   "python.testing.cwd": "${workspaceFolder}/src",
   "python.testing.unittestEnabled": false,
@@ -21,8 +18,5 @@
     "__queuestorage__": true
   },
   "bandit.cwd": "${workspaceFolder}/src",
-  "bandit.args": [
-    "-c",
-    "${workspaceFolder}/src/.bandit.yml"
-  ]
+  "bandit.args": ["-c", "${workspaceFolder}/src/.bandit.yml"]
 }

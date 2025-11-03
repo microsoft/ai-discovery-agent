@@ -9,32 +9,9 @@
       "type": "debugpy",
       "request": "launch",
       "cwd": "${workspaceFolder}/src",
+      "python": "${workspaceFolder}/src/.venv/bin/python",
       "module": "uvicorn",
-      "args": ["server:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
-      "autoStartBrowser": true,
-      "env": {
-        "LOGLEVEL": "DEBUG"
-      },
-      "preLaunchTask": "preLaunch",
-      "postDebugTask": "stop_azurite"
-    },
-    {
-      "name": "Python Debugger: Chainlit",
-      "type": "debugpy",
-      "request": "launch",
-      "cwd": "${workspaceFolder}/src",
-      "module": "chainlit",
-      "args": [
-        "run",
-        "--debug",
-        "-h",
-        "-w",
-        "main.py",
-        "--host",
-        "0.0.0.0",
-        "--port",
-        "8000"
-      ],
+      "args": ["debug:app", "--reload", "--host", "0.0.0.0", "--port", "8000"],
       "autoStartBrowser": true,
       "env": {
         "LOGLEVEL": "DEBUG"

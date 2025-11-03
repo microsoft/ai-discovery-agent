@@ -16,6 +16,8 @@ param clientIpAddress string = ''
   'dev'
 ])
 param environment string
+@description('Container image name to use for the App Service Web App, in the format <image_name>:<tag>')
+param containerImageName string = 'aida:latest'
 
 var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var tags = { 'azd-env-name': name }
@@ -39,6 +41,7 @@ module resources 'resources.bicep' = {
     repository: repository
     clientIpAddress: clientIpAddress
     environment: environment
+    containerImageName: containerImageName
   }
 }
 
@@ -57,3 +60,5 @@ output COGNITIVE_SERVICE_NAME string = resources.outputs.COGNITIVE_SERVICE_NAME
 output APPINSIGHTS_INSTRUMENTATIONKEY string = resources.outputs.APPINSIGHTS_INSTRUMENTATIONKEY
 output APPLICATIONINSIGHTS_CONNECTION_STRING string = resources.outputs.APPLICATIONINSIGHTS_CONNECTION_STRING
 output DEPLOYMENT_ENVIRONMENT string = environment
+output ACR_NAME string = resources.outputs.ACR_NAME
+output ACR_LOGIN_SERVER string = resources.outputs.ACR_LOGIN_SERVER

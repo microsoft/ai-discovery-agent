@@ -21,8 +21,8 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.blob import ContentSettings
 from azure.storage.blob.aio import BlobServiceClient  # Updated to async client
 
-from utils.credentials import get_azure_credential
-from utils.logging_setup import get_logger
+from aida.utils.credentials import get_azure_credential
+from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

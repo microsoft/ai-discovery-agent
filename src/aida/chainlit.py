@@ -11,34 +11,27 @@ and registers Chainlit event handlers.
 import os
 
 import chainlit as cl
-from dotenv import load_dotenv
 
-from auth import (
-    is_oauth_enabled,
-    oauth_callback,  # noqa E402
-    password_auth_callback,
-)
-from chat_handlers import (
-    on_chat_resume,
-    on_chat_start,  # noqa E402
-    on_message,
-    set_chat_profiles,
-)
-from interfaces import ConversationManager
-from persistence.conversation_manager import (
+from aida.interfaces import ConversationManager
+from aida.persistence import AzureStorageManager  # noqa E402
+from aida.persistence.conversation_manager import (
     AzureStorageConversationManager,
     DummyConversationManager,
 )
-
-# Load env values from file before importing other modules
-load_dotenv(".azure.env", override=False)
-load_dotenv(".env", override=False)
-
-
-from persistence import AzureStorageManager  # noqa E402
-from utils.cached_llm import create_llm  # noqa E402
-from utils.config import setup_auth_secret  # noqa E402
-from utils.logging_setup import get_logger  # noqa E402
+from aida.utils.auth import (
+    is_oauth_enabled,
+    oauth_callback,
+    password_auth_callback,
+)
+from aida.utils.cached_llm import create_llm  # noqa E402
+from aida.utils.chat_handlers import (
+    on_chat_resume,
+    on_chat_start,
+    on_message,
+    set_chat_profiles,
+)
+from aida.utils.config import setup_auth_secret  # noqa E402
+from aida.utils.logging_setup import get_logger  # noqa E402
 
 logger = get_logger(__name__)
 
@@ -56,7 +49,6 @@ try:
         "AZURE_STORAGE_ACCOUNT_URL"
     ):
         _storage_manager = AzureStorageManager()
-        openai_client = None
         AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT", "")
         AZURE_OPENAI_API_VERSION = os.getenv(
             "AZURE_OPENAI_API_VERSION", "2025-04-01-preview"
@@ -153,7 +145,3 @@ async def main(message: cl.Message):
 async def resume(thread):
     """Handle chat resume event."""
     await on_chat_resume(get_conversation_manager(), thread)
-
-
-if __name__ == "__main__":
-    cl.run()

@@ -16,8 +16,15 @@
     {
       "label": "lint",
       "type": "shell",
-      "command": "cd src && uv run pre-commit run --all-files",
+      "command": "cd src && uv run pre-commit run --all-files -v",
       "group": "build"
+    },
+    {
+      "label": "check-copyright-headers",
+      "type": "shell",
+      "command": "./scripts/check-copyright-headers.sh",
+      "group": "test",
+      "problemMatcher": []
     },
     {
       "label": "build",
@@ -25,18 +32,12 @@
       "command": "uv build --directory src",
       "group": "build",
       "problemMatcher": "$python",
-      "dependsOn": [
-        "lint"
-      ]
+      "dependsOn": ["lint"]
     },
     {
       "label": "validate all",
       "group": "build",
-      "dependsOn": [
-        "build",
-        "bandit",
-        "bicep-checkov"
-      ]
+      "dependsOn": ["build", "bandit", "bicep-checkov"]
     },
     {
       "label": "bandit",
@@ -54,27 +55,20 @@
     {
       "label": "bicep-checkov",
       "type": "shell",
-      "command": "source src/.venv/bin/activate && uv run checkov -d ${workspaceFolder}/infra --compact",
+      "command": "source src/.venv/bin/activate && uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.checkov.yml --quiet",
       "group": "test",
-      "dependsOn": [
-        "bicep-validate"
-      ]
+      "dependsOn": ["bicep-validate"]
     },
     {
       "label": "bicep-checkov-debug",
       "type": "shell",
-      "command": "source src/.venv/bin/activate && LOG_LEVEL=debug uv run checkov --framework bicep -d ${workspaceFolder}/infra --compact",
+      "command": "source src/.venv/bin/activate && LOG_LEVEL=debug uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.checkov.yml --compact",
       "group": "test",
-      "dependsOn": [
-        "bicep-validate"
-      ]
+      "dependsOn": ["bicep-validate"]
     },
     {
       "label": "preLaunch",
-      "dependsOn": [
-        "build",
-        "start_azurite"
-      ]
+      "dependsOn": ["build", "start_azurite"]
     },
     {
       "label": "prepareAzureDev",

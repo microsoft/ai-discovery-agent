@@ -2,16 +2,8 @@
 param location string
 @description('Name prefix used for derived resource names')
 param namePrefix string
-@description('Subnet ID used for VM (provides VNet rule access to storage)')
+@description('Subnet ID used for storage (provides VNet rule access to storage)')
 param privateSubnetId string
-@description('Principal ID of the Web App managed identity (SystemAssigned)')
-param webPrincipalId string
-@description('Resource ID of the Web App (used for role assignment GUID)')
-param webId string
-@description('Principal ID of the Web App managed identity (SystemAssigned)')
-param stagingWebPrincipalId string
-@description('Resource ID of the Web App (used for role assignment GUID)')
-param stagingWebId string
 @description('Principal ID (e.g. user / group) receiving Storage Blob Data Contributor')
 param principalId string
 @description('Principal type corresponding to principalId (e.g. User, Group, ServicePrincipal)')
@@ -94,28 +86,6 @@ resource conversationsContainer 'Microsoft.Storage/storageAccounts/blobServices/
 
 // Role definition: Storage Blob Data Contributor (built-in)
 var storageBlobDataContributorRoleId = resourceId('Microsoft.Authorization/roleDefinitions', 'ba92f5b4-2d11-453d-a403-e96b0029c9fe')
-
-// Grant Web App managed identity access to blobs
-resource storageBlobDataContributorForAppService 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: storageAccount
-  name: guid(storageAccount.id, webPrincipalId, storageBlobDataContributorRoleId)
-  properties: {
-    roleDefinitionId: storageBlobDataContributorRoleId
-    principalId: webPrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
-
-// Grant Web App managed identity access to blobs
-resource storageBlobDataContributorForStagingAppService 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  scope: storageAccount
-  name: guid(storageAccount.id, stagingWebPrincipalId, storageBlobDataContributorRoleId)
-  properties: {
-    roleDefinitionId: storageBlobDataContributorRoleId
-    principalId: stagingWebPrincipalId
-    principalType: 'ServicePrincipal'
-  }
-}
 
 // Grant specified principal (user/group) blob contributor access
 resource storageBlobDataContributorForUser 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
