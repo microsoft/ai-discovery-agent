@@ -104,7 +104,7 @@ class SingleAgent(Agent):
         CompiledStateGraph
             A compiled state graph representing the agent's workflow.
         """
-        from agents import RESPONSE_TAG
+        from . import RESPONSE_TAG
 
         if self._chain is None:
             start_prompt = ChatPromptTemplate.from_messages(
