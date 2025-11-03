@@ -17,27 +17,28 @@ This is a set of agents to help during the AI Discovery Workshop training or to 
 
 1. **Fork the repository**:
 
-    The `azd` deployment process requires write access to the repository to set up GitHub Actions for automated deployments. Please fork this repository to your own GitHub account.
+   The `azd` deployment process requires write access to the repository to set up GitHub Actions for automated deployments. Please fork this repository to your own GitHub account.
 
 2. **Clone the repository**:
-    ```bash
-    git clone https://github.com/youraccount/ai-discovery-agent.git
-    cd ai-discovery-agent
-    ```
+
+   ```bash
+   git clone https://github.com/youraccount/ai-discovery-agent.git
+   cd ai-discovery-agent
+   ```
 
 3. **Install dependencies**:
 
-    Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
+   Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
 
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
 
-    ```bash
-    cd src
-    # Create a virtual environment and install requirements
-    uv sync
-    ```
+   ```bash
+   cd src
+   # Create a virtual environment and install requirements
+   uv sync
+   ```
 
 4. **Configure authentication**:
 
@@ -322,7 +323,7 @@ For more details, see the [official Microsoft documentation on OIDC and federate
 
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit [Contributor License Agreements](https://cla.opensource.microsoft.com).
 

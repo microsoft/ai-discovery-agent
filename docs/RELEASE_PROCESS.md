@@ -150,6 +150,7 @@ sigstore verify identity aida-0.7.1.tar.gz \
 ```
 
 Expected output:
+
 ```
 ✓ Signature verified successfully
 ```
@@ -172,7 +173,8 @@ Expected output:
 
 **Problem**: Package build fails during `uv build`.
 
-**Solution**: 
+**Solution**:
+
 1. Test the build locally: `cd src && uv build`
 2. Fix any errors in the source code or `pyproject.toml`
 3. Commit and push the fixes
@@ -186,11 +188,13 @@ Expected output:
 ## Security Considerations
 
 1. **Sigstore Signing**: All artifacts are signed transparently using Sigstore, providing:
+
    - Tamper-proof signatures
    - Public certificate transparency logs
    - Keyless signing (no private keys to manage)
 
-2. **GitHub Actions Security**: 
+2. **GitHub Actions Security**:
+
    - Workflow uses `id-token: write` permission for Sigstore OIDC authentication
    - Artifacts are built in isolated GitHub runners
    - Only `main` branch can trigger releases
