@@ -790,7 +790,9 @@ async def rebuild_messages(conversation_history: list[dict[str, str]]) -> None:
             content = message.get("content", "")
 
             if role == "user":
-                await cl.Message(content=content, author="User").send()
+                await cl.Message(
+                    content=content, author="User", type="user_message"
+                ).send()
             elif role == "assistant":
                 # Create assistant message with mermaid support
                 elements: list[cl.CustomElement] | None = None

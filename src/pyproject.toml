@@ -77,8 +77,8 @@ ignore = [
 ]
 
 [tool.setuptools.packages.find]
-where = ["."]
-exclude = ["tests*"]
+exclude = ["tests*","docs*"]
+include = ["public","prompts","config"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
