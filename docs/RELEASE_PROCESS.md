@@ -6,12 +6,28 @@ This document describes the automated release process for the AI Discovery Agent
 
 The project uses an automated release pipeline (`.github/workflows/10-release.yml`) that:
 
-1. Triggers on pull requests and pushes to the `main` branch
+1. Triggers on pull requests and pushes to the `main` and `dev` branches
 2. Extracts the version number from `src/pyproject.toml`
 3. Creates a GitHub release with a version tag
 4. Builds the package using `uv build`
 5. Signs the distribution artifacts with [Sigstore](https://www.sigstore.dev/)
 6. Uploads signed artifacts to the GitHub release
+
+## Release Types
+
+The pipeline supports two types of releases:
+
+### Production Releases (main branch)
+
+- **Tag format**: `vX.Y.Z` (e.g., `v0.7.1`)
+- **Status**: Full release
+- **When**: Merged to `main` branch
+
+### Development Releases (dev branch)
+
+- **Tag format**: `vX.Y.Z-dev` (e.g., `v0.7.1-dev`)
+- **Status**: Prerelease
+- **When**: Merged to `dev` branch
 
 ## Version Management
 
@@ -33,47 +49,84 @@ Versions must follow [Semantic Versioning](https://semver.org/) (X.Y.Z):
 
 ## Release Workflow
 
-### For Pull Requests
+### For Open Pull Requests
 
-When a PR is opened targeting the `main` branch, the workflow:
+When a PR is opened or updated (but not yet merged) targeting `main` or `dev`, the workflow:
 
-1. **Validates** the version format in `pyproject.toml`
-2. **Builds** the package to ensure it compiles correctly
-3. **Posts a comment** on the PR with release preview information
+1. **Checks if tags exist** - Verifies if `vX.Y.Z` (or `vX.Y.Z-dev`) already exists
+2. **Validates** the version format in `pyproject.toml`
+3. **Builds** the package to ensure it compiles correctly
+4. **Posts a comment** with release preview and warnings if needed
 
-Example PR comment:
+#### PR Comment Scenarios
+
+**✅ Ready to Release** (tag doesn't exist):
 
 ```
-## 🚀 Release Preview
+## 🚀 Release Preview ✅
 
-This PR will trigger a release when merged to main.
+**Status**: Ready to release
+
+This PR will trigger a production release when merged to main.
 
 **Version**: `0.7.1`
 **Tag**: `v0.7.1`
+**Branch**: `main`
 
 The release pipeline will:
 1. ✅ Build the package with `uv build`
 2. ✅ Sign the tar.gz with sigstore
 3. ✅ Create a GitHub release with tag `v0.7.1`
 4. ✅ Upload signed artifacts
-
-> **Note**: If tag `v0.7.1` already exists, a `v0.7.1-patch` tag will be created instead.
 ```
 
-### For Pushes to Main
+**⚠️ Tag Exists** (patch will be created):
 
-When code is pushed to `main` (typically after merging a PR), the workflow:
+```
+## 🚀 Release Preview ⚠️
+
+**Status**: Tag exists - patch release will be created
+
+## ⚠️ Notice
+
+Tag `v0.7.1` already exists. When merged, a `v0.7.1-patch` tag will be created instead.
+
+Consider updating the version in `src/pyproject.toml` to create a clean release.
+```
+
+**❌ Cannot Release** (both tag and patch exist):
+
+```
+## 🚀 Release Preview ❌
+
+**Status**: Cannot release - version update required
+
+## ⚠️ Action Required
+
+**Both `v0.7.1` and `v0.7.1-patch` tags already exist!**
+
+You must update the version in `src/pyproject.toml` before merging this PR.
+
+**Do not merge this PR until the version is updated.**
+```
+
+### For Merged Pull Requests / Pushes
+
+When a PR is merged or code is pushed to `main` or `dev`, the workflow:
 
 1. **Extracts** the version from `pyproject.toml`
-2. **Checks** if the tag `vX.Y.Z` already exists
-   - If it exists, creates a `vX.Y.Z-patch` tag instead
-   - If both exist, the workflow fails with an error
-3. **Builds** the package with `uv build`
-4. **Signs** the `.tar.gz` file using Sigstore
-5. **Creates** a GitHub release with the tag and uploads:
+2. **Determines branch** - main (production) or dev (development)
+3. **Checks** if the tag exists
+   - Main: `vX.Y.Z` → if exists, creates `vX.Y.Z-patch`
+   - Dev: `vX.Y.Z-dev` → if exists, creates `vX.Y.Z-dev-patch`
+   - If both exist, the workflow fails
+4. **Builds** the package with `uv build`
+5. **Signs** the `.tar.gz` file using Sigstore
+6. **Creates** a GitHub release with:
    - Source distribution (`.tar.gz`)
    - Sigstore signature (`.tar.gz.sigstore`)
    - Wheel distribution (`.whl`)
+   - Prerelease flag for dev releases
 
 ## Tag Conflict Resolution
 
@@ -91,7 +144,9 @@ If a tag already exists for the current version:
 
 ## Making a Release
 
-### Step 1: Update the Version
+### Production Release (main branch)
+
+#### Step 1: Update the Version
 
 1. Open `src/pyproject.toml`
 2. Update the version number:
@@ -104,27 +159,48 @@ If a tag already exists for the current version:
    git commit -m "Bump version to 0.8.0"
    ```
 
-### Step 2: Create a Pull Request
+#### Step 2: Create a Pull Request
 
 1. Push your changes to a branch
 2. Open a pull request targeting `main`
 3. Review the automated release preview comment
+   - ✅ If status is "Ready to release", proceed
+   - ⚠️ If tag exists, consider updating version
+   - ❌ If both tags exist, **must** update version
 4. Ensure all CI checks pass
 
-### Step 3: Merge to Main
+#### Step 3: Merge to Main
 
-1. Once approved, merge the PR to `main`
+1. Once approved and tag status is acceptable, merge the PR to `main`
 2. The release workflow automatically triggers
 3. Monitor the workflow at: https://github.com/microsoft/ai-discovery-agent/actions/workflows/10-release.yml
 
-### Step 4: Verify the Release
+#### Step 4: Verify the Release
 
 1. Go to: https://github.com/microsoft/ai-discovery-agent/releases
 2. Verify the new release is created with:
-   - Correct version tag
+   - Correct version tag (`v0.8.0`)
    - Source distribution (`.tar.gz`)
    - Signature file (`.tar.gz.sigstore`)
    - Wheel distribution (`.whl`)
+   - **Not** marked as prerelease
+
+### Development Release (dev branch)
+
+Development releases follow the same process but target the `dev` branch:
+
+1. Create a PR targeting `dev` (not `main`)
+2. Review the release preview comment
+   - Tag will be `vX.Y.Z-dev` format
+   - Will be marked as prerelease
+3. Merge when ready
+4. Release will be created automatically with prerelease flag
+
+**Note**: Dev releases are useful for:
+
+- Testing release process
+- Early access to features
+- Beta testing with specific users
 
 ## Verifying Signed Artifacts
 

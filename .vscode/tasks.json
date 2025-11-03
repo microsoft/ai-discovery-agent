@@ -16,7 +16,7 @@
     {
       "label": "lint",
       "type": "shell",
-      "command": "cd src && uv run pre-commit run --all-files",
+      "command": "cd src && uv run pre-commit run --all-files -v",
       "group": "build"
     },
     {
