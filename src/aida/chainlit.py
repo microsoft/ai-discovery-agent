@@ -12,7 +12,7 @@ import os
 
 import chainlit as cl
 
-from aida.interfaces.interfaces import ConversationManager
+from aida.interfaces import ConversationManager
 from aida.persistence import AzureStorageManager  # noqa E402
 from aida.persistence.conversation_manager import (
     AzureStorageConversationManager,

@@ -15,7 +15,7 @@ from typing import Any
 from langchain.chat_models.base import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
-from aida.interfaces.interfaces import ConversationManager
+from aida.interfaces import ConversationManager
 from aida.utils.logging_setup import get_logger
 
 from .azure_storage import AzureStorageManager
