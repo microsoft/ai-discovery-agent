@@ -78,14 +78,14 @@ jobs:
           # Check if tag exists
           if git rev-parse "$TAG" >/dev/null 2>&1; then
             echo "Tag $TAG already exists"
-            
+
             # For main branch, require a new semantic version
             if [ "$BRANCH" == "main" ]; then
               echo "Error: Tag $TAG already exists for main branch"
               echo "Please update the version in pyproject.toml to a new semantic version"
               exit 1
             fi
-            
+
             # For dev branch, allow patch releases
             PATCH_TAG="${TAG}-patch-$(date +%Y%m%d%H%M%S)"
 
@@ -286,7 +286,7 @@ jobs:
             if (versionUpdateRequired) {
               statusIcon = '❌';
               statusMessage = 'Cannot release - version update required';
-              
+
               if (branch === 'main') {
                 warningSection = `\n## ⚠️ Action Required\n\n**Tag \`${tag}\` already exists!**\n\nFor main branch releases, you must use a new semantic version. Patch releases are not allowed for production releases.\n\nPlease update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
               } else if (patchTagExists) {
