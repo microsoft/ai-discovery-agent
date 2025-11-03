@@ -12,9 +12,9 @@ from unittest.mock import Mock, mock_open, patch
 
 import pytest
 import yaml
-from tests.fixtures.data import SAMPLE_AUTH_CONFIG
 
 from aida.utils.auth import is_oauth_enabled, oauth_callback, password_auth_callback
+from tests.fixtures.data import SAMPLE_AUTH_CONFIG
 
 
 class TestPasswordAuthentication:

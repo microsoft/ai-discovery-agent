@@ -13,9 +13,9 @@ from unittest.mock import mock_open, patch
 
 import pytest
 import yaml
-from tests.fixtures.data import SAMPLE_AGENT_CONFIG
 
 import aida.agents.agent_manager as agent_manager
+from tests.fixtures.data import SAMPLE_AGENT_CONFIG
 
 
 class TestAgentManagerModule:

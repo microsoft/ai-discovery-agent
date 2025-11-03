@@ -14,6 +14,7 @@ from unittest.mock import patch
 
 import pytest
 import yaml
+
 from tests.fixtures.data import SAMPLE_AGENT_CONFIG
 
 

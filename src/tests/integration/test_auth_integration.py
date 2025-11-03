@@ -15,9 +15,9 @@ from unittest.mock import Mock, patch
 import chainlit as cl
 import pytest
 import yaml
-from tests.fixtures.data import SAMPLE_AUTH_CONFIG
 
 from aida.utils.auth import is_oauth_enabled, password_auth_callback
+from tests.fixtures.data import SAMPLE_AUTH_CONFIG
 
 
 class TestAuthenticationIntegration:
@@ -48,7 +48,9 @@ class TestAuthenticationIntegration:
     async def test_password_auth_flow_missing_config(self):
         """Test authentication when config file is missing."""
         # Patch to non-existent file
-        with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path("/nonexistent/path/auth.yaml")):
+        with patch(
+            "aida.utils.auth.AUTH_CONFIG_FILE", Path("/nonexistent/path/auth.yaml")
+        ):
             result = await password_auth_callback("testuser", "testpass")
             assert result is None
 

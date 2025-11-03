@@ -13,13 +13,13 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 
 import chainlit as cl
 import pytest
+
+from aida.persistence.conversation_manager import DummyConversationManager
+from aida.utils.chat_handlers import on_chat_start, on_message, set_chat_profiles
 from tests.fixtures.data import (
     create_mock_admin_user,
     create_mock_user,
 )
-
-from aida.persistence.conversation_manager import DummyConversationManager
-from aida.utils.chat_handlers import on_chat_start, on_message, set_chat_profiles
 
 
 class TestChatProfileIntegration:
@@ -260,7 +260,8 @@ class TestMessageRoutingIntegration:
         with (
             patch("chainlit.user_session") as mock_session,
             patch(
-                "aida.utils.chat_handlers.agent_registry.get_agent", return_value=dummy_agent
+                "aida.utils.chat_handlers.agent_registry.get_agent",
+                return_value=dummy_agent,
             ) as mock_get_agent,
             patch("chainlit.Step", DummyStep),
             patch("chainlit.LangchainCallbackHandler", DummyLCB),
