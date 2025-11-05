@@ -104,7 +104,6 @@
       "type": "shell",
       "command": "./scripts/generate-notice.sh",
       "args": [
-        "--include-dev",
         "--verbose"
       ],
       "group": "build",
