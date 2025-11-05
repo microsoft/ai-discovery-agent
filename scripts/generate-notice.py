@@ -20,11 +20,7 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any, Optional
 
-try:
-    import tomllib
-except ImportError:
-    # For Python < 3.11
-    import tomli as tomllib
+import tomllib
 
 
 def load_pyproject_toml(pyproject_path: Path) -> dict[str, Any]:
