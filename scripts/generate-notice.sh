@@ -13,7 +13,7 @@ PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 # Default values
 PYPROJECT_PATH="$PROJECT_ROOT/src/pyproject.toml"
 OUTPUT_PATH="$PROJECT_ROOT/NOTICE"
-INCLUDE_DEV=false
+INCLUDE_DEV=true
 VERBOSE=false
 
 # Help function
@@ -26,13 +26,13 @@ Generate NOTICE file for OSS compliance based on pyproject.toml dependencies.
 OPTIONS:
     -p, --pyproject-path PATH   Path to pyproject.toml file (default: src/pyproject.toml)
     -o, --output PATH          Output path for NOTICE file (default: NOTICE)
-    -d, --include-dev          Include development dependencies
+    --no-dev                   Exclude development dependencies (dev deps included by default)
     -v, --verbose              Enable verbose output
     -h, --help                 Show this help message
 
 EXAMPLES:
-    $0                                    # Generate NOTICE file with default settings
-    $0 --include-dev                      # Include development dependencies
+    $0                                    # Generate NOTICE file with default settings (includes dev deps)
+    $0 --no-dev                          # Exclude development dependencies
     $0 --output NOTICE.txt --verbose     # Custom output path with verbose logging
     $0 --pyproject-path custom/pyproject.toml  # Custom pyproject.toml path
 
@@ -50,8 +50,8 @@ while [[ $# -gt 0 ]]; do
             OUTPUT_PATH="$2"
             shift 2
             ;;
-        -d|--include-dev)
-            INCLUDE_DEV=true
+        --no-dev)
+            INCLUDE_DEV=false
             shift
             ;;
         -v|--verbose)
@@ -82,8 +82,8 @@ PYTHON_ARGS=(
     "--output" "$OUTPUT_PATH"
 )
 
-if [[ "$INCLUDE_DEV" == "true" ]]; then
-    PYTHON_ARGS+=(--include-dev)
+if [[ "$INCLUDE_DEV" == "false" ]]; then
+    PYTHON_ARGS+=(--no-dev)
 fi
 
 if [[ "$VERBOSE" == "true" ]]; then

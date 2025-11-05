@@ -136,7 +136,7 @@ def generate_notice_content(
     project_version: str,
     runtime_deps: list[str],
     dev_deps: list[str],
-    include_dev: bool = False,
+    include_dev: bool = True,
 ) -> str:
     """
     Generate the content for the NOTICE file.
@@ -259,9 +259,9 @@ def main() -> int:
         help="Output path for NOTICE file (default: NOTICE)",
     )
     parser.add_argument(
-        "--include-dev",
+        "--no-dev",
         action="store_true",
-        help="Include development dependencies in NOTICE file",
+        help="Exclude development dependencies from NOTICE file (dev deps included by default)",
     )
     parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
 
@@ -294,7 +294,7 @@ def main() -> int:
             print("Generating NOTICE content...")
 
         notice_content = generate_notice_content(
-            project_name, project_version, runtime_deps, dev_deps, args.include_dev
+            project_name, project_version, runtime_deps, dev_deps, not args.no_dev
         )
 
         # Write NOTICE file with cleaned content (remove trailing whitespace)

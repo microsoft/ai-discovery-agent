@@ -27,7 +27,7 @@ python3 scripts/generate-notice.py [OPTIONS]
 **Options:**
 - `--pyproject-path PATH`: Path to pyproject.toml (default: `src/pyproject.toml`)
 - `--output PATH`: Output path for NOTICE file (default: `NOTICE`)
-- `--include-dev`: Include development dependencies
+- `--no-dev`: Exclude development dependencies (dev deps included by default)
 - `--verbose`: Enable verbose output
 
 ### `generate-notice.sh`
@@ -47,22 +47,22 @@ A shell wrapper script that provides a convenient interface and handles the Pyth
 **Options:**
 - `-p, --pyproject-path PATH`: Path to pyproject.toml
 - `-o, --output PATH`: Output path for NOTICE file
-- `-d, --include-dev`: Include development dependencies
+- `--no-dev`: Exclude development dependencies (dev deps included by default)
 - `-v, --verbose`: Enable verbose output
 - `-h, --help`: Show help message
 
 ## Examples
 
 ### Basic Usage
-Generate a NOTICE file with runtime dependencies only:
+Generate a NOTICE file with all dependencies (includes dev dependencies by default):
 ```bash
 ./scripts/generate-notice.sh
 ```
 
-### Include Development Dependencies
-Generate a NOTICE file including development/build dependencies:
+### Exclude Development Dependencies
+Generate a NOTICE file with only runtime dependencies:
 ```bash
-./scripts/generate-notice.sh --include-dev
+./scripts/generate-notice.sh --no-dev
 ```
 
 ### Custom Paths
@@ -78,7 +78,9 @@ Generate a NOTICE file with custom input and output paths:
 If you prefer to use the Python script directly:
 ```bash
 cd src
-uv run python ../scripts/generate-notice.py --include-dev --verbose
+uv run python ../scripts/generate-notice.py --verbose
+# To exclude dev dependencies:
+uv run python ../scripts/generate-notice.py --no-dev --verbose
 ```
 
 ## NOTICE File Format
@@ -88,7 +90,7 @@ The generated NOTICE file includes:
 1. **Header Section**: Project name, version, and copyright
 2. **Third-Party Software Notices**: Legal disclaimer
 3. **Runtime Dependencies**: All dependencies required for operation
-4. **Development Dependencies**: Build/test dependencies (if `--include-dev` is used)
+4. **Development Dependencies**: Build/test dependencies (included by default, unless `--no-dev` is used)
 5. **Footer**: Generation timestamp and additional information
 
 For each dependency, the script attempts to include:
@@ -125,7 +127,7 @@ You can integrate NOTICE file generation into your build process by adding it to
 ### GitHub Actions
 ```yaml
 - name: Generate NOTICE file
-  run: ./scripts/generate-notice.sh --include-dev
+  run: ./scripts/generate-notice.sh
 ```
 
 ### Pre-commit Hook
