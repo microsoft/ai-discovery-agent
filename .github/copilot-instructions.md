@@ -20,6 +20,80 @@ This project is an AI-powered workshop facilitation system built with Chainlit t
 - Mermaid diagram support for visual workflows
 - Azure deployment automation
 
+## Best Practices for Copilot Task Assignment
+
+When creating issues or tasks for Copilot to work on, follow these guidelines to ensure the best results:
+
+### Ideal Tasks for Copilot
+
+**✅ Good Candidates:**
+- Bug fixes with clear reproduction steps
+- Adding unit or integration tests for existing functionality
+- Documentation updates and improvements
+- Code refactoring that follows established patterns
+- Implementing new features based on existing patterns
+- Accessibility improvements
+- Performance optimizations with clear metrics
+- Configuration updates following existing schemas
+
+**❌ Avoid Assigning:**
+- Complex architectural changes requiring new design decisions
+- Security-critical authentication or authorization logic changes
+- Production-critical hotfixes without thorough review
+- Tasks requiring business domain expertise not documented in the codebase
+- Cross-repository changes
+- Changes requiring access to external systems or secrets
+
+### Writing Effective Issue Descriptions
+
+**Good Issue Template:**
+```markdown
+## Problem
+Clear description of what needs to be fixed or implemented
+
+## Expected Behavior
+Specific, measurable outcomes
+
+## Files Involved
+- List of files that likely need changes
+- Reference similar implementations if applicable
+
+## Acceptance Criteria
+- [ ] Specific requirement 1
+- [ ] Tests added/updated
+- [ ] Documentation updated
+- [ ] Linting and formatting passes
+```
+
+**Example - Good Issue:**
+```markdown
+Title: Add unit tests for cached_loader.py
+
+## Problem
+The cached_loader module lacks comprehensive unit test coverage
+
+## Expected Behavior
+- All public methods in cached_loader.py should have unit tests
+- Edge cases (empty cache, expired cache) should be tested
+- Mock external file system calls
+
+## Files Involved
+- src/aida/utils/cached_loader.py (target)
+- tests/unit/test_cached_loader.py (reference for patterns)
+
+## Acceptance Criteria
+- [ ] Test coverage > 90% for cached_loader.py
+- [ ] All tests pass
+- [ ] Follow existing pytest patterns in tests/unit/
+```
+
+**Example - Bad Issue:**
+```markdown
+Title: Improve the app
+
+The app needs to be better and faster.
+```
+
 ## Code Quality and Style Guidelines
 
 ### 1. **Type Annotations**
@@ -350,6 +424,300 @@ documents = config.get("documents", [])
 if documents:
     # Load each document and combine for comprehensive context
     combined_context = await self._load_multiple_documents(documents)
+```
+
+## Build, Test, and Validation Workflow
+
+### Local Development Setup
+
+**Prerequisites:**
+```bash
+# Python 3.12 required
+python --version  # Should be 3.12+
+
+# Install uv for dependency management
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Setup Steps:**
+```bash
+cd src
+uv sync                          # Install all dependencies including dev tools
+uv run pre-commit install        # Install pre-commit hooks
+```
+
+### Running Quality Checks
+
+**Before Committing Changes:**
+
+```bash
+# 1. Run pre-commit hooks (Black, Ruff, file checks)
+uv run pre-commit run --all-files
+
+# 2. Run linting
+uv run ruff check .
+
+# 3. Run type checking (if applicable)
+uv run -m compileall src/
+
+# 4. Run tests with coverage
+uv run pytest tests/ -v --cov=aida --cov-report=term-missing
+
+# 5. Run security checks
+uv run bandit -r aida/ -f sarif -o bandit-results.sarif
+```
+
+**Fix Common Issues:**
+```bash
+# Auto-fix linting issues
+uv run ruff check --fix .
+
+# Auto-format code
+uv run black .
+
+# Check for missing copyright headers
+./scripts/check-copyright-headers.sh
+```
+
+### CI/CD Pipeline
+
+**Continuous Integration (`.github/workflows/01-ci.yml`):**
+- Runs on all PRs and pushes (except to `main`)
+- Steps:
+  1. Pre-commit hooks (Black, Ruff, YAML checks)
+  2. Copyright header validation
+  3. Python compilation check
+  4. Full test suite (pytest)
+  5. Security scans (Bandit, Checkov, CodeQL)
+
+**Continuous Deployment (`.github/workflows/02-ci-cd.yml`):**
+- Runs on pushes to `main` branch
+- Steps:
+  1. Build and provision Azure infrastructure
+  2. Deploy to staging slot
+  3. Manual approval required for production swap
+
+**Security Scanning:**
+- `03-checkov-security.yml` - Infrastructure as Code security
+- `04-bandit-security.yml` - Python code security
+- `codeql.yml` - Advanced code analysis
+
+### Testing Philosophy
+
+**Test Structure:**
+```
+tests/
+├── unit/           # Fast, isolated unit tests (no external deps)
+├── integration/    # Tests with mocked external services
+└── fixtures/       # Shared test data and mocks
+```
+
+**Test Requirements:**
+- All new features must include unit tests
+- Integration tests for complex workflows
+- Mock Azure OpenAI and Storage calls in tests
+- Aim for >80% code coverage on new code
+- Tests must be fast (<10 seconds for unit tests)
+
+**Example Test Pattern:**
+```python
+@pytest.mark.asyncio
+async def test_feature(mock_azure_client):
+    """Test description following docstring conventions."""
+    # Arrange
+    mock_azure_client.return_value = expected_response
+    
+    # Act
+    result = await function_under_test()
+    
+    # Assert
+    assert result == expected_value
+    mock_azure_client.assert_called_once()
+```
+
+## Security Considerations for AI/LLM Applications
+
+### Prompt Injection Prevention
+
+**Never trust user input in prompts:**
+```python
+# ❌ BAD - Vulnerable to prompt injection
+prompt = f"User said: {user_input}"
+
+# ✅ GOOD - Use structured messages with roles
+messages = [
+    {"role": "system", "content": system_persona},
+    {"role": "user", "content": user_input}  # Clearly separated
+]
+```
+
+### Azure OpenAI Security
+
+**API Key Management:**
+- Use Managed Identity for Azure resources (preferred)
+- Never commit API keys to repository
+- Store secrets in `.env` file (gitignored)
+- Use environment variables for all sensitive configuration
+
+**Rate Limiting and Cost Control:**
+```python
+# Implement token limits and caching
+from aida.utils.cached_llm import get_cached_llm
+
+llm = get_cached_llm(
+    max_tokens=1000,          # Limit response size
+    temperature=0.7,          # Consistent with config
+)
+```
+
+### Data Privacy
+
+**Conversation Storage:**
+- Conversations stored in Azure Blob Storage
+- Use private endpoints for data plane access
+- Enable encryption at rest (default)
+- Implement role-based access control (RBAC)
+
+**PII Handling:**
+- Do not log user messages verbatim
+- Sanitize logs of sensitive information
+- Follow data retention policies
+- Implement proper access controls for stored conversations
+
+### Security Checklist for PRs
+
+- [ ] No secrets or API keys in code
+- [ ] All external inputs validated and sanitized
+- [ ] Azure OpenAI calls use appropriate safety settings
+- [ ] Prompt injection mitigations in place
+- [ ] Tests include security edge cases
+- [ ] Dependencies updated (no known vulnerabilities)
+- [ ] Security scans pass (Bandit, CodeQL, Checkov)
+
+## Common Pitfalls and Troubleshooting
+
+### Agent Configuration Issues
+
+**Problem:** Agent fails to load persona or document files
+
+**Solution:**
+```python
+# Verify file paths are relative to project root
+persona_path = Path(__file__).parent.parent / "prompts" / "persona.md"
+if not persona_path.exists():
+    raise FileNotFoundError(f"Persona not found: {persona_path}")
+```
+
+**Problem:** YAML configuration not validating
+
+**Solution:**
+- Check against `pages.schema.json`
+- Use YAML language server comments
+- Validate with example files in `config/`
+
+### Azure OpenAI Connection Issues
+
+**Problem:** `ResourceNotFoundError` when calling Azure OpenAI
+
+**Common Causes:**
+1. Model deployment name mismatch
+2. Missing environment variables
+3. Incorrect API version
+
+**Solution:**
+```bash
+# Verify environment variables
+echo $AZURE_OPENAI_ENDPOINT
+echo $AZURE_OPENAI_API_VERSION
+echo $AZURE_OPENAI_API_KEY  # Should not be empty
+
+# Check model deployment names match infra/resources.bicep
+```
+
+### Chainlit Session Issues
+
+**Problem:** Session data not persisting between messages
+
+**Solution:**
+```python
+# Always use cl.user_session for state management
+import chainlit as cl
+
+@cl.on_chat_start
+async def start():
+    # Initialize session state
+    cl.user_session.set("agent_manager", agent_manager)
+
+@cl.on_message
+async def main(message: cl.Message):
+    # Retrieve from session
+    agent_manager = cl.user_session.get("agent_manager")
+```
+
+### Test Failures
+
+**Problem:** Tests fail with Azure Storage errors
+
+**Solution:**
+- Use Azurite for local testing
+- Mock Azure Storage calls in unit tests
+- Check `AZURE_STORAGE_CONNECTION_STRING` in `.env`
+
+**Problem:** Async tests hanging or timing out
+
+**Solution:**
+```python
+# Use pytest-asyncio properly
+@pytest.mark.asyncio
+async def test_async_function():
+    # Ensure awaiting all async calls
+    result = await async_function()
+```
+
+### Deployment Issues
+
+**Problem:** GitHub Actions deployment fails on provision step
+
+**Common Causes:**
+1. Missing Azure credentials or OIDC configuration
+2. Insufficient permissions on Azure subscription
+3. Resource naming conflicts
+
+**Solution:**
+- Check GitHub secrets and variables are configured
+- Verify service principal has Contributor role
+- Ensure `resourceToken` is unique in your environment
+
+## Quick Reference: Common Commands
+
+**Development:**
+```bash
+uv run -m chainlit run -dhw chainlit_app.py    # Run app locally
+uv run pytest tests/ -v                        # Run all tests
+uv run ruff check --fix .                      # Lint and fix
+uv run black .                                 # Format code
+```
+
+**Testing:**
+```bash
+uv run pytest tests/unit/ -v                   # Unit tests only
+uv run pytest tests/integration/ -v            # Integration tests only
+uv run pytest --cov=aida --cov-report=html     # Coverage report
+```
+
+**Azure Deployment:**
+```bash
+azd auth login                                 # Login to Azure
+azd provision                                  # Create/update infrastructure
+azd deploy                                     # Deploy to staging
+azd up                                         # Provision + deploy
+```
+
+**Quality Checks:**
+```bash
+uv run pre-commit run --all-files              # All pre-commit hooks
+./scripts/check-copyright-headers.sh           # Copyright headers
+./scripts/generate-notice.sh --no-dev          # Update NOTICE file
 ```
 
 By following these comprehensive guidelines, we ensure that the AI Discovery Workshop Facilitator codebase remains maintainable, extensible, and aligned with the project's specific requirements for workshop facilitation and multi-agent AI interactions.
