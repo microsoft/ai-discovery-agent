@@ -10,8 +10,11 @@ Tests configuration loading, logging setup, and other utility functions.
 import os
 from unittest.mock import mock_open, patch
 
+import pytest
+
 from aida.utils.config import load_program_info, setup_auth_secret
 from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
+from aida.utils.mermaid import extract_mermaid
 
 
 class TestConfigModule:
@@ -173,19 +176,51 @@ class TestMermaidModule:
 
     def test_extract_mermaid_with_valid_diagram(self):
         """Test extracting valid mermaid diagram from text."""
-        # This test would require the actual mermaid module implementation
-        # For now, we'll create a placeholder test structure
-        pass
+        text = """
+        Here is some explanation.
+
+        ```mermaid
+        graph TD
+            A-->B
+        ```
+        More details follow.
+        """
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        assert len(diagrams) == 1
+        assert "graph TD" in diagrams[0]
 
     def test_extract_mermaid_no_diagram(self):
         """Test extracting mermaid diagram when none exists."""
-        pass
+        text = "There is no diagram in this text."
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        assert len(diagrams) == 0
 
     def test_extract_mermaid_malformed_diagram(self):
         """Test extracting malformed mermaid diagram."""
-        pass
+        text = """
+        ```mermaid
+        graph TD
+            A--B
+        """
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        # Should still detect one diagram block even if malformed
+        assert len(diagrams) == 1
+        assert "graph TD" in diagrams[0]
 
 
 # Note: Tests for cached_llm.py would require mocking LangChain components
 # and would be more complex due to the Azure OpenAI integration.
 # We can add those tests in a separate file or extend this one later.
+
+
+# Placeholder for tests for cached_llm.py
+@pytest.mark.skip(
+    reason="Tests for cached_llm.py require mocking LangChain components and Azure OpenAI, which is not set up yet."
+)
+class TestCachedLLMModule:
+    def test_stub(self):
+        """Placeholder stub test for cached_llm.py."""
+        pass
