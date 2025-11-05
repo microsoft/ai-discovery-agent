@@ -570,6 +570,7 @@ llm = create_llm(
     deployment="gpt-4o",
     temperature=0.7,          # Consistent with config
     tag="rate-limited"
+)
 ```
 
 ### Data Privacy
