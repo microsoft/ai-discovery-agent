@@ -18,7 +18,7 @@ import subprocess  # nosec B404
 import sys
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Any, Optional
 
 try:
     import tomllib
@@ -27,7 +27,7 @@ except ImportError:
     import tomli as tomllib
 
 
-def load_pyproject_toml(pyproject_path: Path) -> dict:
+def load_pyproject_toml(pyproject_path: Path) -> dict[str, Any]:
     """
     Load and parse pyproject.toml file.
 
@@ -51,7 +51,7 @@ def load_pyproject_toml(pyproject_path: Path) -> dict:
         raise Exception(f"Failed to parse pyproject.toml: {e}")
 
 
-def extract_dependencies(pyproject_data: dict) -> Tuple[List[str], List[str]]:
+def extract_dependencies(pyproject_data: dict[str, Any]) -> tuple[list[str], list[str]]:
     """
     Extract runtime and development dependencies from pyproject.toml.
 
@@ -99,7 +99,7 @@ def normalize_package_name(dep_spec: str) -> str:
     return package_name.lower().replace("_", "-")
 
 
-def get_package_info(package_name: str) -> Optional[Dict[str, str]]:
+def get_package_info(package_name: str) -> Optional[dict[str, str]]:
     """
     Get package information using pip show command.
 
@@ -110,7 +110,7 @@ def get_package_info(package_name: str) -> Optional[Dict[str, str]]:
         Dictionary with package information or None if not found
     """
     try:
-        # Use full path to pip for security
+        # Use 'uv run pip' to ensure pip is run in the correct environment.
 
         result = subprocess.run(  # nosec B603, B607
             ["uv", "run", "pip", "show", package_name],
@@ -138,8 +138,8 @@ def get_package_info(package_name: str) -> Optional[Dict[str, str]]:
 def generate_notice_content(
     project_name: str,
     project_version: str,
-    runtime_deps: List[str],
-    dev_deps: List[str],
+    runtime_deps: list[str],
+    dev_deps: list[str],
     include_dev: bool = False,
 ) -> str:
     """

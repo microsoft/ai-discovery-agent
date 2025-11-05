@@ -101,12 +101,12 @@ For each dependency, the script attempts to include:
 ## Requirements
 
 ### Python Dependencies
-The script requires Python 3.11+ and attempts to use these packages if available:
+The script requires Python 3.12+ and attempts to use these packages if available:
 - `tomllib` (Python 3.11+) or `tomli` (fallback)
 - Standard library modules: `argparse`, `subprocess`, `pathlib`, `datetime`
 
 ### System Requirements
-- Python 3.11 or later
+- Python 3.12 or later
 - `pip` command available in PATH (for package information gathering)
 - `uv` (optional, but recommended for this project)
 
@@ -174,7 +174,7 @@ chmod +x scripts/generate-notice.py
 
 ### Python Version Issues
 If you get import errors related to `tomllib`:
-- Ensure you're using Python 3.11+
+- Ensure you're using Python 3.12+
 - Install `tomli` as a fallback: `pip install tomli`
 
 ## License Compliance Notes
