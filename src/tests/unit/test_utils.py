@@ -10,8 +10,11 @@ Tests configuration loading, logging setup, and other utility functions.
 import os
 from unittest.mock import mock_open, patch
 
-from utils.config import load_program_info, setup_auth_secret
-from utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
+import pytest
+
+from aida.utils.config import load_program_info, setup_auth_secret
+from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
+from aida.utils.mermaid import extract_mermaid
 
 
 class TestConfigModule:
@@ -20,14 +23,14 @@ class TestConfigModule:
     def test_setup_auth_secret_already_set(self):
         """Test setup_auth_secret when secret is already configured."""
         with patch.dict(os.environ, {"CHAINLIT_AUTH_SECRET": "existing_secret"}):
-            with patch("utils.config.dotenv.set_key") as mock_set_key:
+            with patch("aida.utils.config.dotenv.set_key") as mock_set_key:
                 setup_auth_secret()
 
                 # Should not call set_key if secret already exists
                 mock_set_key.assert_not_called()
 
-    @patch("utils.config.random_secret")
-    @patch("utils.config.dotenv.set_key")
+    @patch("aida.utils.config.random_secret")
+    @patch("aida.utils.config.dotenv.set_key")
     def test_setup_auth_secret_not_set(self, mock_set_key, mock_random_secret):
         """Test setup_auth_secret when no secret is configured."""
         # Arrange
@@ -45,7 +48,7 @@ class TestConfigModule:
             )
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch("utils.config.tomllib.load")
+    @patch("aida.utils.config.tomllib.load")
     def test_load_program_info_success(self, mock_tomllib_load, mock_file):
         """Test successful program info loading."""
         # Arrange
@@ -82,7 +85,7 @@ class TestConfigModule:
         assert result == "Error retrieving program information."
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch("utils.config.tomllib.load", side_effect=Exception("Parse error"))
+    @patch("aida.utils.config.tomllib.load", side_effect=Exception("Parse error"))
     def test_load_program_info_parse_error(self, mock_tomllib_load, mock_file):
         """Test program info loading with parsing error."""
         # Act
@@ -118,7 +121,7 @@ class TestLoggingModule:
         """Test that get_logger respects LOGLEVEL environment variable."""
         # Since _LOG_LEVEL is set at import time, we need to test differently
         # We'll patch the _LOG_LEVEL directly
-        with patch("utils.logging_setup._LOG_LEVEL", "DEBUG"):
+        with patch("aida.utils.logging_setup._LOG_LEVEL", "DEBUG"):
             # Act
             logger = get_logger("test_module")
 
@@ -159,7 +162,7 @@ class TestLoggingModule:
         """Test that setup_logging respects LOGLEVEL environment variable."""
         # Since _LOG_LEVEL is set at import time, we need to test differently
         # We'll patch the _LOG_LEVEL directly
-        with patch("utils.logging_setup._LOG_LEVEL", "WARNING"):
+        with patch("aida.utils.logging_setup._LOG_LEVEL", "WARNING"):
             # Act
             logger = setup_logging("test_module")
 
@@ -173,19 +176,51 @@ class TestMermaidModule:
 
     def test_extract_mermaid_with_valid_diagram(self):
         """Test extracting valid mermaid diagram from text."""
-        # This test would require the actual mermaid module implementation
-        # For now, we'll create a placeholder test structure
-        pass
+        text = """
+        Here is some explanation.
+
+        ```mermaid
+        graph TD
+            A-->B
+        ```
+        More details follow.
+        """
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        assert len(diagrams) == 1
+        assert "graph TD" in diagrams[0]
 
     def test_extract_mermaid_no_diagram(self):
         """Test extracting mermaid diagram when none exists."""
-        pass
+        text = "There is no diagram in this text."
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        assert len(diagrams) == 0
 
     def test_extract_mermaid_malformed_diagram(self):
         """Test extracting malformed mermaid diagram."""
-        pass
+        text = """
+        ```mermaid
+        graph TD
+            A--B
+        """
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        # Should still detect one diagram block even if malformed
+        assert len(diagrams) == 1
+        assert "graph TD" in diagrams[0]
 
 
 # Note: Tests for cached_llm.py would require mocking LangChain components
 # and would be more complex due to the Azure OpenAI integration.
 # We can add those tests in a separate file or extend this one later.
+
+
+# Placeholder for tests for cached_llm.py
+@pytest.mark.skip(
+    reason="Tests for cached_llm.py require mocking LangChain components and Azure OpenAI, which is not set up yet."
+)
+class TestCachedLLMModule:
+    def test_stub(self):
+        """Placeholder stub test for cached_llm.py."""
+        pass

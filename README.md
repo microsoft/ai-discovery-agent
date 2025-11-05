@@ -1,6 +1,7 @@
 [![CI - Compilation and Testing](https://github.com/microsoft/ai-discovery-agent/actions/workflows/01-ci.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/01-ci.yml)
 [![CD](https://github.com/microsoft/ai-discovery-agent/actions/workflows/02-ci-cd.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/02-ci-cd.yml)
 [![SFI](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-checkov-security.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/03-checkov-security.yml)
+[![Release](https://github.com/microsoft/ai-discovery-agent/actions/workflows/10-release.yml/badge.svg)](https://github.com/microsoft/ai-discovery-agent/actions/workflows/10-release.yml)
 
 # Welcome to Aida, the AI Discovery Agent and Workshop Facilitator
 
@@ -16,27 +17,28 @@ This is a set of agents to help during the AI Discovery Workshop training or to 
 
 1. **Fork the repository**:
 
-    The `azd` deployment process requires write access to the repository to set up GitHub Actions for automated deployments. Please fork this repository to your own GitHub account.
+   The `azd` deployment process requires write access to the repository to set up GitHub Actions for automated deployments. Please fork this repository to your own GitHub account.
 
 2. **Clone the repository**:
-    ```bash
-    git clone https://github.com/youraccount/ai-discovery-agent.git
-    cd ai-discovery-agent
-    ```
+
+   ```bash
+   git clone https://github.com/youraccount/ai-discovery-agent.git
+   cd ai-discovery-agent
+   ```
 
 3. **Install dependencies**:
 
-    Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
+   Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
 
-    ```bash
-    curl -LsSf https://astral.sh/uv/install.sh | sh
-    ```
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
 
-    ```bash
-    cd src
-    # Create a virtual environment and install requirements
-    uv sync
-    ```
+   ```bash
+   cd src
+   # Create a virtual environment and install requirements
+   uv sync
+   ```
 
 4. **Configure authentication**:
 
@@ -319,9 +321,47 @@ For more details, see the [official Microsoft documentation on OIDC and federate
 
 ---
 
+## OSS Compliance and NOTICE File Generation
+
+This project includes automated tooling to generate OSS-compliant NOTICE files that list all third-party dependencies used in the project. This is required for proper open source license compliance.
+
+### Generating NOTICE Files
+
+The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `src/pyproject.toml`:
+
+```bash
+# Generate NOTICE file with runtime dependencies only (excludes dev dependencies)
+./scripts/generate-notice.sh --no-dev
+
+# Include development dependencies (default behavior)
+./scripts/generate-notice.sh
+# Generate with verbose output
+./scripts/generate-notice.sh --verbose
+```
+
+### VS Code Integration
+
+You can also generate NOTICE files directly from VS Code using the built-in tasks:
+
+1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. Type "Tasks: Run Task"
+3. Select either:
+   - **generate-notice**: Runtime dependencies only
+   - **generate-notice-with-dev**: Include development dependencies
+
+### Compliance Requirements
+
+The generated NOTICE file follows OSS best practices as outlined in:
+- [FOSSLight Guide - OSS Notice Types](https://fosslight.org/hub-guide-en/tips/2_project/4_oss_notice/#types-of-oss-notices)
+- [Apache License 2.0 - Redistribution Requirements](https://www.apache.org/licenses/LICENSE-2.0.html#redistribution)
+
+For more detailed information about the NOTICE file generation scripts, see [`scripts/README.md`](scripts/README.md).
+
+---
+
 ## Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit [Contributor License Agreements](https://cla.opensource.microsoft.com).
 
@@ -332,6 +372,8 @@ provided by the bot. You will only need to do this once across all repos using o
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or
 contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+
+For information about the release process, see the [Release Process documentation](docs/RELEASE_PROCESS.md).
 
 ## Trademarks
 

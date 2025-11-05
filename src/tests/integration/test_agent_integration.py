@@ -34,7 +34,7 @@ class TestAgentManagerIntegration:
     def reset_module_state(self):
         """Reset agent_manager module state before each test."""
         # Import here to avoid import at module level
-        import agents.agent_manager as agent_manager
+        import aida.agents.agent_manager as agent_manager
 
         # Store original state from global configuration
         original_agents_config = agent_manager._agents_config.copy()
@@ -49,8 +49,10 @@ class TestAgentManagerIntegration:
     def test_load_configurations_with_real_file(self, temp_config_file):
         """Test loading configurations from actual file."""
         # Patch the PAGES_CONFIG_FILE constant
-        with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)):
-            import agents.agent_manager as agent_manager
+        with patch(
+            "aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)
+        ):
+            import aida.agents.agent_manager as agent_manager
 
             # Reload the module by calling load_configurations
             agent_manager.load_configurations()
@@ -63,8 +65,10 @@ class TestAgentManagerIntegration:
 
     def test_role_based_access_control_workflow(self, temp_config_file):
         """Test complete role-based access control workflow."""
-        with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)):
-            import agents.agent_manager as agent_manager
+        with patch(
+            "aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(temp_config_file)
+        ):
+            import aida.agents.agent_manager as agent_manager
 
             # Load configuration
             agent_manager.load_configurations()
@@ -96,7 +100,7 @@ class TestAgentManagerErrorHandling:
     @pytest.fixture(autouse=True)
     def reset_module_state(self):
         """Reset agent_manager module state before each test."""
-        import agents.agent_manager as agent_manager
+        import aida.agents.agent_manager as agent_manager
 
         # Store original state from global configuration
         original_agents_config = agent_manager._agents_config.copy()
@@ -111,9 +115,10 @@ class TestAgentManagerErrorHandling:
     def test_missing_config_file(self):
         """Test behavior when config file is missing."""
         with patch(
-            "agents.agent_manager.PAGES_CONFIG_FILE", Path("/nonexistent/config.yaml")
+            "aida.agents.agent_manager.PAGES_CONFIG_FILE",
+            Path("/nonexistent/config.yaml"),
         ):
-            import agents.agent_manager as agent_manager
+            import aida.agents.agent_manager as agent_manager
 
             # Load configuration (should handle missing file gracefully)
             agent_manager.load_configurations()
@@ -139,8 +144,8 @@ class TestAgentManagerErrorHandling:
             f.flush()
 
             try:
-                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                    import agents.agent_manager as agent_manager
+                with patch("aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import aida.agents.agent_manager as agent_manager
 
                     # Load configuration (should handle parsing error gracefully)
                     agent_manager.load_configurations()
@@ -178,8 +183,8 @@ class TestAgentManagerErrorHandling:
             f.flush()
 
             try:
-                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                    import agents.agent_manager as agent_manager
+                with patch("aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import aida.agents.agent_manager as agent_manager
 
                     # Load configuration
                     agent_manager.load_configurations()
@@ -203,7 +208,7 @@ class TestAgentConfigurationValidation:
     @pytest.fixture(autouse=True)
     def reset_module_state(self):
         """Reset agent_manager module state before each test."""
-        import agents.agent_manager as agent_manager
+        import aida.agents.agent_manager as agent_manager
 
         # Store original state from global configuration
         original_agents_config = agent_manager._agents_config.copy()
@@ -244,8 +249,8 @@ class TestAgentConfigurationValidation:
             f.flush()
 
             try:
-                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                    import agents.agent_manager as agent_manager
+                with patch("aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import aida.agents.agent_manager as agent_manager
 
                     # Load configuration
                     agent_manager.load_configurations()
@@ -290,8 +295,8 @@ class TestAgentConfigurationValidation:
             f.flush()
 
             try:
-                with patch("agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
-                    import agents.agent_manager as agent_manager
+                with patch("aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
+                    import aida.agents.agent_manager as agent_manager
 
                     # Load configuration
                     agent_manager.load_configurations()

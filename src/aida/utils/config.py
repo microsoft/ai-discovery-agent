@@ -12,7 +12,7 @@ from pathlib import Path
 import dotenv
 from chainlit.secret import random_secret
 
-from .logging_setup import get_logger
+from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 
@@ -44,7 +44,7 @@ def load_program_info() -> str:
     """
     program_info = ""
     try:
-        with open(Path(__file__).parent.parent / "pyproject.toml", "rb") as f:
+        with open(Path(__file__).parent.parent.parent / "pyproject.toml", "rb") as f:
             info = tomllib.load(f)
             # Extract all fields from the [project] section
             project_info = info.get("project", {})

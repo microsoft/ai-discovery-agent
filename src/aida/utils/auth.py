@@ -18,9 +18,9 @@ import chainlit as cl
 import yaml
 from yaml.loader import SafeLoader
 
-from utils.logging_setup import get_logger
+from aida.utils.logging_setup import get_logger
 
-AUTH_CONFIG_FILE = Path(__file__).parent / "config/auth-config.yaml"
+AUTH_CONFIG_FILE = Path(__file__).parent.parent.parent / "config/auth-config.yaml"
 
 logger = get_logger(__name__)
 

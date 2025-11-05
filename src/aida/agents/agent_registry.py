@@ -27,13 +27,13 @@ from pathlib import Path
 
 import yaml
 
-from utils.logging_setup import get_logger
+from aida.utils.logging_setup import get_logger
 
 from .agent import Agent
 from .graph_agent import GraphAgent
 from .single_agent import SingleAgent
 
-PAGES_FILE = Path(__file__).parent.parent / "config/pages.yaml"
+PAGES_FILE = Path(__file__).parent.parent.parent / "config/pages.yaml"
 
 logger = get_logger(__name__)
 

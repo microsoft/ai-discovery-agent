@@ -1,0 +1,374 @@
+name: Release Pipeline
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+      - dev
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+  pull-requests: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Extract version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(grep -E "^version = " src/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: $VERSION"
+
+          # Determine if this is main or dev branch
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]] || [[ "${{ github.base_ref }}" == "main" ]]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "Branch: main (production release)"
+          elif [[ "${{ github.ref }}" == "refs/heads/dev" ]] || [[ "${{ github.base_ref }}" == "dev" ]]; then
+            echo "branch=dev" >> "$GITHUB_OUTPUT"
+            echo "Branch: dev (development release)"
+          else
+            echo "branch=unknown" >> "$GITHUB_OUTPUT"
+            echo "Branch: unknown"
+          fi
+
+      - name: Check if tag exists and determine final tag
+        id: check_tag
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          BRANCH="${{ steps.get_version.outputs.branch }}"
+
+          # Create tag with branch prefix for dev
+          if [ "$BRANCH" == "dev" ]; then
+            TAG="v$VERSION-dev"
+          else
+            TAG="v$VERSION"
+          fi
+
+          # Fetch all tags
+          git fetch --tags
+
+          # Check if tag exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists"
+
+            # For main branch, require a new semantic version
+            if [ "$BRANCH" == "main" ]; then
+              echo "Error: Tag $TAG already exists for main branch"
+              echo "Please update the version in pyproject.toml to a new semantic version"
+              exit 1
+            fi
+
+            # For dev branch, allow patch releases
+            PATCH_TAG="${TAG}-patch-$(date +%Y%m%d%H%M%S)"
+
+            # Check if patch tag also exists
+            if git rev-parse "$PATCH_TAG" >/dev/null 2>&1; then
+              echo "Error: Both $TAG and $PATCH_TAG already exist"
+              echo "Please update the version in pyproject.toml"
+              exit 1
+            fi
+
+            echo "tag=$PATCH_TAG" >> "$GITHUB_OUTPUT"
+            echo "Using patch tag: $PATCH_TAG"
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "Using tag: $TAG"
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build package
+        run: |
+          uv build --directory src
+          echo "Build artifacts:"
+          ls -lh src/dist/
+
+      - name: Install sigstore for signing
+        run: |
+          uv pip install --system sigstore
+
+      - name: Sign the distribution
+        run: |
+          # Find the tar.gz file
+          TARBALL=$(find src/dist -name "*.tar.gz" -type f)
+
+          if [ -z "$TARBALL" ]; then
+            echo "Error: No tar.gz file found in src/dist/"
+            exit 1
+          fi
+
+          echo "Signing: $TARBALL"
+
+          # Sign the tarball using sigstore
+          sigstore sign "$TARBALL"
+
+          echo "Signature files created:"
+          ls -lh src/dist/
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.check_tag.outputs.tag }}
+          name: Release ${{ steps.check_tag.outputs.tag }}
+          body: |
+            Release ${{ steps.check_tag.outputs.tag }}
+
+            Version: ${{ steps.get_version.outputs.version }}
+            Branch: ${{ steps.get_version.outputs.branch }}
+            ${{ steps.check_tag.outputs.tag_exists == 'true' && '⚠️ **Note**: This is a patch release because the original version tag already existed.' || '' }}
+
+            ## Changes
+            See the [commit history](https://github.com/${{ github.repository }}/commits/${{ steps.check_tag.outputs.tag }}) for details.
+
+            ## Artifacts
+            - Source distribution (tar.gz) with sigstore signature
+            - Wheel distribution (whl)
+
+            ## Verification
+            To verify the signature:
+            ```bash
+            pip install sigstore
+            sigstore verify identity <tarball> --cert-identity <identity> --cert-oidc-issuer https://token.actions.githubusercontent.com
+            ```
+          files: |
+            src/dist/*.tar.gz
+            src/dist/*.tar.gz.sigstore
+            src/dist/*.whl
+          draft: false
+          prerelease: ${{ steps.get_version.outputs.branch == 'dev' || steps.check_tag.outputs.tag_exists == 'true' }}
+
+  validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Install Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+
+      - name: Extract version from pyproject.toml
+        id: get_version
+        run: |
+          VERSION=$(grep -E "^version = " src/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Version to be released: $VERSION"
+
+          # Determine target branch
+          if [[ "${{ github.base_ref }}" == "main" ]]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "Target branch: main"
+          elif [[ "${{ github.base_ref }}" == "dev" ]]; then
+            echo "branch=dev" >> "$GITHUB_OUTPUT"
+            echo "Target branch: dev"
+          else
+            echo "branch=unknown" >> "$GITHUB_OUTPUT"
+            echo "Target branch: unknown"
+          fi
+
+      - name: Check if tag already exists
+        id: check_existing_tag
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+          BRANCH="${{ steps.get_version.outputs.branch }}"
+
+          # Create tag with branch prefix for dev
+          if [ "$BRANCH" == "dev" ]; then
+            TAG="v$VERSION-dev"
+          else
+            TAG="v$VERSION"
+          fi
+
+          # Fetch all tags
+          git fetch --tags
+
+          # Check if tag exists
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "tag_exists=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "⚠️  Warning: Tag $TAG already exists!"
+
+            # For main branch, this is an error - require version update
+            if [ "$BRANCH" == "main" ]; then
+              echo "version_update_required=true" >> "$GITHUB_OUTPUT"
+              echo "❌ Error: Tag $TAG already exists for main branch!"
+              echo "A new semantic version is required for main branch releases."
+            else
+              # For dev branch, check if patch tag also exists
+                PATCH_TAG="${TAG}-patch-$(date +%Y%m%d%H%M%S)"
+              if git rev-parse "$PATCH_TAG" >/dev/null 2>&1; then
+                echo "patch_tag_exists=true" >> "$GITHUB_OUTPUT"
+                echo "version_update_required=true" >> "$GITHUB_OUTPUT"
+                echo "❌ Error: Both $TAG and $PATCH_TAG already exist!"
+              else
+                echo "patch_tag_exists=false" >> "$GITHUB_OUTPUT"
+                echo "version_update_required=false" >> "$GITHUB_OUTPUT"
+                echo "ℹ️  A patch tag $PATCH_TAG will be created instead"
+              fi
+            fi
+          else
+            echo "tag_exists=false" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "version_update_required=false" >> "$GITHUB_OUTPUT"
+            echo "✓ Tag $TAG is available"
+          fi
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.get_version.outputs.version }}"
+
+          # Check if version follows semantic versioning (X.Y.Z)
+          if ! echo "$VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "Error: Version '$VERSION' does not follow semantic versioning (X.Y.Z)"
+            exit 1
+          fi
+
+          echo "✓ Version format is valid: $VERSION"
+
+      - name: Build package (dry-run)
+        run: |
+          uv build --directory src
+          echo "✓ Package builds successfully"
+          echo "Build artifacts:"
+          ls -lh src/dist/
+
+      - name: Comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const version = '${{ steps.get_version.outputs.version }}';
+            const branch = '${{ steps.get_version.outputs.branch }}';
+            const tag = '${{ steps.check_existing_tag.outputs.tag }}';
+            const tagExists = '${{ steps.check_existing_tag.outputs.tag_exists }}' === 'true';
+            const versionUpdateRequired = '${{ steps.check_existing_tag.outputs.version_update_required }}' === 'true';
+            const patchTagExists = '${{ steps.check_existing_tag.outputs.patch_tag_exists }}' === 'true';
+
+            let statusIcon = '✅';
+            let statusMessage = 'Ready to release';
+            let warningSection = '';
+
+            if (versionUpdateRequired) {
+              statusIcon = '❌';
+              statusMessage = 'Cannot release - version update required';
+
+              if (branch === 'main') {
+                warningSection = `\n## ⚠️ Action Required\n\n**Tag \`${tag}\` already exists!**\n\nFor main branch releases, you must use a new semantic version. Patch releases are not allowed for production releases.\n\nPlease update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
+              } else if (patchTagExists) {
+                warningSection = `\n## ⚠️ Action Required\n\n**Both \`${tag}\` and \`${tag}-patch\` tags already exist!**\n\nYou must update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
+              }
+            } else if (tagExists && branch === 'dev') {
+              statusIcon = '⚠️';
+              statusMessage = 'Tag exists - patch release will be created';
+              warningSection = `\n## ⚠️ Notice\n\nTag \`${tag}\` already exists. When merged, a \`${tag}-patch\` tag will be created instead.\n\nConsider updating the version in \`src/pyproject.toml\` to create a clean release.\n`;
+            }
+
+            const releaseType = branch === 'dev' ? 'development prerelease' : 'production release';
+
+            const comment = `## 🚀 Release Preview ${statusIcon}
+
+            **Status**: ${statusMessage}
+
+            This PR will trigger a ${releaseType} when merged to ${branch}.
+
+            **Version**: \`${version}\`
+            **Tag**: \`${tag}\`
+            **Branch**: \`${branch}\`
+            ${warningSection}
+            The release pipeline will:
+            1. ✅ Build the package with \`uv build\`
+            2. ✅ Sign the tar.gz with sigstore
+            3. ✅ Create a GitHub release with tag \`${tag}\`${tagExists && branch === 'dev' && !versionUpdateRequired ? '-patch' : ''}
+            4. ✅ Upload signed artifacts
+            ${branch === 'dev' ? '\n> **Note**: Dev releases are marked as prerelease.' : ''}
+            ${branch === 'main' ? '\n> **Note**: Main branch releases require unique semantic versions. Patch releases are not allowed.' : ''}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
+
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+    env:
+      REGISTRY: ghcr.io
+      IMAGE_NAME: ${{ github.repository }}
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      # Uses the `docker/login-action` action to log in to the Container registry registry using the account and password that will publish the packages. Once published, the packages are scoped to the account defined here.
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3.6.0
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      # This step uses [docker/metadata-action](https://github.com/docker/metadata-action#about) to extract tags and labels that will be applied to the specified image. The `id` "meta" allows the output of this step to be referenced in a subsequent step. The `images` value provides the base name for the tags and labels.
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v5.8.0
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      # This step uses the `docker/build-push-action` action to build the image, based on your repository's `Dockerfile`. If the build succeeds, it pushes the image to GitHub Packages.
+      # It uses the `context` parameter to define the build's context as the set of files located in the specified path. For more information, see [Usage](https://github.com/docker/build-push-action#usage) in the README of the `docker/build-push-action` repository.
+      # It uses the `tags` and `labels` parameters to tag and label the image with the output from the "meta" step.
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@v6.18.0
+        with:
+          context: src
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+      # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
+      - name: Generate artifact attestation
+        uses: actions/attest-build-provenance@v3
+        with:
+          subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          subject-digest: ${{ steps.push.outputs.digest }}
+          push-to-registry: true

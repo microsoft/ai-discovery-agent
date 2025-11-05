@@ -14,7 +14,7 @@ from unittest.mock import mock_open, patch
 import pytest
 import yaml
 
-import agents.agent_manager as agent_manager
+import aida.agents.agent_manager as agent_manager
 from tests.fixtures.data import SAMPLE_AGENT_CONFIG
 
 
@@ -41,7 +41,7 @@ class TestAgentManagerModule:
         return yaml.dump(SAMPLE_AGENT_CONFIG)
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch("agents.agent_manager.yaml.load")
+    @patch("aida.agents.agent_manager.yaml.load")
     def test_load_configurations_success(self, mock_yaml_load, mock_file):
         """Test successful configuration loading."""
         # Arrange
@@ -56,7 +56,7 @@ class TestAgentManagerModule:
         mock_yaml_load.assert_called_once()
 
     @patch("builtins.open", side_effect=FileNotFoundError)
-    @patch("agents.agent_manager.logger.error")
+    @patch("aida.agents.agent_manager.logger.error")
     def test_load_configurations_file_not_found(self, mock_logger, mock_file):
         """Test configuration loading when file is missing."""
         # Act
@@ -68,8 +68,11 @@ class TestAgentManagerModule:
         mock_logger.assert_called_once()
 
     @patch("builtins.open", new_callable=mock_open, read_data="invalid: yaml: content")
-    @patch("agents.agent_manager.yaml.load", side_effect=yaml.YAMLError("Invalid YAML"))
-    @patch("agents.agent_manager.logger.error")
+    @patch(
+        "aida.agents.agent_manager.yaml.load",
+        side_effect=yaml.YAMLError("Invalid YAML"),
+    )
+    @patch("aida.agents.agent_manager.logger.error")
     def test_load_configurations_yaml_error(
         self, mock_logger, mock_yaml_load, mock_file
     ):
@@ -246,7 +249,7 @@ class TestAgentManagerModule:
         with patch(
             "builtins.open", mock_open(read_data=yaml.dump(SAMPLE_AGENT_CONFIG))
         ):
-            with patch("agents.agent_manager.yaml.load") as mock_yaml_load:
+            with patch("aida.agents.agent_manager.yaml.load") as mock_yaml_load:
                 mock_yaml_load.return_value = SAMPLE_AGENT_CONFIG
                 agent_manager.load_configurations()
 
@@ -331,7 +334,7 @@ class TestAgentManagerModule:
 class TestAgentManagerIntegration:
     """Integration tests for agent manager with file system."""
 
-    @patch("agents.agent_manager.PAGES_CONFIG_FILE")
+    @patch("aida.agents.agent_manager.PAGES_CONFIG_FILE")
     def test_load_configurations_with_real_path(self, mock_path):
         """Test loading configurations with actual file path logic."""
         # Arrange
@@ -340,7 +343,7 @@ class TestAgentManagerIntegration:
         with patch(
             "builtins.open", mock_open(read_data=yaml.dump(SAMPLE_AGENT_CONFIG))
         ):
-            with patch("agents.agent_manager.yaml.load") as mock_yaml_load:
+            with patch("aida.agents.agent_manager.yaml.load") as mock_yaml_load:
                 mock_yaml_load.return_value = SAMPLE_AGENT_CONFIG
 
                 # Act

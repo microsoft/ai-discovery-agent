@@ -1,10 +1,13 @@
+# Copyright (c) Microsoft Corporation.
+# Licensed under the MIT license.
+
 """Unit tests for the SingleAgent class."""
 
 from unittest.mock import MagicMock, patch
 
 import pytest
 
-from agents.single_agent import SingleAgent
+from aida.agents.single_agent import SingleAgent
 
 
 class TestSingleAgent:
@@ -67,7 +70,7 @@ class TestSingleAgent:
         assert agent.documents is None
         assert agent.temperature is None
 
-    @patch("agents.single_agent.load_prompt_files")
+    @patch("aida.agents.single_agent.load_prompt_files")
     def test_get_system_prompts_single_document(self, mock_load_prompt_files):
         """Test system prompt generation with single document."""
         mock_load_prompt_files.return_value = [
@@ -90,7 +93,7 @@ class TestSingleAgent:
         assert system_prompts[0].content == "Facilitator persona content"
         assert system_prompts[1].content == "Workshop guide content"
 
-    @patch("agents.single_agent.load_prompt_files")
+    @patch("aida.agents.single_agent.load_prompt_files")
     def test_get_system_prompts_multiple_documents(self, mock_load_prompt_files):
         """Test system prompt generation with multiple documents."""
         mock_load_prompt_files.return_value = [
@@ -116,7 +119,7 @@ class TestSingleAgent:
         assert system_prompts[1].content == "Domain knowledge content"
         assert system_prompts[2].content == "Best practices content"
 
-    @patch("agents.single_agent.load_prompt_files")
+    @patch("aida.agents.single_agent.load_prompt_files")
     def test_get_system_prompts_no_documents(self, mock_load_prompt_files):
         """Test system prompt generation with no documents."""
         mock_load_prompt_files.return_value = ["Persona content only"]
@@ -131,7 +134,7 @@ class TestSingleAgent:
         assert len(system_prompts) == 1
         assert system_prompts[0].content == "Persona content only"
 
-    @patch("agents.single_agent.load_prompt_files")
+    @patch("aida.agents.single_agent.load_prompt_files")
     def test_get_system_prompts_load_error_handling(self, mock_load_prompt_files):
         """Test error handling when prompt loading fails."""
         mock_load_prompt_files.side_effect = FileNotFoundError("Prompt file not found")
@@ -144,8 +147,8 @@ class TestSingleAgent:
         with pytest.raises(FileNotFoundError):
             agent.get_system_prompts()
 
-    @patch("agents.single_agent.ChatPromptTemplate")
-    @patch("agents.single_agent.MessagesPlaceholder")
+    @patch("aida.agents.single_agent.ChatPromptTemplate")
+    @patch("aida.agents.single_agent.MessagesPlaceholder")
     def test_create_chain(self, mock_messages_placeholder, mock_chat_prompt_template):
         """Test chain creation functionality."""
         # Mock the template components
@@ -236,7 +239,7 @@ class TestSingleAgent:
         assert hasattr(agent, "_get_azure_chat_openai")
         assert hasattr(agent, "astream")
 
-    @patch("agents.single_agent.load_prompt_files")
+    @patch("aida.agents.single_agent.load_prompt_files")
     def test_logging_in_get_system_prompts(self, mock_load_prompt_files):
         """Test that logging occurs in get_system_prompts."""
         mock_load_prompt_files.return_value = ["Test content"]
@@ -247,7 +250,7 @@ class TestSingleAgent:
             documents="prompts/doc.md",
         )
 
-        with patch("agents.single_agent.logger") as mock_logger:
+        with patch("aida.agents.single_agent.logger") as mock_logger:
             agent.get_system_prompts()
 
             # Verify debug logging was called

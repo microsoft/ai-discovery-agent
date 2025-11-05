@@ -14,8 +14,8 @@ from unittest.mock import AsyncMock, MagicMock, Mock, patch
 import chainlit as cl
 import pytest
 
-from chat_handlers import on_chat_start, on_message, set_chat_profiles
-from persistence.conversation_manager import DummyConversationManager
+from aida.persistence.conversation_manager import DummyConversationManager
+from aida.utils.chat_handlers import on_chat_start, on_message, set_chat_profiles
 from tests.fixtures.data import (
     create_mock_admin_user,
     create_mock_user,
@@ -50,7 +50,7 @@ class TestChatProfileIntegration:
         user.metadata = {"roles": ["user"]}
 
         # Mock the agent_manager module functions
-        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+        with patch("aida.agents.agent_manager.get_available_agents") as mock_get_agents:
             # Test with user having restricted access
             mock_get_agents.return_value = {
                 "facilitator": mock_available_agents["facilitator"]
@@ -71,7 +71,7 @@ class TestChatProfileIntegration:
         user.metadata = {"roles": ["admin", "user"]}
 
         # Mock the agent_manager module functions
-        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+        with patch("aida.agents.agent_manager.get_available_agents") as mock_get_agents:
             mock_get_agents.return_value = mock_available_agents
 
             profiles = await set_chat_profiles(user)
@@ -113,7 +113,7 @@ class TestChatStartIntegration:
     async def test_on_chat_start_with_user(self, mock_session, mock_user):
         """Test chat start with authenticated user."""
         # Mock the agent manager functions
-        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+        with patch("aida.agents.agent_manager.get_available_agents") as mock_get_agents:
             mock_get_agents.return_value = {
                 "facilitator": {
                     "title": "Workshop Facilitator",
@@ -171,7 +171,7 @@ class TestChatStartIntegration:
 
     async def test_on_chat_start_no_available_agents(self, mock_user):
         """Test chat start when user has no available agents."""
-        with patch("agents.agent_manager.get_available_agents") as mock_get_agents:
+        with patch("aida.agents.agent_manager.get_available_agents") as mock_get_agents:
             mock_get_agents.return_value = {}
 
             with patch("chainlit.user_session") as mock_cl_session:
@@ -260,7 +260,8 @@ class TestMessageRoutingIntegration:
         with (
             patch("chainlit.user_session") as mock_session,
             patch(
-                "chat_handlers.agent_registry.get_agent", return_value=dummy_agent
+                "aida.utils.chat_handlers.agent_registry.get_agent",
+                return_value=dummy_agent,
             ) as mock_get_agent,
             patch("chainlit.Step", DummyStep),
             patch("chainlit.LangchainCallbackHandler", DummyLCB),

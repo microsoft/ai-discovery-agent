@@ -225,3 +225,6 @@ __blob*
 
 *.sarif
 *_results.xml
+copyright-header-check.xml
+copyright-header-check.json
+**/*.tmp

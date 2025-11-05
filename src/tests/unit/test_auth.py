@@ -13,7 +13,7 @@ from unittest.mock import Mock, mock_open, patch
 import pytest
 import yaml
 
-from auth import is_oauth_enabled, oauth_callback, password_auth_callback
+from aida.utils.auth import is_oauth_enabled, oauth_callback, password_auth_callback
 from tests.fixtures.data import SAMPLE_AUTH_CONFIG
 
 
@@ -26,14 +26,14 @@ class TestPasswordAuthentication:
         return yaml.dump(SAMPLE_AUTH_CONFIG)
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch("auth.yaml.load")
+    @patch("aida.utils.auth.yaml.load")
     async def test_password_auth_callback_success(self, mock_yaml_load, mock_file):
         """Test successful password authentication."""
         # Arrange
         password = "testpass"  # nosec B105
 
         # Create a proper PBKDF2 hash for the test password
-        from auth import _hash_password
+        from aida.utils.auth import _hash_password
 
         hashed_password = _hash_password(password)
 
@@ -66,7 +66,7 @@ class TestPasswordAuthentication:
         assert result.metadata["roles"] == ["user"]
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch("auth.yaml.load")
+    @patch("aida.utils.auth.yaml.load")
     async def test_password_auth_callback_invalid_user(self, mock_yaml_load, mock_file):
         """Test authentication with non-existent user."""
         # Arrange
@@ -81,7 +81,7 @@ class TestPasswordAuthentication:
         assert result is None
 
     @patch("builtins.open", new_callable=mock_open)
-    @patch("auth.yaml.load")
+    @patch("aida.utils.auth.yaml.load")
     async def test_password_auth_callback_wrong_password(
         self, mock_yaml_load, mock_file
     ):
@@ -91,7 +91,7 @@ class TestPasswordAuthentication:
         wrong_password = "wrongpass"  # nosec B105
 
         # Create a proper PBKDF2 hash for the correct password
-        from auth import _hash_password
+        from aida.utils.auth import _hash_password
 
         hashed_password = _hash_password(correct_password)
 
@@ -133,7 +133,7 @@ class TestPasswordAuthentication:
         assert result is None
 
     @patch("builtins.open", new_callable=mock_open, read_data="invalid: yaml: content")
-    @patch("auth.yaml.load", side_effect=yaml.YAMLError("Invalid YAML"))
+    @patch("aida.utils.auth.yaml.load", side_effect=yaml.YAMLError("Invalid YAML"))
     async def test_password_auth_callback_invalid_yaml(self, mock_yaml_load, mock_file):
         """Test authentication with invalid YAML config."""
         # Arrange
