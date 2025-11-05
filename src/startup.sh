@@ -46,7 +46,7 @@ HOST=${HOST:-"0.0.0.0"}
 LOG_LEVEL=${LOG_LEVEL:-"info"}
 
 SECRETS_DIR="${SECRETS_DIR:-/home/site/wwwroot/secrets}"
-APP_CONFIG_DIR=${APP_CONFIG_DIR:-/app/config}
+APP_CONFIG_DIR="${APP_CONFIG_DIR:-/app/config}"
 echo "Starting application with the following settings:"
 echo "  - Port: $PORT"
 echo "  - Host: $HOST"
@@ -86,7 +86,7 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
         echo "ERROR: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami))!"
         exit 1
     fi
-    if [ "${FILE_PERMS:2:1}" -ne 0 ]; then
+    if [ "${FILE_PERMS:2:1}" != "0" ]; then
         echo "ERROR: $AUTH_CONFIG_SOURCE is world-writable! Unsafe permission."
         exit 1
     fi
@@ -113,6 +113,6 @@ status=$?
 if [ $status -eq 0 ]; then
     echo "✓ Uvicorn shut down normally (exit code 0)."
 else
-   echo "ERROR: Uvicorn terminated with exit code $status!"
-   exit $status
+    echo "ERROR: Uvicorn terminated with exit code $status!"
+    exit $status
 fi
