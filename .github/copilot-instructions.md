@@ -79,12 +79,12 @@ The cached_loader module lacks comprehensive unit test coverage
 
 ## Files Involved
 - src/aida/utils/cached_loader.py (target)
-- tests/unit/test_cached_loader.py (reference for patterns)
+- src/tests/unit/test_cached_loader.py (reference for patterns)
 
 ## Acceptance Criteria
 - [ ] Test coverage > 90% for cached_loader.py
 - [ ] All tests pass
-- [ ] Follow existing pytest patterns in tests/unit/
+- [ ] Follow existing pytest patterns in src/tests/unit/
 ```
 
 **Example - Bad Issue:**
@@ -562,12 +562,14 @@ messages = [
 **Rate Limiting and Cost Control:**
 ```python
 # Implement token limits and caching
-from aida.utils.cached_llm import get_cached_llm
+from aida.utils.cached_llm import create_llm
 
-llm = get_cached_llm(
-    max_tokens=1000,          # Limit response size
+llm = create_llm(
+    endpoint=AZURE_OPENAI_ENDPOINT,
+    api_version=AZURE_OPENAI_API_VERSION,
+    deployment="gpt-4o",
     temperature=0.7,          # Consistent with config
-)
+    tag="rate-limited"
 ```
 
 ### Data Privacy
