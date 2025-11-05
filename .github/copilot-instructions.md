@@ -526,10 +526,10 @@ async def test_feature(mock_azure_client):
     """Test description following docstring conventions."""
     # Arrange
     mock_azure_client.return_value = expected_response
-    
+
     # Act
     result = await function_under_test()
-    
+
     # Assert
     assert result == expected_value
     mock_azure_client.assert_called_once()
