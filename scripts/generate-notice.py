@@ -111,13 +111,13 @@ def get_package_info(package_name: str) -> Optional[Dict[str, str]]:
     """
     try:
         # Use full path to pip for security
-        pip_path = "/usr/bin/uv"
-        if not Path(pip_path).exists():
-            # Fallback to pip in PATH
-            pip_path = "uv"
+        # pip_path = "/usr/bin/pip"
+        # if not Path(pip_path).exists():
+        #     # Fallback to pip in PATH
+        #     pip_path = "pip"
         
         result = subprocess.run(  # nosec B603, B607
-            [pip_path, "pip","show", package_name],
+            ["uv","run","pip", "show", package_name],
             capture_output=True,
             text=True,
             check=True,

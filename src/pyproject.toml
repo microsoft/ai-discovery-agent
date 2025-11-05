@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "aida"
-version = "0.7.2"
+version = "0.7.3"
 description = "AI Discovery Agent"
 authors = [{ name = "jmservera" }]
 readme = "README.md"
@@ -51,6 +51,7 @@ dev = [
     "checkov>=3.2.473",
     "isort==7.0.0",
     "bandit-sarif-formatter>=1.1.1",
+    "pip>=25.3",
 ]
 
 [tool.black]
@@ -77,8 +78,8 @@ ignore = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["tests*","docs*"]
-include = ["public","prompts","config"]
+exclude = ["tests*", "docs*"]
+include = ["public", "prompts", "config"]
 
 [tool.pytest.ini_options]
 minversion = "6.0"
