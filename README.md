@@ -321,6 +321,45 @@ For more details, see the [official Microsoft documentation on OIDC and federate
 
 ---
 
+## OSS Compliance and NOTICE File Generation
+
+This project includes automated tooling to generate OSS-compliant NOTICE files that list all third-party dependencies used in the project. This is required for proper open source license compliance.
+
+### Generating NOTICE Files
+
+The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `src/pyproject.toml`:
+
+```bash
+# Generate NOTICE file with runtime dependencies only
+./scripts/generate-notice.sh
+
+# Include development dependencies
+./scripts/generate-notice.sh --include-dev
+
+# Generate with verbose output
+./scripts/generate-notice.sh --verbose
+```
+
+### VS Code Integration
+
+You can also generate NOTICE files directly from VS Code using the built-in tasks:
+
+1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. Type "Tasks: Run Task"
+3. Select either:
+   - **generate-notice**: Runtime dependencies only
+   - **generate-notice-with-dev**: Include development dependencies
+
+### Compliance Requirements
+
+The generated NOTICE file follows OSS best practices as outlined in:
+- [FOSSLight Guide - OSS Notice Types](https://fosslight.org/hub-guide-en/tips/2_project/4_oss_notice/#types-of-oss-notices)
+- [Apache License 2.0 - Redistribution Requirements](https://www.apache.org/licenses/LICENSE-2.0.html#redistribution)
+
+For more detailed information about the NOTICE file generation scripts, see [`scripts/README.md`](scripts/README.md).
+
+---
+
 ## Contributing
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
