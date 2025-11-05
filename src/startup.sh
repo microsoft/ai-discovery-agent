@@ -86,8 +86,8 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
         echo "ERROR: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami))!"
         exit 1
     fi
-    if [ "${FILE_PERMS:2:1}" != "0" ]; then
-        echo "ERROR: $AUTH_CONFIG_SOURCE is world-writable! Unsafe permission."
+    if [ "$FILE_PERMS" -ne 600 ] && [ "$FILE_PERMS" -ne 640 ]; then
+        echo "ERROR: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 or 640."
         exit 1
     fi
     if ! ln -sf "$AUTH_CONFIG_SOURCE" "$APP_CONFIG_DIR/auth-config.yaml"; then
