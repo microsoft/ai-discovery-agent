@@ -101,18 +101,10 @@ fi
 
 # Start the application with error handling
 echo "Starting uvicorn server..."
-python -m uvicorn --factory aida:create_app \
+exec python -m uvicorn --factory aida:create_app \
     --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
     --timeout-keep-alive "$WORKER_TIMEOUT" \
     --access-log \
     --log-level "$LOG_LEVEL"
-
-status=$?
-if [ $status -eq 0 ]; then
-    echo "✓ Uvicorn shut down normally (exit code 0)."
-else
-    echo "ERROR: Uvicorn terminated with exit code $status!"
-    exit $status
-fi
