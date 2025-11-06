@@ -215,12 +215,3 @@ class TestMermaidModule:
 # and would be more complex due to the Azure OpenAI integration.
 # We can add those tests in a separate file or extend this one later.
 
-
-# Placeholder for tests for cached_llm.py
-@pytest.mark.skip(
-    reason="Tests for cached_llm.py require mocking LangChain components and Azure OpenAI, which is not set up yet."
-)
-class TestCachedLLMModule:
-    def test_stub(self):
-        """Placeholder stub test for cached_llm.py."""
-        pass
