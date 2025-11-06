@@ -60,7 +60,10 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
     # Ensure /app/config exists
     if [ ! -d "$APP_CONFIG_DIR" ]; then
         echo "Directory $APP_CONFIG_DIR does not exist. Creating it..."
-        mkdir -p "$APP_CONFIG_DIR";
+         if ! mkdir -p "$APP_CONFIG_DIR"; then  
+            echo "ERROR: Failed to create directory $APP_CONFIG_DIR!"  
+            exit 1  
+        fi 
     fi
     # Check if $APP_CONFIG_DIR is a directory
     if [ ! -d "$APP_CONFIG_DIR" ]; then
