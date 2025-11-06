@@ -365,7 +365,34 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
-      # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
+      - uses: sigstore/cosign-installer@v4.0.0
+        name: Install Cosign
+        with:
+          cosign-release: "v3.0.2"
+
+      # these secrets should be generated with
+      # cosign generate-key-pair
+      # `docker run -it -e GITHUB_TOKEN=${PAT} ghcr.io/sigstore/cosign/cosign:v3.0.2 generate-key-pair github://microsoft/ai-discovery-agent`
+      - name: Write signing key to disk (only needed for `cosign sign --key`)
+        run: |
+          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+          chmod 600 cosign.key
+
+      - name: Sign container image with annotations from our environment
+        run: |
+          cosign sign --key cosign.key \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ steps.push.outputs.digest }}
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+      - name: Clean up signing key
+        if: always()
+        run:
+          rm -f cosign.key
+          # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
       - name: Generate artifact attestation
         uses: actions/attest-build-provenance@v3
         with:

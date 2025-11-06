@@ -288,6 +288,8 @@ To enable automated deployment to Azure using GitHub Actions and managed identit
 - `AUTH_CONFIG_YAML`: The full YAML content for `src/config/auth-config.yaml` (used to provide authentication configuration securely at deploy time).
 - `AZURE_CREDENTIALS` (optional): Only required if not using OIDC federation. For managed identity federation, this is not needed.
 - `PUSH_PAT`: A Personal Access Token with Contents write permissions, required for the format-pr action to push formatted code changes back to pull request branches.
+- `COSIGN_PRIVATE_KEY`: The private key for signing container images (generated via `cosign generate-key-pair`). Used in the release workflow to sign container images with Cosign.
+- `COSIGN_PASSWORD`: The password protecting the Cosign private key. Set when generating the key pair with `cosign generate-key-pair`.
 
 ### Deployment Workflow
 
