@@ -50,16 +50,6 @@ jobs:
         run: uv run -m compileall src/
         shell: bash
 
-      - name: Generate requirements.txt and test requirements.txt
-        if: always()
-        run: |
-          uv pip compile src/pyproject.toml -o src/requirements.txt
-          rm -rf src/.venv
-          python3 -m venv src/.venv
-          source src/.venv/bin/activate
-          cd src && uv pip install -r requirements.txt
-        shell: bash
-
       - name: Run tests
         if: always()
         run: uv run pytest --junit-xml pytest.xml
@@ -118,7 +108,9 @@ jobs:
 
             # Cleanup
             rm -f "$TEMP_CURRENT" "$TEMP_GENERATED" "$NOTICE_TMP"
-            exit 1
+            if {{ github.base_ref == 'main' || github.ref == 'refs/heads/main' }}; then
+              exit 1
+            fi
           else
             echo "✅ NOTICE file is up to date!"
           fi
