@@ -10,8 +10,6 @@ Tests configuration loading, logging setup, and other utility functions.
 import os
 from unittest.mock import mock_open, patch
 
-import pytest
-
 from aida.utils.config import load_program_info, setup_auth_secret
 from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
 from aida.utils.mermaid import extract_mermaid
@@ -214,4 +212,3 @@ class TestMermaidModule:
 # Note: Tests for cached_llm.py would require mocking LangChain components
 # and would be more complex due to the Azure OpenAI integration.
 # We can add those tests in a separate file or extend this one later.
-
