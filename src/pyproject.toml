@@ -15,7 +15,8 @@ urls = { "homepage" = "https://github.com/microsoft/ai-discovery-agent", "reposi
 classifiers = [
     "Programming Language :: Python :: 3.12",
     "Operating System :: OS Independent",
-    "Framework :: FastAPI",
+    # The application uses Chainlit as the primary framework (which is built on FastAPI).
+    "Framework :: Chainlit",
 ]
 license = "MIT"
 
