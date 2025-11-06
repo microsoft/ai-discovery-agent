@@ -71,6 +71,20 @@
       "dependsOn": ["build", "start_azurite"]
     },
     {
+      "label": "generate-notice",
+      "type": "shell",
+      "command": "./scripts/generate-notice.sh",
+      "args": ["--verbose"],
+      "group": "build",
+      "presentation": {
+        "echo": true,
+        "reveal": "always",
+        "focus": false,
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
       "label": "prepareAzureDev",
       "type": "shell",
       "command": "./scripts/map-env-vars.sh",

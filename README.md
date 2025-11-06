@@ -288,6 +288,8 @@ To enable automated deployment to Azure using GitHub Actions and managed identit
 - `AUTH_CONFIG_YAML`: The full YAML content for `src/config/auth-config.yaml` (used to provide authentication configuration securely at deploy time).
 - `AZURE_CREDENTIALS` (optional): Only required if not using OIDC federation. For managed identity federation, this is not needed.
 - `PUSH_PAT`: A Personal Access Token with Contents write permissions, required for the format-pr action to push formatted code changes back to pull request branches.
+- `COSIGN_PRIVATE_KEY`: The private key for signing container images (generated via `cosign generate-key-pair`). Used in the release workflow to sign container images with Cosign.
+- `COSIGN_PASSWORD`: The password protecting the Cosign private key. Set when generating the key pair with `cosign generate-key-pair`.
 
 ### Deployment Workflow
 
@@ -318,6 +320,46 @@ This workflow uses GitHub's OpenID Connect (OIDC) integration to authenticate to
 3. Configured the federated credential in Azure AD to trust your GitHub repository and workflow.
 
 For more details, see the [official Microsoft documentation on OIDC and federated credentials](https://learn.microsoft.com/azure/developer/github/connect-from-azure?tabs=azure-cli%2Clinux&pivots=identity-fed).
+
+---
+
+## OSS Compliance and NOTICE File Generation
+
+This project includes automated tooling to generate OSS-compliant NOTICE files that list all third-party dependencies used in the project. This is required for proper open source license compliance.
+
+### Generating NOTICE Files
+
+The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `src/pyproject.toml`:
+
+```bash
+# Generate NOTICE file including both runtime and development dependencies (default behavior)
+./scripts/generate-notice.sh
+
+# Generate NOTICE file with runtime dependencies only (excludes dev dependencies)
+./scripts/generate-notice.sh --no-dev
+# Generate with verbose output
+./scripts/generate-notice.sh --verbose
+```
+
+### VS Code Integration
+
+You can also generate NOTICE files directly from VS Code using the built-in tasks:
+
+1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
+2. Type "Tasks: Run Task"
+3. Select **generate-notice** to generate the NOTICE file (includes both runtime and development dependencies by default).
+   - To generate a NOTICE file with runtime dependencies only (excluding dev dependencies), run the script manually:
+     ```bash
+     ./scripts/generate-notice.sh --no-dev
+     ```
+
+### Compliance Requirements
+
+The generated NOTICE file follows OSS best practices as outlined in:
+- [FOSSLight Guide - OSS Notice Types](https://fosslight.org/hub-guide-en/tips/2_project/4_oss_notice/#types-of-oss-notices)
+- [Apache License 2.0 - Redistribution Requirements](https://www.apache.org/licenses/LICENSE-2.0.html#redistribution)
+
+For more detailed information about the NOTICE file generation scripts, see [`scripts/README.md`](scripts/README.md).
 
 ---
 

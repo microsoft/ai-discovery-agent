@@ -12,6 +12,7 @@ from unittest.mock import mock_open, patch
 
 from aida.utils.config import load_program_info, setup_auth_secret
 from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
+from aida.utils.mermaid import extract_mermaid
 
 
 class TestConfigModule:
@@ -173,17 +174,39 @@ class TestMermaidModule:
 
     def test_extract_mermaid_with_valid_diagram(self):
         """Test extracting valid mermaid diagram from text."""
-        # This test would require the actual mermaid module implementation
-        # For now, we'll create a placeholder test structure
-        pass
+        text = """
+        Here is some explanation.
+
+        ```mermaid
+        graph TD
+            A-->B
+        ```
+        More details follow.
+        """
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        assert len(diagrams) == 1
+        assert "graph TD" in diagrams[0]
 
     def test_extract_mermaid_no_diagram(self):
         """Test extracting mermaid diagram when none exists."""
-        pass
+        text = "There is no diagram in this text."
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        assert len(diagrams) == 0
 
-    def test_extract_mermaid_malformed_diagram(self):
-        """Test extracting malformed mermaid diagram."""
-        pass
+    def test_extract_mermaid_from_malformed_markdown(self):
+        """Test extracting mermaid diagram from malformed markdown."""
+        text = """
+        ```mermaid
+        graph TD
+            A--B
+        """
+        diagrams = extract_mermaid(text)
+        assert isinstance(diagrams, list)
+        # Should still detect one diagram block even if markdown is malformed
+        assert len(diagrams) == 1
+        assert "graph TD" in diagrams[0]
 
 
 # Note: Tests for cached_llm.py would require mocking LangChain components
