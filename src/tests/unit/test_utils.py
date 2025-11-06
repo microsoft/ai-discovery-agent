@@ -197,8 +197,8 @@ class TestMermaidModule:
         assert isinstance(diagrams, list)
         assert len(diagrams) == 0
 
-    def test_extract_mermaid_malformed_diagram(self):
-        """Test extracting malformed mermaid diagram."""
+    def test_extract_mermaid_from_malformed_markdown(self):
+        """Test extracting mermaid diagram from malformed markdown."""
         text = """
         ```mermaid
         graph TD
@@ -206,7 +206,7 @@ class TestMermaidModule:
         """
         diagrams = extract_mermaid(text)
         assert isinstance(diagrams, list)
-        # Should still detect one diagram block even if malformed
+        # Should still detect one diagram block even if markdown is malformed
         assert len(diagrams) == 1
         assert "graph TD" in diagrams[0]
 
