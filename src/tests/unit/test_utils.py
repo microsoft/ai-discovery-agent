@@ -10,8 +10,7 @@ Tests configuration loading, logging setup, and other utility functions.
 import os
 from unittest.mock import mock_open, patch
 
-import pytest
-
+from aida.utils.cached_llm import create_llm
 from aida.utils.config import load_program_info, setup_auth_secret
 from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
 from aida.utils.mermaid import extract_mermaid
@@ -211,16 +210,48 @@ class TestMermaidModule:
         assert "graph TD" in diagrams[0]
 
 
-# Note: Tests for cached_llm.py would require mocking LangChain components
-# and would be more complex due to the Azure OpenAI integration.
-# We can add those tests in a separate file or extend this one later.
+# TODO: Add tests for cached_llm.py; would require mocking LangChain components and Azure OpenAI integration.
 
 
-# Placeholder for tests for cached_llm.py
-@pytest.mark.skip(
-    reason="Tests for cached_llm.py require mocking LangChain components and Azure OpenAI, which is not set up yet."
-)
 class TestCachedLLMModule:
-    def test_stub(self):
-        """Placeholder stub test for cached_llm.py."""
-        pass
+    """Test cached_llm module functionality."""
+
+    @patch("aida.utils.cached_llm.get_azure_credential")
+    @patch("aida.utils.cached_llm.get_bearer_token_provider")
+    @patch("aida.utils.cached_llm.AzureChatOpenAI")
+    def test_create_llm_azure(
+        self, mock_azure_chat, mock_token_provider, mock_azure_credential
+    ):
+        """Test create_llm creates AzureChatOpenAI with proper configuration."""
+        # Arrange
+        mock_token_provider.return_value = "mock_token"
+        endpoint = "https://example.openai.azure.com/"
+        api_version = "2025-01-01-preview"
+        deployment = "gpt-4o"
+        temperature = 0.7
+        tag = "test"
+
+        # Act
+        create_llm(endpoint, api_version, deployment, temperature, tag)
+
+        # Assert
+        mock_azure_chat.assert_called_once()
+        assert mock_azure_chat.called
+
+    @patch.dict(os.environ, {"AZURE_OPENAI_DEPLOYMENT": "test-model"})
+    @patch("aida.utils.cached_llm.ChatOpenAI")
+    def test_create_llm_localhost(self, mock_chat_openai):
+        """Test create_llm creates ChatOpenAI for localhost endpoint."""
+        # Arrange
+        endpoint = "http://localhost:8080"
+        api_version = "2025-01-01-preview"
+        deployment = None
+        temperature = 0.5
+        tag = "local"
+
+        # Act
+        create_llm(endpoint, api_version, deployment, temperature, tag)
+
+        # Assert
+        mock_chat_openai.assert_called_once()
+        assert mock_chat_openai.called
