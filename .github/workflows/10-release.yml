@@ -375,8 +375,8 @@ jobs:
       # `docker run -it -e GITHUB_TOKEN=${PAT} ghcr.io/sigstore/cosign/cosign:v3.0.2 generate-key-pair github://microsoft/ai-discovery-agent`
       - name: Write signing key to disk (only needed for `cosign sign --key`)
         run: |
+          install -m 600 /dev/null cosign.key 
           echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
-          chmod 600 cosign.key
 
       - name: Sign container image with annotations from our environment
         run: |
