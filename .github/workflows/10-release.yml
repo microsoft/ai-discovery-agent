@@ -318,12 +318,35 @@ jobs:
             ${branch === 'main' ? '\n> **Note**: Main branch releases require unique semantic versions. Patch releases are not allowed.' : ''}
             `;
 
-            github.rest.issues.createComment({
+            // Check if a comment already exists from this workflow
+            const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comment
             });
+
+            const botComment = comments.data.find(comment => 
+              comment.user.type === 'Bot' && 
+              comment.body.includes('## 🚀 Release Preview')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
 
   build-and-push-image:
     runs-on: ubuntu-latest
