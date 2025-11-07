@@ -251,4 +251,3 @@ class TestCachedLLMModule:
 
         # Assert
         mock_chat_openai.assert_called_once()
-        assert mock_chat_openai.called
