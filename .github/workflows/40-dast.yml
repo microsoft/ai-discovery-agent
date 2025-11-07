@@ -57,19 +57,19 @@ jobs:
           docker run -d \
             --name ai-discovery-agent-test \
             -p ${{ env.CONTAINER_PORT }}:${{ env.CONTAINER_PORT }} \
-            -e PORT=${{ env.CONTAINER_PORT }} \  
-            -e AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }} \  
-            -e AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }} \  
+            -e PORT=${{ env.CONTAINER_PORT }} \
+            -e AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }} \
+            -e AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }} \
             -e AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }} \
             ai-discovery-agent:test
 
       - name: Wait for container to be healthy
         run: |
           echo "Waiting for container to start on port ${{ env.CONTAINER_PORT }}..."
-          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:${{ env.CONTAINER_PORT }}/health)" != "200" ]]; do echo "Waiting for /health endpoint..."; sleep 5; done' || {  
-                    echo "Container failed to start. Showing logs:"  
-                    docker logs ai-discovery-agent-test  
-                    exit 1  
+          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:${{ env.CONTAINER_PORT }}/health)" != "200" ]]; do echo "Waiting for /health endpoint..."; sleep 5; done' || {
+                    echo "Container failed to start. Showing logs:"
+                    docker logs ai-discovery-agent-test
+                    exit 1
                   }
 
       - name: Test container endpoints
