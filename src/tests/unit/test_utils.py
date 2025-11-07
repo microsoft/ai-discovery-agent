@@ -10,6 +10,8 @@ Tests configuration loading, logging setup, and other utility functions.
 import os
 from unittest.mock import mock_open, patch
 
+from pydantic import SecretStr
+
 from aida.utils.cached_llm import create_llm
 from aida.utils.config import load_program_info, setup_auth_secret
 from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
@@ -232,7 +234,16 @@ class TestCachedLLMModule:
         create_llm(endpoint, api_version, deployment, temperature, tag)
 
         # Assert
-        mock_azure_chat.assert_called_once()
+        mock_azure_chat.assert_called_once_with(
+            azure_endpoint=endpoint,
+            api_version=api_version,
+            azure_ad_token_provider="mock_token",
+            azure_deployment=deployment,
+            temperature=temperature,
+            streaming=True,
+            stream_usage=True,
+            tags=[tag],
+        )
 
     @patch.dict(os.environ, {"AZURE_OPENAI_DEPLOYMENT": "test-model"})
     @patch("aida.utils.cached_llm.ChatOpenAI")
@@ -249,4 +260,12 @@ class TestCachedLLMModule:
         create_llm(endpoint, api_version, deployment, temperature, tag)
 
         # Assert
-        mock_chat_openai.assert_called_once()
+        mock_chat_openai.assert_called_once_with(
+            model="test-model",
+            base_url=endpoint,
+            streaming=True,
+            temperature=temperature,
+            stream_usage=True,
+            api_key=SecretStr(os.environ.get("AZURE_ENV_NAME", "")),
+            tags=[tag],
+        )
