@@ -104,8 +104,16 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v5.0.0
         with:
-          name: zap-scan-report
+          name: zap-scan-report-html
           path: report_html.html
+          retention-days: 30
+
+      - name: Upload JSON report
+        if: always()
+        uses: actions/upload-artifact@v5.0.0
+        with:
+          name: zap-scan-report-json
+          path: report_json.json
           retention-days: 30
 
       - name: Create SARIF file from ZAP results
