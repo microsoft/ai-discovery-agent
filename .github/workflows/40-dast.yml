@@ -57,9 +57,9 @@ jobs:
           docker run -d \
             --name ai-discovery-agent-test \
             -p ${{ env.CONTAINER_PORT }}:${{ env.CONTAINER_PORT }} \
-            -e PORT=${{ env.CONTAINER_PORT }} \
-            -e AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }} \
-            -e AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }} \
+            -e PORT=${{ env.CONTAINER_PORT }}\
+            -e AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }}\
+            -e AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }}\
             -e AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }} \
             ai-discovery-agent:test
 
