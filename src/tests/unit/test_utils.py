@@ -10,8 +10,6 @@ Tests configuration loading, logging setup, and other utility functions.
 import os
 from unittest.mock import mock_open, patch
 
-import pytest
-
 from aida.utils.config import load_program_info, setup_auth_secret
 from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
 from aida.utils.mermaid import extract_mermaid
@@ -197,8 +195,8 @@ class TestMermaidModule:
         assert isinstance(diagrams, list)
         assert len(diagrams) == 0
 
-    def test_extract_mermaid_malformed_diagram(self):
-        """Test extracting malformed mermaid diagram."""
+    def test_extract_mermaid_from_malformed_markdown(self):
+        """Test extracting mermaid diagram from malformed markdown."""
         text = """
         ```mermaid
         graph TD
@@ -206,7 +204,7 @@ class TestMermaidModule:
         """
         diagrams = extract_mermaid(text)
         assert isinstance(diagrams, list)
-        # Should still detect one diagram block even if malformed
+        # Should still detect one diagram block even if markdown is malformed
         assert len(diagrams) == 1
         assert "graph TD" in diagrams[0]
 
@@ -214,13 +212,3 @@ class TestMermaidModule:
 # Note: Tests for cached_llm.py would require mocking LangChain components
 # and would be more complex due to the Azure OpenAI integration.
 # We can add those tests in a separate file or extend this one later.
-
-
-# Placeholder for tests for cached_llm.py
-@pytest.mark.skip(
-    reason="Tests for cached_llm.py require mocking LangChain components and Azure OpenAI, which is not set up yet."
-)
-class TestCachedLLMModule:
-    def test_stub(self):
-        """Placeholder stub test for cached_llm.py."""
-        pass

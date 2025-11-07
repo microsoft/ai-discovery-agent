@@ -720,7 +720,8 @@ azd up                                         # Provision + deploy
 ```bash
 uv run pre-commit run --all-files              # All pre-commit hooks
 ./scripts/check-copyright-headers.sh           # Copyright headers
-./scripts/generate-notice.sh --no-dev          # Update NOTICE file
+./scripts/generate-notice.sh                   # Update NOTICE file (includes dev dependencies by default)
+./scripts/generate-notice.sh --no-dev          # Update NOTICE file (runtime dependencies only, excludes dev dependencies)
 ```
 
 By following these comprehensive guidelines, we ensure that the AI Discovery Workshop Facilitator codebase remains maintainable, extensible, and aligned with the project's specific requirements for workshop facilitation and multi-agent AI interactions.

@@ -64,10 +64,15 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
     # Ensure /app/config exists
     if [ ! -d "$APP_CONFIG_DIR" ]; then
         echo "Directory $APP_CONFIG_DIR does not exist. Creating it..."
-        if ! mkdir -p "$APP_CONFIG_DIR"; then
-            echo "ERROR: Failed to create $APP_CONFIG_DIR directory!"
+         if ! mkdir -p "$APP_CONFIG_DIR"; then
+            echo "ERROR: Failed to create directory $APP_CONFIG_DIR!"
             exit 1
         fi
+    fi
+    # Check if $APP_CONFIG_DIR is a directory
+    if [ ! -d "$APP_CONFIG_DIR" ]; then
+        echo "ERROR: $APP_CONFIG_DIR exists but is not a directory!"
+        exit 1
     fi
     # Check if $APP_CONFIG_DIR is writable
     if [ ! -w "$APP_CONFIG_DIR" ]; then
@@ -105,18 +110,10 @@ fi
 
 # Start the application with error handling
 echo "Starting uvicorn server..."
-python -m uvicorn --factory "$APP_FACTORY" \
+exec python -m uvicorn --factory "$APP_FACTORY" \
     --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
     --timeout-keep-alive "$WORKER_TIMEOUT" \
     --access-log \
     --log-level "$LOG_LEVEL"
-
-status=$?
-if [ $status -eq 0 ]; then
-    echo "✓ Uvicorn shut down normally (exit code 0)."
-else
-    echo "ERROR: Uvicorn terminated with exit code $status!"
-    exit $status
-fi
