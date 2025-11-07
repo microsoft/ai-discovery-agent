@@ -108,7 +108,7 @@ jobs:
 
             # Cleanup
             rm -f "$TEMP_CURRENT" "$TEMP_GENERATED" "$NOTICE_TMP"
-            if {{ github.base_ref == 'main' || github.ref == 'refs/heads/main' }}; then
+            if [[ "$GITHUB_BASE_REF" == "main" || "$GITHUB_REF" == "refs/heads/main" ]]; then
               exit 1
             fi
           else

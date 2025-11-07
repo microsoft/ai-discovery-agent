@@ -40,11 +40,8 @@ def load_pyproject_toml(pyproject_path: Path) -> dict[str, Any]:
     if not pyproject_path.exists():
         raise FileNotFoundError(f"pyproject.toml not found at {pyproject_path}")
 
-    try:
-        with open(pyproject_path, "rb") as f:
-            return tomllib.load(f)
-    except Exception as e:
-        raise Exception(f"Failed to parse pyproject.toml: {e}")
+    with open(pyproject_path, "rb") as f:
+        return tomllib.load(f)
 
 
 def extract_dependencies(pyproject_data: dict[str, Any]) -> tuple[list[str], list[str]]:
