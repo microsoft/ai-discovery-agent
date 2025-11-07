@@ -210,9 +210,6 @@ class TestMermaidModule:
         assert "graph TD" in diagrams[0]
 
 
-# TODO: Add tests for cached_llm.py; would require mocking LangChain components and Azure OpenAI integration.
-
-
 class TestCachedLLMModule:
     """Test cached_llm module functionality."""
 
