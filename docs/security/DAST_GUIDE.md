@@ -83,7 +83,7 @@ jobs:
           fail_action: false # Don't fail the build initially
 
       - name: ZAP Full Scan
-        uses: zaproxy/action-full-scan@v0.11.0
+        uses: zaproxy/action-full-scan@v0.13.0
         with:
           target: ${{ secrets.STAGING_URL }}
           token: ${{ secrets.GITHUB_TOKEN }}
