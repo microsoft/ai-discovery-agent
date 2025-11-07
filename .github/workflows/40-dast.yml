@@ -2,7 +2,7 @@ name: 40 DAST-OWASPZap
 # Dynamic Application Security Testing using OWASP ZAP
 # This workflow scans the containerized application for security vulnerabilities
 # Configuration: .zap-rules.conf (focuses on app-level issues; Azure handles infrastructure)
-# Documentation: docs/security/DAST_GUIDE.md#8-zap-configuration-for-azure-app-service-deployment
+# Documentation: docs/security/DAST_GUIDE.md#11-zap-configuration-for-azure-app-service-deployment
 
 on:
   push:
