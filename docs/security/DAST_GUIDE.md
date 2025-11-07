@@ -819,7 +819,7 @@ The configuration file uses a simple format based on [ZAP full-scan documentatio
 
 ```yaml
 - name: Run ZAP OWASP full scan
-  uses: zaproxy/action-full-scan@v0.13.0
+  uses: zaproxy/action-full-scan@v0.15.0
   with:
     docker_name: "ghcr.io/zaproxy/zaproxy:stable"
     target: "http://localhost:8000"
