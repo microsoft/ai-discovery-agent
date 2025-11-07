@@ -233,7 +233,6 @@ class TestCachedLLMModule:
 
         # Assert
         mock_azure_chat.assert_called_once()
-        assert mock_azure_chat.called
 
     @patch.dict(os.environ, {"AZURE_OPENAI_DEPLOYMENT": "test-model"})
     @patch("aida.utils.cached_llm.ChatOpenAI")
