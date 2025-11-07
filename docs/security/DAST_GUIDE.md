@@ -7,7 +7,7 @@
 
 Dynamic Application Security Testing (DAST) examines the running application to identify security vulnerabilities by simulating attacks. This document outlines DAST strategies, tools, and implementation recommendations for the AI Discovery Workshop Facilitator.
 
-**Deployment Context:** The application is deployed as a Docker container behind Azure App Service, which provides infrastructure-level security controls (HTTPS, security headers, WAF). DAST testing focuses on application-level vulnerabilities that require code fixes. See [Section 8](#8-zap-configuration-for-azure-app-service-deployment) for detailed configuration.
+**Deployment Context:** The application is deployed as a Docker container behind Azure App Service, which provides infrastructure-level security controls (HTTPS, security headers, WAF). DAST testing focuses on application-level vulnerabilities that require code fixes. See [Section 11](#11-zap-configuration-for-azure-app-service-deployment) for detailed configuration.
 
 ## 1. DAST Scope & Considerations
 
