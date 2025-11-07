@@ -98,7 +98,6 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: "http://localhost:${{ env.CONTAINER_PORT }}"
           cmd_options: "-a -j -l WARN -c .zap-rules.conf"
-          allow_issue_writing: false
 
       - name: Upload HTML report
         if: always()
@@ -115,17 +114,6 @@ jobs:
           name: zap-scan-report-json
           path: report_json.json
           retention-days: 30
-
-      - name: Create SARIF file from ZAP results
-        if: always()
-        uses: SvanBoxel/zaproxy-to-ghas@v1.0.2
-
-      - name: Upload SARIF file
-        if: always()
-        uses: github/codeql-action/upload-sarif@v4.31.2
-        with:
-          sarif_file: results.sarif
-          category: dast-owaspzap
 
       - name: Cleanup
         if: always()
