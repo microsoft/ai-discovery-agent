@@ -252,6 +252,3 @@ class TestCachedLLMModule:
         # Assert
         mock_chat_openai.assert_called_once()
         assert mock_chat_openai.called
-# Note: Tests for cached_llm.py would require mocking LangChain components
-# and would be more complex due to the Azure OpenAI integration.
-# We can add those tests in a separate file or extend this one later.
