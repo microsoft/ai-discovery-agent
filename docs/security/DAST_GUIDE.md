@@ -729,9 +729,9 @@ False Positive Rate: 15%
 
 ---
 
-## 8. ZAP Configuration for Azure App Service Deployment
+## 11. ZAP Configuration for Azure App Service Deployment
 
-### 8.1 Deployment Context
+### 11.1 Deployment Context
 
 The AI Discovery Agent is deployed as a **Docker container behind Azure App Service** with the following security layers:
 
