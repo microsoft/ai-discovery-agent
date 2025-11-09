@@ -157,7 +157,7 @@ jobs:
           az acr build \
             --registry ${{ env.ACR_NAME }} \
             --image $IMAGE_TAG \
-            --file src/Dockerfile \
+            --file Dockerfile \
             src/
 
           echo "Container image built and pushed: ${{ steps.prepare.outputs.ACR_LOGIN_SERVER }}/$IMAGE_TAG"

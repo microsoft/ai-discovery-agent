@@ -31,11 +31,11 @@ ENV WEB_CONCURRENCY=1 \
     HOST=0.0.0.0 \
     LOG_LEVEL=info
 
-COPY . .
+COPY src/. .
 RUN chmod +x /app/startup.sh
 # Set permissions for config directory and create .files directory
 RUN chown nonroot:nonroot -R /app/config && \
-    mkdir /app/.files && \
+    mkdir -p /app/.files && \
     chown nonroot:nonroot /app/.files && \
     chmod 700 /app/.files && \
     touch /app/.env && \
