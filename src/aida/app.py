@@ -10,6 +10,7 @@ and integrates with Chainlit for the chat interface.
 The application is designed to be deployed on Azure App Service and includes
 proper health check endpoints for container orchestration.
 """
+import os
 
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI, status
@@ -34,6 +35,14 @@ def create_app() -> FastAPI:
         FastAPI: Configured FastAPI application instance with health check
             endpoints and Chainlit integration mounted at the root path.
     """
+
+    # if public folder does not exist copy from src/aida/static
+    if not os.path.exists("public"):
+        import shutil
+
+        # get package root
+        shutil.copytree(os.path.join(os.path.dirname(__file__), "static"), "public")
+
     # FastAPI application instance for the AI Discovery Agent
     # Provides REST API endpoints and serves as the main server entry point
     app = FastAPI(
