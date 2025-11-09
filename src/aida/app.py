@@ -31,36 +31,29 @@ class HealthCheck(BaseModel):
 
 def init_app():
     """Initialize application by ensuring necessary folders exist."""
-    if (
-        not os.path.exists("public")
-        or not os.path.exists("config")
-        or not os.path.exists("prompts")
-    ):
+    # Always check and create each directory independently
+    logger.info("Initializing application folders")
+    # if public folder does not exist copy from src/aida/static/public
+    if not os.path.exists("public"):
+        logger.info("Creating public folder from static assets")
+        # construct path to static assets
+        shutil.copytree(
+            os.path.join(os.path.dirname(__file__), "static/public"), "public"
+        )
+    # if config folder does not exist copy from src/aida/static/config
+    if not os.path.exists("config"):
+        logger.info("Creating config folder from static assets")
+        # construct path to static assets
+        shutil.copytree(
+            os.path.join(os.path.dirname(__file__), "static/config"), "config"
+        )
 
-        logger.info("Initializing application folders")
-        # if public folder does not exist copy from src/aida/static/public
-        if not os.path.exists("public"):
-            logger.info("Creating public folder from static assets")
-            # construct path to static assets
-            shutil.copytree(
-                os.path.join(os.path.dirname(__file__), "static/public"), "public"
-            )
-        # if config folder does not exist copy from src/aida/static/config
-        if not os.path.exists("config"):
-            logger.info("Creating config folder from static assets")
-            # construct path to static assets
-            shutil.copytree(
-                os.path.join(os.path.dirname(__file__), "static/config"), "config"
-            )
-
-        if not os.path.exists("prompts"):
-            logger.info("Creating prompts folder from static assets")
-            # construct path to static assets
-            shutil.copytree(
-                os.path.join(os.path.dirname(__file__), "static/prompts"), "prompts"
-            )
-
-
+    if not os.path.exists("prompts"):
+        logger.info("Creating prompts folder from static assets")
+        # construct path to static assets
+        shutil.copytree(
+            os.path.join(os.path.dirname(__file__), "static/prompts"), "prompts"
+        )
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
