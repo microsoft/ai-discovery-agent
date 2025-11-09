@@ -36,21 +36,21 @@ def init_app():
         # if public folder does not exist copy from src/aida/static
         if not os.path.exists("public"):
             logger.info("Creating public folder from static assets")
-            # get package root
+            # construct path to static assets
             shutil.copytree(
                 os.path.join(os.path.dirname(__file__), "static/public"), "public"
             )
         # if config folder does not exist copy from src/aida/config
         if not os.path.exists("config"):
             logger.info("Creating config folder from static assets")
-            # get package root
+            # construct path to static assets
             shutil.copytree(
                 os.path.join(os.path.dirname(__file__), "static/config"), "config"
             )
 
         if not os.path.exists("prompts"):
             logger.info("Creating prompts folder from static assets")
-            # get package root
+            # construct path to static assets
             shutil.copytree(
                 os.path.join(os.path.dirname(__file__), "static/prompts"), "prompts"
             )
