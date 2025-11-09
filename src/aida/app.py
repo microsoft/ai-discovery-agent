@@ -28,6 +28,38 @@ class HealthCheck(BaseModel):
     status: str = "OK"
 
 
+def init_app():
+    """Initialize application by ensuring necessary folders exist."""
+    logger.info("Initializing application folders")
+    # if public folder does not exist copy from src/aida/static
+    if not os.path.exists("public"):
+        import shutil
+
+        logger.info("Creating public folder from static assets")
+        # get package root
+        shutil.copytree(
+            os.path.join(os.path.dirname(__file__), "static/public"), "public"
+        )
+    # if config folder does not exist copy from src/aida/config
+    if not os.path.exists("config"):
+        import shutil
+
+        logger.info("Creating config folder from static assets")
+        # get package root
+        shutil.copytree(
+            os.path.join(os.path.dirname(__file__), "static/config"), "config"
+        )
+
+    if not os.path.exists("prompts"):
+        import shutil
+
+        logger.info("Creating prompts folder from static assets")
+        # get package root
+        shutil.copytree(
+            os.path.join(os.path.dirname(__file__), "static/prompts"), "prompts"
+        )
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -35,13 +67,7 @@ def create_app() -> FastAPI:
         FastAPI: Configured FastAPI application instance with health check
             endpoints and Chainlit integration mounted at the root path.
     """
-
-    # if public folder does not exist copy from src/aida/static
-    if not os.path.exists("public"):
-        import shutil
-
-        # get package root
-        shutil.copytree(os.path.join(os.path.dirname(__file__), "static"), "public")
+    init_app()
 
     # FastAPI application instance for the AI Discovery Agent
     # Provides REST API endpoints and serves as the main server entry point
@@ -78,6 +104,8 @@ def create_app() -> FastAPI:
     # This integrates the Chainlit chat interface with the FastAPI server
     # The target "aida/__main__.py" contains the Chainlit application logic
     logger.info("Mounting Chainlit application at root path '/'")
-    mount_chainlit(app, target="aida/chainlit.py", path="/")
+    mount_chainlit(
+        app, target=os.path.join(os.path.dirname(__file__), "chainlit.py"), path="/"
+    )
 
     return app

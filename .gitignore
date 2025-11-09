@@ -228,3 +228,5 @@ __blob*
 copyright-header-check.xml
 copyright-header-check.json
 src/public
+src/prompts
+src/config

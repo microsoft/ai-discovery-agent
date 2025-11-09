@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["uv_build>=0.8.18,<0.9.0"]
+build-backend = "uv_build"
 
 [project]
 name = "aida"
@@ -77,9 +77,10 @@ ignore = [
 ]
 
 [tool.setuptools.packages.find]
-exclude = ["tests*","docs*"]
-include = ["public","prompts","config"]
+exclude = ["tests*", "docs*"]
 
+[tool.setuptools.package-data]
+aida = ["prompts/*", "config/*", "public/*", "static/*"]
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q --strict-markers --disable-warnings"

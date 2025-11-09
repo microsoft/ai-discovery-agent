@@ -6,8 +6,7 @@ Configuration loading utilities for AI Discovery Workshop Agent.
 """
 
 import os
-import tomllib
-from pathlib import Path
+from importlib.metadata import PackageNotFoundError, distribution
 
 import dotenv
 from chainlit.secret import random_secret
@@ -35,7 +34,7 @@ def setup_auth_secret() -> None:
 
 def load_program_info() -> str:
     """
-    Load program information from pyproject.toml.
+    Load program information from installed package metadata.
 
     Returns:
     --------
@@ -44,24 +43,53 @@ def load_program_info() -> str:
     """
     program_info = ""
     try:
-        with open(Path(__file__).parent.parent.parent / "pyproject.toml", "rb") as f:
-            info = tomllib.load(f)
-            # Extract all fields from the [project] section
-            project_info = info.get("project", {})
-            program_info += f"### {project_info.get('name', 'Unknown Program')} version {project_info.get('version', 'N/A')}\n"
-            program_info += (
-                f"- {project_info.get('description', 'No description available.')}\n"
-            )
-            program_info += f"- Author(s): {', '.join([author.get('name', '') for author in project_info.get('authors', [])])}\n"
-            # get version
-            program_info += f"- Version: {project_info.get('version', 'N/A')}\n"
-            program_info += (
-                f"- Homepage: {project_info.get('urls', {}).get('homepage', 'N/A')}\n"
-            )
-            program_info += f"- Repository: {project_info.get('urls', {}).get('repository', 'N/A')}\n"
-            program_info += f"- Documentation: {project_info.get('urls', {}).get('documentation', 'N/A')}\n"
+        # Get the distribution for this package
+        dist = distribution("aida")
+
+        # Extract metadata
+        metadata = dist.metadata
+        name = metadata.get("Name", "Unknown Program")
+        version = metadata.get("Version", "N/A")
+        summary = metadata.get("Summary", "No description available.")
+        author = metadata.get("Author", "N/A")
+        author_email = metadata.get("Author-Email", "")
+        home_page = metadata.get("Home-Page", "N/A")
+
+        # Format author information
+        author_info = author
+        if author_email and author != "N/A":
+            author_info = f"{author} <{author_email}>"
+
+        # Build program info string
+        program_info += f"### {name} version {version}\n"
+        program_info += f"- {summary}\n"
+        program_info += f"- Author(s): {author_info}\n"
+        program_info += f"- Version: {version}\n"
+        program_info += f"- Homepage: {home_page}\n"
+
+        # Try to get additional URLs from metadata if available
+        project_urls = metadata.get_all("Project-URL") or []
+        repository_url = "N/A"
+        documentation_url = "N/A"
+
+        for url_line in project_urls:
+            if url_line:
+                label, url = url_line.split(", ", 1)
+                if "repository" in label.lower() or "github" in label.lower():
+                    repository_url = url
+                elif "documentation" in label.lower() or "docs" in label.lower():
+                    documentation_url = url
+
+        program_info += f"- Repository: {repository_url}\n"
+        program_info += f"- Documentation: {documentation_url}\n"
+
+    except PackageNotFoundError:
+        logger.error("Package 'aida' not found in installed packages", exc_info=True)
+        program_info = "Error: Package not found in installed packages."
     except Exception as e:
-        logger.error(f"Error reading pyproject.toml: {e}", exc_info=e, stack_info=True)
+        logger.error(
+            f"Error retrieving package metadata: {e}", exc_info=True, stack_info=True
+        )
         program_info = "Error retrieving program information."
 
     return program_info
