@@ -73,12 +73,18 @@ def load_program_info() -> str:
         documentation_url = "N/A"
 
         for url_line in project_urls:
-            if url_line:
-                label, url = url_line.split(", ", 1)
-                if "repository" in label.lower() or "github" in label.lower():
-                    repository_url = url
-                elif "documentation" in label.lower() or "docs" in label.lower():
-                    documentation_url = url
+            if url_line and ", " in url_line:
+                try:
+                    label, url = url_line.split(", ", 1)
+                    if "repository" in label.lower() or "github" in label.lower():
+                        repository_url = url
+                    elif "documentation" in label.lower() or "docs" in label.lower():
+                        documentation_url = url
+                except ValueError:
+                    logger.warning(
+                        f"Malformed Project-URL entry: {url_line}. Expected format: 'label, url'"
+                    )
+                    continue
 
         program_info += f"- Repository: {repository_url}\n"
         program_info += f"- Documentation: {documentation_url}\n"

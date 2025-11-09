@@ -232,6 +232,8 @@ copyright-header-check.json
 src/public/
 src/prompts/
 src/config/
-public/
-prompts/
+# Exclude root-level runtime config directories
+.chainlit/
 config/
+prompts/
+public/
