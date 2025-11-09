@@ -30,8 +30,13 @@ class HealthCheck(BaseModel):
 
 def init_app():
     """Initialize application by ensuring necessary folders exist."""
-    if not os.path.exists("public") or not os.path.exists("config") or not os.path.exists("prompts"):
+    if (
+        not os.path.exists("public")
+        or not os.path.exists("config")
+        or not os.path.exists("prompts")
+    ):
         import shutil
+
         logger.info("Initializing application folders")
         # if public folder does not exist copy from src/aida/static
         if not os.path.exists("public"):
