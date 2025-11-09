@@ -31,7 +31,6 @@ jobs:
         run: |
           # Install dependencies
           uv sync --only-group dev --directory src
-          . src/.venv/bin/activate
 
           # Run pre-commit to check if formatting is needed
           set +e

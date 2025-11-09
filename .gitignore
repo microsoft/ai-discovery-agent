@@ -228,3 +228,12 @@ __blob*
 copyright-header-check.xml
 copyright-header-check.json
 **/*.tmp
+
+src/public/
+src/prompts/
+src/config/
+# Exclude root-level runtime config directories
+.chainlit/
+config/
+prompts/
+public/

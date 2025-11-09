@@ -2,7 +2,7 @@ name: 52 Apply Format
 
 on:
   workflow_run:
-    workflows: ["Format Request"]
+    workflows: ["50 Format Request"]
     types:
       - completed
 
@@ -124,8 +124,8 @@ jobs:
           done
 
           # Ensure pyproject.toml hasn't been modified to include malicious build scripts
-          if [ -f src/pyproject.toml ]; then
-            if grep -E "(build-backend|build_meta|build\.py)" src/pyproject.toml; then
+          if [ -f pyproject.toml ]; then
+            if grep -E "(build-backend|build_meta|build\.py)" pyproject.toml; then
               echo "Build scripts detected in pyproject.toml - manual review required"
             fi
           fi

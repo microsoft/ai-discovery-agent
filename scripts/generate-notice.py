@@ -16,11 +16,10 @@ import argparse
 import re
 import subprocess  # nosec B404
 import sys
+import tomllib
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Optional
-
-import tomllib
+from typing import Any
 
 
 def load_pyproject_toml(pyproject_path: Path) -> dict[str, Any]:
@@ -64,13 +63,13 @@ def extract_dependencies(pyproject_data: dict[str, Any]) -> tuple[list[str], lis
     # Extract development dependencies from dependency-groups
     if "dependency-groups" in pyproject_data:
         dep_groups = pyproject_data["dependency-groups"]
-        for group_name, deps in dep_groups.items():
+        for _group_name, deps in dep_groups.items():
             dev_deps.extend(deps)
 
     # Also check for project.dependency-groups (alternative format)
     if "project" in pyproject_data and "dependency-groups" in pyproject_data["project"]:
         dep_groups = pyproject_data["project"]["dependency-groups"]
-        for group_name, deps in dep_groups.items():
+        for _group_name, deps in dep_groups.items():
             dev_deps.extend(deps)
 
     return runtime_deps, dev_deps
@@ -92,7 +91,7 @@ def normalize_package_name(dep_spec: str) -> str:
     return package_name.lower().replace("_", "-")
 
 
-def get_package_info(package_name: str) -> Optional[dict[str, str]]:
+def get_package_info(package_name: str) -> dict[str, str] | None:
     """
     Get package information using pip show command.
 
@@ -246,8 +245,8 @@ def main() -> int:
     parser.add_argument(
         "--pyproject-path",
         type=Path,
-        default=Path("src/pyproject.toml"),
-        help="Path to pyproject.toml file (default: src/pyproject.toml)",
+        default=Path("pyproject.toml"),
+        help="Path to pyproject.toml file (default: pyproject.toml)",
     )
     parser.add_argument(
         "--output",

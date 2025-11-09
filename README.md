@@ -329,7 +329,7 @@ This project includes automated tooling to generate OSS-compliant NOTICE files t
 
 ### Generating NOTICE Files
 
-The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `src/pyproject.toml`:
+The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `pyproject.toml`:
 
 ```bash
 # Generate NOTICE file including both runtime and development dependencies (default behavior)
