@@ -245,8 +245,8 @@ def main() -> int:
     parser.add_argument(
         "--pyproject-path",
         type=Path,
-        default=Path("src/pyproject.toml"),
-        help="Path to pyproject.toml file (default: src/pyproject.toml)",
+        default=Path("pyproject.toml"),
+        help="Path to pyproject.toml file (default: pyproject.toml)",
     )
     parser.add_argument(
         "--output",
