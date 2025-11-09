@@ -2,7 +2,7 @@ name: 52 Apply Format
 
 on:
   workflow_run:
-    workflows: ["Format Request"]
+    workflows: ["50 Format Request"]
     types:
       - completed
 
