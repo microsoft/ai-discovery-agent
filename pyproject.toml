@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "aida"
-version = "0.7.2"
+version = "0.7.3"
 description = "AI Discovery Agent"
 authors = [{ name = "jmservera" }]
 readme = "README.md"
@@ -13,9 +13,11 @@ license-files = ["LICEN[CS]E*"]
 urls = { "homepage" = "https://github.com/microsoft/ai-discovery-agent", "repository" = "https://github.com/microsoft/ai-discovery-agent", "documentation" = "https://github.com/microsoft/ai-discovery-agent/blob/main/README.md" }
 classifiers = [
     "Programming Language :: Python :: 3.12",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    # The application uses Chainlit as the primary framework (which is built on FastAPI).
+    "Framework :: FastAPI",
 ]
+license = "MIT"
 
 dependencies = [
     "chainlit>=2.8.0",
@@ -51,6 +53,7 @@ dev = [
     "checkov>=3.2.473",
     "isort==7.0.0",
     "bandit-sarif-formatter>=1.1.1",
+    "pip>=25.3",
 ]
 
 [tool.black]
@@ -80,7 +83,7 @@ ignore = [
 exclude = ["tests*", "docs*"]
 
 [tool.setuptools.package-data]
-aida = ["prompts/*", "config/*", "public/*", "static/*"]
+aida = ["static/*", "startup.sh"]
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q --strict-markers --disable-warnings"

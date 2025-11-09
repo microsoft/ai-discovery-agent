@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# List of essential files for the application
+ESSENTIAL_FILES=("pyproject.toml" "aida/__main__.py")
+
 # Enable debugging if needed
 if [ "${DEBUG:-false}" = "true" ]; then
     set -x
@@ -23,7 +26,7 @@ echo "Contents of current directory:"
 ls -la
 
 # Verify essential files exist
-for file in "pyproject.toml" "aida/__main__.py"; do
+for file in "${ESSENTIAL_FILES[@]}"; do
     if [ ! -f "$file" ]; then
         echo "ERROR: Required file $file not found!"
         exit 1
@@ -42,6 +45,8 @@ PORT=${PORT:-8000}
 HOST=${HOST:-"0.0.0.0"}
 LOG_LEVEL=${LOG_LEVEL:-"info"}
 
+SECRETS_DIR="${SECRETS_DIR:-/home/site/wwwroot/secrets}"
+APP_CONFIG_DIR="${APP_CONFIG_DIR:-/app/config}"
 echo "Starting application with the following settings:"
 echo "  - Port: $PORT"
 echo "  - Host: $HOST"
@@ -50,31 +55,47 @@ echo "  - Worker timeout: $WORKER_TIMEOUT seconds"
 
 # Link auth-config.yaml from secrets directory if it exists when running
 # inside Azure App Service
-if [ -f /home/site/wwwroot/secrets/auth-config.yaml ]; then
-    echo "Preparing to link auth-config.yaml from secrets directory..."
+if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
+    echo "Preparing to link auth-config.yaml from secrets directory ($SECRETS_DIR)..."
     # Ensure /app/config exists
-    if [ ! -d /app/config ]; then
-        echo "Directory /app/config does not exist. Creating it..."
-        mkdir -p /app/config
-        if [ $? -ne 0 ]; then
-            echo "ERROR: Failed to create /app/config directory!"
+    if [ ! -d "$APP_CONFIG_DIR" ]; then
+        echo "Directory $APP_CONFIG_DIR does not exist. Creating it..."
+         if ! mkdir -p "$APP_CONFIG_DIR"; then
+            echo "ERROR: Failed to create directory $APP_CONFIG_DIR!"
             exit 1
         fi
     fi
-    # Check if /app/config is writable
-    if [ ! -w /app/config ]; then
-        echo "ERROR: /app/config is not writable!"
+    # Check if $APP_CONFIG_DIR is a directory
+    if [ ! -d "$APP_CONFIG_DIR" ]; then
+        echo "ERROR: $APP_CONFIG_DIR exists but is not a directory!"
         exit 1
     fi
-    # Check if /app/config/auth-config.yaml exists as a regular file (not a symlink)
-    if [ -f /app/config/auth-config.yaml ] && [ ! -L /app/config/auth-config.yaml ]; then
-        echo "ERROR: /app/config/auth-config.yaml exists as a regular file and will NOT be overwritten to avoid data loss."
+    # Check if $APP_CONFIG_DIR is writable
+    if [ ! -w "$APP_CONFIG_DIR" ]; then
+        echo "ERROR: $APP_CONFIG_DIR is not writable!"
+        exit 1
+    fi
+    # Check if $APP_CONFIG_DIR/auth-config.yaml exists as a regular file (not a symlink)
+    if [ -f "$APP_CONFIG_DIR/auth-config.yaml" ] && [ ! -L "$APP_CONFIG_DIR/auth-config.yaml" ]; then
+        echo "ERROR: $APP_CONFIG_DIR/auth-config.yaml exists as a regular file and will NOT be overwritten to avoid data loss."
         echo "Please remove or backup the file before running this script."
         exit 1
     fi
     # Attempt to create the symlink
-    ln -sf /home/site/wwwroot/secrets/auth-config.yaml /app/config/auth-config.yaml
-    if [ $? -ne 0 ]; then
+    # Check ownership and permissions before symlinking
+    AUTH_CONFIG_SOURCE="$SECRETS_DIR/auth-config.yaml"
+    EXPECTED_UID=$(id -u)
+    FILE_UID=$(stat -c %u "$AUTH_CONFIG_SOURCE")
+    FILE_PERMS=$(stat -c %a "$AUTH_CONFIG_SOURCE")
+    if [ "$FILE_UID" != "$EXPECTED_UID" ]; then
+        echo "ERROR: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami))!"
+        exit 1
+    fi
+    if [ "$FILE_PERMS" != "600" ] && [ "$FILE_PERMS" != "640" ]; then
+        echo "ERROR: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 or 640."
+        exit 1
+    fi
+    if ! ln -sf "$AUTH_CONFIG_SOURCE" "$APP_CONFIG_DIR/auth-config.yaml"; then
         echo "ERROR: Failed to create symlink for auth-config.yaml!"
         exit 1
     fi

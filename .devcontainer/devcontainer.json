@@ -1,6 +1,6 @@
 {
   "name": "Azure Developer CLI",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12",
+  "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
       "version": "16",
@@ -8,7 +8,8 @@
     },
     "ghcr.io/devcontainers/features/azure-cli": {},
     "ghcr.io/azure/azure-dev/azd": {},
-    "ghcr.io/va-h/devcontainers-features/uv": {}
+    "ghcr.io/va-h/devcontainers-features/uv": {},
+    "ghcr.io/devcontainers/features/docker-in-docker": {}
   },
   "customizations": {
     "vscode": {

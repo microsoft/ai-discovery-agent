@@ -318,12 +318,35 @@ jobs:
             ${branch === 'main' ? '\n> **Note**: Main branch releases require unique semantic versions. Patch releases are not allowed.' : ''}
             `;
 
-            github.rest.issues.createComment({
+            // Check if a comment already exists from this workflow
+            const comments = await github.rest.issues.listComments({
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: comment
             });
+
+            const botComment = comments.data.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('## 🚀 Release Preview')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: comment
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
 
   build-and-push-image:
     runs-on: ubuntu-latest
@@ -364,6 +387,33 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - uses: sigstore/cosign-installer@v4.0.0
+        name: Install Cosign
+        with:
+          cosign-release: "v3.0.2"
+
+      # these secrets should be generated with
+      # cosign generate-key-pair
+      # `docker run -it -e GITHUB_TOKEN=${PAT} ghcr.io/sigstore/cosign/cosign:v3.0.2 generate-key-pair github://microsoft/ai-discovery-agent`
+      - name: Write signing key to disk (only needed for `cosign sign --key`)
+        run: |
+          install -m 600 /dev/null cosign.key
+          echo "${{ secrets.COSIGN_PRIVATE_KEY }}" > cosign.key
+
+      - name: Sign container image with annotations from our environment
+        run: |
+          cosign sign --key cosign.key \
+            -a "repo=${{ github.repository }}" \
+            -a "workflow=${{ github.workflow }}" \
+            -a "ref=${{ github.sha }}" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ steps.push.outputs.digest }}
+        env:
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+
+      - name: Clean up signing key
+        if: always()
+        run: rm -f cosign.key
 
       # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
       - name: Generate artifact attestation
