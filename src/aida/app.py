@@ -39,7 +39,9 @@ def ensure_folder_from_static(target_folder: str, static_subfolder: str) -> None
     """
     if not os.path.exists(target_folder):
         logger.info(f"Creating {target_folder} folder from static assets")
-        src_folder = os.path.join(os.path.dirname(__file__), f"static/{static_subfolder}")
+        src_folder = os.path.join(
+            os.path.dirname(__file__), f"static/{static_subfolder}"
+        )
         if not os.path.exists(src_folder):
             logger.error(f"Source {target_folder} folder does not exist: {src_folder}")
         else:
@@ -58,6 +60,8 @@ def init_app():
     ensure_folder_from_static("public", "public")
     ensure_folder_from_static("config", "config")
     ensure_folder_from_static("prompts", "prompts")
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
