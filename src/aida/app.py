@@ -43,7 +43,10 @@ def init_app():
             try:
                 shutil.copytree(src_public, "public")
             except Exception as e:
-                logger.error(f"Failed to copy public folder from {src_public} to 'public': {e}", exc_info=True)
+                logger.error(
+                    f"Failed to copy public folder from {src_public} to 'public': {e}",
+                    exc_info=True,
+                )
     # if config folder does not exist copy from src/aida/static/config
     if not os.path.exists("config"):
         logger.info("Creating config folder from static assets")
@@ -54,7 +57,10 @@ def init_app():
             try:
                 shutil.copytree(src_config, "config")
             except Exception as e:
-                logger.error(f"Failed to copy config folder from {src_config} to 'config': {e}", exc_info=True)
+                logger.error(
+                    f"Failed to copy config folder from {src_config} to 'config': {e}",
+                    exc_info=True,
+                )
 
     if not os.path.exists("prompts"):
         logger.info("Creating prompts folder from static assets")
@@ -65,7 +71,10 @@ def init_app():
             try:
                 shutil.copytree(src_prompts, "prompts")
             except Exception as e:
-                logger.error(f"Failed to copy prompts folder from {src_prompts} to 'prompts': {e}", exc_info=True)
+                logger.error(
+                    f"Failed to copy prompts folder from {src_prompts} to 'prompts': {e}",
+                    exc_info=True,
+                )
 
 
 def create_app() -> FastAPI:
