@@ -106,7 +106,7 @@ jobs:
 
       - name: Build package
         run: |
-          uv build --directory src
+          uv build
           echo "Build artifacts:"
           ls -lh src/dist/
 
@@ -262,7 +262,7 @@ jobs:
 
       - name: Build package (dry-run)
         run: |
-          uv build --directory src
+          uv build
           echo "✓ Package builds successfully"
           echo "Build artifacts:"
           ls -lh src/dist/
