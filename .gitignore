@@ -232,3 +232,6 @@ copyright-header-check.json
 src/public/
 src/prompts/
 src/config/
+public/
+prompts/
+config/

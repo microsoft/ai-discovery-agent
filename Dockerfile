@@ -11,6 +11,7 @@ WORKDIR /app
 # Install dependencies
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-install-project --no-editable --no-dev
+RUN uv run aida init
 
 FROM python:3.12-slim
 ENV VIRTUAL_ENV=/app/.venv
