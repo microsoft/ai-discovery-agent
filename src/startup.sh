@@ -95,7 +95,7 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
         echo "ERROR: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami))!"
         exit 1
     fi
-    if [ "$FILE_PERMS" -ne 600 ]; then
+    if [ "$FILE_PERMS" != "600" ]; then
         echo "ERROR: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 (owner read/write only)."
         exit 1
     fi
