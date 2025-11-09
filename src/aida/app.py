@@ -36,24 +36,36 @@ def init_app():
     # if public folder does not exist copy from src/aida/static/public
     if not os.path.exists("public"):
         logger.info("Creating public folder from static assets")
-        # construct path to static assets
-        shutil.copytree(
-            os.path.join(os.path.dirname(__file__), "static/public"), "public"
-        )
+        src_public = os.path.join(os.path.dirname(__file__), "static/public")
+        if not os.path.exists(src_public):
+            logger.error(f"Source public folder does not exist: {src_public}")
+        else:
+            try:
+                shutil.copytree(src_public, "public")
+            except Exception as e:
+                logger.error(f"Failed to copy public folder from {src_public} to 'public': {e}", exc_info=True)
     # if config folder does not exist copy from src/aida/static/config
     if not os.path.exists("config"):
         logger.info("Creating config folder from static assets")
-        # construct path to static assets
-        shutil.copytree(
-            os.path.join(os.path.dirname(__file__), "static/config"), "config"
-        )
+        src_config = os.path.join(os.path.dirname(__file__), "static/config")
+        if not os.path.exists(src_config):
+            logger.error(f"Source config folder does not exist: {src_config}")
+        else:
+            try:
+                shutil.copytree(src_config, "config")
+            except Exception as e:
+                logger.error(f"Failed to copy config folder from {src_config} to 'config': {e}", exc_info=True)
 
     if not os.path.exists("prompts"):
         logger.info("Creating prompts folder from static assets")
-        # construct path to static assets
-        shutil.copytree(
-            os.path.join(os.path.dirname(__file__), "static/prompts"), "prompts"
-        )
+        src_prompts = os.path.join(os.path.dirname(__file__), "static/prompts")
+        if not os.path.exists(src_prompts):
+            logger.error(f"Source prompts folder does not exist: {src_prompts}")
+        else:
+            try:
+                shutil.copytree(src_prompts, "prompts")
+            except Exception as e:
+                logger.error(f"Failed to copy prompts folder from {src_prompts} to 'prompts': {e}", exc_info=True)
 
 
 def create_app() -> FastAPI:
