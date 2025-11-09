@@ -29,54 +29,35 @@ class HealthCheck(BaseModel):
     status: str = "OK"
 
 
+def ensure_folder_from_static(target_folder: str, static_subfolder: str) -> None:
+    """
+    Ensure that the target folder exists by copying it from the static assets if necessary.
+
+    Args:
+        target_folder: The name of the folder to create (e.g., "public").
+        static_subfolder: The subfolder in static to copy from (e.g., "public").
+    """
+    if not os.path.exists(target_folder):
+        logger.info(f"Creating {target_folder} folder from static assets")
+        src_folder = os.path.join(os.path.dirname(__file__), f"static/{static_subfolder}")
+        if not os.path.exists(src_folder):
+            logger.error(f"Source {target_folder} folder does not exist: {src_folder}")
+        else:
+            try:
+                shutil.copytree(src_folder, target_folder)
+            except Exception as e:
+                logger.error(
+                    f"Failed to copy {target_folder} folder from {src_folder} to '{target_folder}': {e}",
+                    exc_info=True,
+                )
+
+
 def init_app():
     """Initialize application by ensuring necessary folders exist."""
-    # Always check and create each directory independently
     logger.info("Initializing application folders")
-    # if public folder does not exist copy from src/aida/static/public
-    if not os.path.exists("public"):
-        logger.info("Creating public folder from static assets")
-        src_public = os.path.join(os.path.dirname(__file__), "static/public")
-        if not os.path.exists(src_public):
-            logger.error(f"Source public folder does not exist: {src_public}")
-        else:
-            try:
-                shutil.copytree(src_public, "public")
-            except Exception as e:
-                logger.error(
-                    f"Failed to copy public folder from {src_public} to 'public': {e}",
-                    exc_info=True,
-                )
-    # if config folder does not exist copy from src/aida/static/config
-    if not os.path.exists("config"):
-        logger.info("Creating config folder from static assets")
-        src_config = os.path.join(os.path.dirname(__file__), "static/config")
-        if not os.path.exists(src_config):
-            logger.error(f"Source config folder does not exist: {src_config}")
-        else:
-            try:
-                shutil.copytree(src_config, "config")
-            except Exception as e:
-                logger.error(
-                    f"Failed to copy config folder from {src_config} to 'config': {e}",
-                    exc_info=True,
-                )
-
-    if not os.path.exists("prompts"):
-        logger.info("Creating prompts folder from static assets")
-        src_prompts = os.path.join(os.path.dirname(__file__), "static/prompts")
-        if not os.path.exists(src_prompts):
-            logger.error(f"Source prompts folder does not exist: {src_prompts}")
-        else:
-            try:
-                shutil.copytree(src_prompts, "prompts")
-            except Exception as e:
-                logger.error(
-                    f"Failed to copy prompts folder from {src_prompts} to 'prompts': {e}",
-                    exc_info=True,
-                )
-
-
+    ensure_folder_from_static("public", "public")
+    ensure_folder_from_static("config", "config")
+    ensure_folder_from_static("prompts", "prompts")
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
