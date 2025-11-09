@@ -1,4 +1,4 @@
-name: Apply Format
+name: 52 Apply Format
 
 on:
   workflow_run:
@@ -106,7 +106,6 @@ jobs:
           echo "pr_head_ref=$PR_HEAD_REF" >> $GITHUB_OUTPUT
           echo "requester=$REQUESTER" >> $GITHUB_OUTPUT
 
-
       - name: Checkout PR code
         uses: actions/checkout@v5
         with:
@@ -130,7 +129,6 @@ jobs:
               echo "Build scripts detected in pyproject.toml - manual review required"
             fi
           fi
-
 
       - name: Install Python
         if: steps.extract.outputs.should_format == 'true'

@@ -1,4 +1,4 @@
-name: Release Pipeline
+name: 10 Release Pipeline
 
 on:
   pull_request:
@@ -108,7 +108,7 @@ jobs:
         run: |
           uv build
           echo "Build artifacts:"
-          ls -lh src/dist/
+          ls -lh dist/
 
       - name: Install sigstore for signing
         run: |
@@ -117,10 +117,10 @@ jobs:
       - name: Sign the distribution
         run: |
           # Find the tar.gz file
-          TARBALL=$(find src/dist -name "*.tar.gz" -type f)
+          TARBALL=$(find dist -name "*.tar.gz" -type f)
 
           if [ -z "$TARBALL" ]; then
-            echo "Error: No tar.gz file found in src/dist/"
+            echo "Error: No tar.gz file found in dist/"
             exit 1
           fi
 
@@ -130,7 +130,7 @@ jobs:
           sigstore sign "$TARBALL"
 
           echo "Signature files created:"
-          ls -lh src/dist/
+          ls -lh dist/
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -158,9 +158,9 @@ jobs:
             sigstore verify identity <tarball> --cert-identity <identity> --cert-oidc-issuer https://token.actions.githubusercontent.com
             ```
           files: |
-            src/dist/*.tar.gz
-            src/dist/*.tar.gz.sigstore
-            src/dist/*.whl
+            dist/*.tar.gz
+            dist/*.tar.gz.sigstore
+            dist/*.whl
           draft: false
           prerelease: ${{ steps.get_version.outputs.branch == 'dev' || steps.check_tag.outputs.tag_exists == 'true' }}
 
@@ -265,7 +265,7 @@ jobs:
           uv build
           echo "✓ Package builds successfully"
           echo "Build artifacts:"
-          ls -lh src/dist/
+          ls -lh dist/
 
       - name: Comment on PR
         uses: actions/github-script@v7
@@ -383,7 +383,7 @@ jobs:
         id: push
         uses: docker/build-push-action@v6.18.0
         with:
-          context: src
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}

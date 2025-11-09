@@ -2,7 +2,7 @@
 set -e
 
 # List of essential files for the application
-ESSENTIAL_FILES=("pyproject.toml" "aida/__main__.py")
+ESSENTIAL_FILES=("aida/__main__.py")
 
 # Enable debugging if needed
 if [ "${DEBUG:-false}" = "true" ]; then
