@@ -11,7 +11,6 @@ WORKDIR /app
 # Install dependencies
 COPY pyproject.toml uv.lock ./
 RUN uv sync --locked --no-install-project --no-editable --no-dev
-RUN uv run aida init
 
 FROM python:3.12-slim
 ENV VIRTUAL_ENV=/app/.venv
@@ -34,8 +33,10 @@ ENV WEB_CONCURRENCY=1 \
 
 COPY src/. .
 RUN chmod +x /app/startup.sh
+
 # Set permissions for config directory and create .files directory
-RUN chown nonroot:nonroot -R /app/config && \
+RUN python -m aida init && \
+    chown nonroot:nonroot -R /app/config && \
     mkdir -p /app/.files && \
     chown nonroot:nonroot /app/.files && \
     chmod 700 /app/.files && \
