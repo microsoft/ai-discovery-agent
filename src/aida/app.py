@@ -54,6 +54,8 @@ def init_app():
         shutil.copytree(
             os.path.join(os.path.dirname(__file__), "static/prompts"), "prompts"
         )
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
