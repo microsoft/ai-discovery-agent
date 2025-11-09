@@ -1,4 +1,4 @@
-name: Release Pipeline
+name: 10 Release Pipeline
 
 on:
   pull_request:

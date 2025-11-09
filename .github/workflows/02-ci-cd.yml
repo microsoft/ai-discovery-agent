@@ -1,4 +1,4 @@
-name: Main CI/CD
+name: 02 Main CI/CD
 on:
   workflow_dispatch:
   push:

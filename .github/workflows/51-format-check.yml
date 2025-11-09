@@ -1,4 +1,4 @@
-name: PR Format Check
+name: 51 PR Format Check
 
 on:
   pull_request:
