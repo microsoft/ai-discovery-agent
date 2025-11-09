@@ -10,8 +10,6 @@ Tests configuration loading functionality including program metadata extraction.
 from importlib.metadata import PackageNotFoundError
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 from aida.utils.config import load_program_info, setup_auth_secret
 
 
