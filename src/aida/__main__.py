@@ -27,7 +27,7 @@ def main() -> None:
     # Access command-line arguments
     arguments = sys.argv
 
-    if(len(arguments) > 1 and arguments[1] == "init"):
+    if len(arguments) > 1 and arguments[1] == "init":
         logger.info("Initializing application files...")
         init_app()
     else:

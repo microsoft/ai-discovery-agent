@@ -11,6 +11,7 @@ The application is designed to be deployed on Azure App Service and includes
 proper health check endpoints for container orchestration.
 """
 import os
+import shutil
 
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI, status
@@ -35,17 +36,16 @@ def init_app():
         or not os.path.exists("config")
         or not os.path.exists("prompts")
     ):
-        import shutil
 
         logger.info("Initializing application folders")
-        # if public folder does not exist copy from src/aida/static
+        # if public folder does not exist copy from src/aida/static/public
         if not os.path.exists("public"):
             logger.info("Creating public folder from static assets")
             # construct path to static assets
             shutil.copytree(
                 os.path.join(os.path.dirname(__file__), "static/public"), "public"
             )
-        # if config folder does not exist copy from src/aida/config
+        # if config folder does not exist copy from src/aida/static/config
         if not os.path.exists("config"):
             logger.info("Creating config folder from static assets")
             # construct path to static assets
