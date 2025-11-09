@@ -1,4 +1,4 @@
-name: Bandit Security Scan
+name: 04 Bandit Security Scan
 on:
   workflow_dispatch:
   push:

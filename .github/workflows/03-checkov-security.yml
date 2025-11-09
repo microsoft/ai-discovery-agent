@@ -1,4 +1,4 @@
-name: Checkov Infra & Code Scanning
+name: 03 Checkov Infra & Code Scanning
 on:
   push:
     branches: ["dev", "main"]

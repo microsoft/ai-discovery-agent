@@ -1,4 +1,4 @@
-name: CI - Compilation and Testing
+name: 01 CI - Compilation and Testing
 on:
   workflow_dispatch:
   workflow_call:

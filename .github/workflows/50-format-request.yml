@@ -1,4 +1,4 @@
-name: Format Request
+name: 50 Format Request
 
 on:
   issue_comment:
