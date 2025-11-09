@@ -25,7 +25,7 @@ python3 scripts/generate-notice.py [OPTIONS]
 ```
 
 **Options:**
-- `--pyproject-path PATH`: Path to pyproject.toml (default: `src/pyproject.toml`)
+- `--pyproject-path PATH`: Path to pyproject.toml (default: `pyproject.toml`)
 - `--output PATH`: Output path for NOTICE file (default: `NOTICE`)
 - `--no-dev`: Exclude development dependencies (dev deps included by default)
 - `--verbose`: Enable verbose output
@@ -139,7 +139,7 @@ Add to `.pre-commit-config.yaml`:
       name: Generate NOTICE file
       entry: ./scripts/generate-notice.sh
       language: system
-      files: ^src/pyproject\.toml$
+      files: ^pyproject\.toml$
       pass_filenames: false
 ```
 

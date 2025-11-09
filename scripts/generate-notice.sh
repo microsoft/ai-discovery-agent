@@ -24,7 +24,7 @@ Usage: $0 [OPTIONS]
 Generate NOTICE file for OSS compliance based on pyproject.toml dependencies.
 
 OPTIONS:
-    -p, --pyproject-path PATH   Path to pyproject.toml file (default: src/pyproject.toml)
+    -p, --pyproject-path PATH   Path to pyproject.toml file (default: pyproject.toml)
     -o, --output PATH          Output path for NOTICE file (default: NOTICE)
     --no-dev                   Exclude development dependencies (development dependencies included by default)
     -v, --verbose              Enable verbose output

@@ -125,8 +125,8 @@ jobs:
           done
 
           # Ensure pyproject.toml hasn't been modified to include malicious build scripts
-          if [ -f src/pyproject.toml ]; then
-            if grep -E "(build-backend|build_meta|build\.py)" src/pyproject.toml; then
+          if [ -f pyproject.toml ]; then
+            if grep -E "(build-backend|build_meta|build\.py)" pyproject.toml; then
               echo "Build scripts detected in pyproject.toml - manual review required"
             fi
           fi

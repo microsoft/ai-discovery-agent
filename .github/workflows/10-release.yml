@@ -42,7 +42,7 @@ jobs:
       - name: Extract version from pyproject.toml
         id: get_version
         run: |
-          VERSION=$(grep -E "^version = " src/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          VERSION=$(grep -E "^version = " pyproject.toml | sed 's/version = "\(.*\)"/\1/')
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Extracted version: $VERSION"
 
@@ -185,7 +185,7 @@ jobs:
       - name: Extract version from pyproject.toml
         id: get_version
         run: |
-          VERSION=$(grep -E "^version = " src/pyproject.toml | sed 's/version = "\(.*\)"/\1/')
+          VERSION=$(grep -E "^version = " pyproject.toml | sed 's/version = "\(.*\)"/\1/')
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
           echo "Version to be released: $VERSION"
 
@@ -287,14 +287,14 @@ jobs:
               statusMessage = 'Cannot release - version update required';
 
               if (branch === 'main') {
-                warningSection = `\n## ⚠️ Action Required\n\n**Tag \`${tag}\` already exists!**\n\nFor main branch releases, you must use a new semantic version. Patch releases are not allowed for production releases.\n\nPlease update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
+                warningSection = `\n## ⚠️ Action Required\n\n**Tag \`${tag}\` already exists!**\n\nFor main branch releases, you must use a new semantic version. Patch releases are not allowed for production releases.\n\nPlease update the version in \`pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
               } else if (patchTagExists) {
-                warningSection = `\n## ⚠️ Action Required\n\n**Both \`${tag}\` and \`${tag}-patch\` tags already exist!**\n\nYou must update the version in \`src/pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
+                warningSection = `\n## ⚠️ Action Required\n\n**Both \`${tag}\` and \`${tag}-patch\` tags already exist!**\n\nYou must update the version in \`pyproject.toml\` before merging this PR.\n\n**Do not merge this PR until the version is updated.**\n`;
               }
             } else if (tagExists && branch === 'dev') {
               statusIcon = '⚠️';
               statusMessage = 'Tag exists - patch release will be created';
-              warningSection = `\n## ⚠️ Notice\n\nTag \`${tag}\` already exists. When merged, a \`${tag}-patch\` tag will be created instead.\n\nConsider updating the version in \`src/pyproject.toml\` to create a clean release.\n`;
+              warningSection = `\n## ⚠️ Notice\n\nTag \`${tag}\` already exists. When merged, a \`${tag}-patch\` tag will be created instead.\n\nConsider updating the version in \`pyproject.toml\` to create a clean release.\n`;
             }
 
             const releaseType = branch === 'dev' ? 'development prerelease' : 'production release';
