@@ -461,10 +461,10 @@ uv run ruff check .
 uv run -m compileall src/
 
 # 4. Run tests with coverage
-uv run pytest tests/ -v --cov=aida --cov-report=term-missing
+cd src && uv run pytest tests/ -v --cov=aida --cov-report=term-missing
 
 # 5. Run security checks
-uv run bandit -r aida/ -f sarif -o bandit-results.sarif
+cd src && uv run bandit -r aida/
 ```
 
 **Fix Common Issues:**
