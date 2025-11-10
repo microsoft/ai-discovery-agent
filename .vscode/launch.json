@@ -8,7 +8,7 @@
       "name": "Python Debugger: FastAPI",
       "type": "debugpy",
       "request": "launch",
-      "cwd": "${workspaceFolder}/src",
+      "cwd": "${workspaceFolder}",
       "python": "${workspaceFolder}/.venv/bin/python",
       "module": "uvicorn",
       "args": [

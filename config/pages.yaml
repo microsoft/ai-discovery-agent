@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/ai-discovery-agent/refs/heads/dev/src/aida/static/schema/pages.v0.2.schema.json
+# yaml-language-server: $schema=./pages.v0.2.schema.json
 # Pages configuration for AI Discovery Workshop Agent
 # This file defines all available pages in the application
 #

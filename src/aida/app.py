@@ -12,9 +12,11 @@ proper health check endpoints for container orchestration.
 """
 import os
 import shutil
+from pathlib import Path
 
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI, status
+from fastapi.responses import FileResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
 
@@ -78,6 +80,29 @@ def create_app() -> FastAPI:
         description="FastAPI server for AI-powered workshop facilitation with Chainlit integration",
         version="1.0.0",
     )
+
+    @app.get(
+        "/public/elements/MermaidViewer.jsx",
+        name="MermaidViewer.jsx",
+        tags=["static"],
+        summary="Get Mermaid Diagram Source",
+        response_class=FileResponse,
+    )
+    def get_mermaid_source() -> str:
+        """Get the Mermaid diagram source from static assets.
+
+        Returns:
+            FileResponse: Mermaid diagram source as a file response.
+        """
+        mermaid_file_path = os.path.join(
+            Path.cwd(), "public/elements/MermaidViewer.jsx"
+        )
+        if not os.path.exists(mermaid_file_path):
+            mermaid_file_path = os.path.join(
+                os.path.dirname(__file__),
+                "static/elements/MermaidViewer.jsx",
+            )
+        return mermaid_file_path
 
     @app.get(
         "/health",
