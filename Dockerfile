@@ -1,3 +1,4 @@
+#checkov:skip=CKV_DOCKER_3:by now we need root due to file share permission issues
 # Install uv
 FROM python:3.12-slim AS builder
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
