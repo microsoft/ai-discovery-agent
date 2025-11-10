@@ -17,8 +17,7 @@ ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
-RUN adduser --system --no-create-home nonroot && \
-    addgroup --system nonroot && usermod -a -G nonroot nonroot
+# RUN adduser --system --no-create-home --group --uid 10000 nonroot
 
 WORKDIR /app
 
@@ -35,18 +34,23 @@ COPY src/. .
 RUN chmod +x /app/startup.sh
 
 # Set permissions for config directory and create .files directory
+# RUN python -m aida init && \
+#     chown nonroot:nonroot -R /app/config && \
+#     mkdir -p /app/.files && \
+#     chown nonroot:nonroot /app/.files && \
+#     chmod 700 /app/.files && \
+#     touch /app/.env && \
+#     chown nonroot:nonroot /app/.env
+
 RUN python -m aida init && \
-    chown nonroot:nonroot -R /app/config && \
     mkdir -p /app/.files && \
-    chown nonroot:nonroot /app/.files && \
     chmod 700 /app/.files && \
-    touch /app/.env && \
-    chown nonroot:nonroot /app/.env
+    touch /app/.env
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
 
-USER nonroot
+# USER nonroot
 EXPOSE 8000
 # Run the application
 CMD ["/app/startup.sh"]
