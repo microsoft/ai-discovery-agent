@@ -9,9 +9,12 @@ on:
       - dev
     paths:
       - "src/**"
+      - ".github/workflows/01-ci.yml"
       - ".github/workflows/02-ci-cd.yml"
       - "infra/**"
       - "azure.yaml"
+      - "Dockerfile"
+      - "pyproject.toml"
 
 concurrency:
   group: cd-${{ github.workflow }}-${{ github.ref || github.run_id }}
