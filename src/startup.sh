@@ -20,7 +20,7 @@ echo "Environment: ${OTEL_SERVICE_NAME:-unknown}"
 
 # Show environment variables (excluding sensitive ones)
 echo "Environment variables:"
-env | grep -E "^(AZURE|CHAINLIT|PYTHON|WEB_|WORKER_|WEBSITE_|OAUTH_)" | grep -v -E "(SECRET|KEY|TOKEN|PASSWORD|CREDENTIAL|AUTH)" | sort
+env | grep -E "^(AZURE|CHAINLIT|PYTHON|WEB_|WORKER_|WEBSITE_|OAUTH_)" | grep -v -E "(SECRET|KEY|TOKEN|PASSWORD|CREDENTIAL|_AUTH)" | sort
 
 echo "Contents of current directory:"
 ls -la
