@@ -20,7 +20,7 @@ echo "Environment: ${OTEL_SERVICE_NAME:-unknown}"
 
 # Show environment variables (excluding sensitive ones)
 echo "Environment variables:"
-env | grep -E "^(AZURE|CHAINLIT|PYTHON|WEB_|WORKER_|WEBSITE_|OAUTH_)" | grep -v -E "(SECRET|KEY|TOKEN)" | sort
+env | grep -E "^(AZURE|CHAINLIT|PYTHON|WEB_|WORKER_|WEBSITE_|OAUTH_)" | grep -v -E "(SECRET|KEY|TOKEN|PASSWORD|CREDENTIAL|_AUTH)" | sort
 
 echo "Contents of current directory:"
 ls -la
@@ -40,11 +40,14 @@ export PYTHONDONTWRITEBYTECODE="${PYTHONDONTWRITEBYTECODE:-1}"
 
 # Performance and worker settings
 WEB_CONCURRENCY=${WEB_CONCURRENCY:-1}
+# Set a long default worker timeout (1200 seconds = 20 minutes)
+# to support long-running tasks or slow model loading. Adjust as needed for your workload.
 WORKER_TIMEOUT=${WORKER_TIMEOUT:-1200}
 PORT=${PORT:-8000}
 HOST=${HOST:-"0.0.0.0"}
 LOG_LEVEL=${LOG_LEVEL:-"info"}
 
+APP_FACTORY="${APP_FACTORY:-aida:create_app}"
 SECRETS_DIR="${SECRETS_DIR:-/home/site/wwwroot/secrets}"
 APP_CONFIG_DIR="${APP_CONFIG_DIR:-/app/config}"
 echo "Starting application with the following settings:"
@@ -52,6 +55,7 @@ echo "  - Port: $PORT"
 echo "  - Host: $HOST"
 echo "  - Workers: $WEB_CONCURRENCY"
 echo "  - Worker timeout: $WORKER_TIMEOUT seconds"
+echo "  - App factory: $APP_FACTORY"
 
 # Link auth-config.yaml from secrets directory if it exists when running
 # inside Azure App Service
@@ -90,21 +94,21 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
     if [ "$FILE_UID" != "$EXPECTED_UID" ]; then
         echo "WARNING: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami)) but by ${FILE_UID}!"
     fi
-    if [ "$FILE_PERMS" != "600" ] && [ "$FILE_PERMS" != "640" ]; then
-        echo "WARNING: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 or 640."
+    if [ "$FILE_PERMS" != "600" ]; then
+        echo "WARNING: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 (owner read/write only)."
     fi
     if ! ln -sf "$AUTH_CONFIG_SOURCE" "$APP_CONFIG_DIR/auth-config.yaml"; then
         echo "ERROR: Failed to create symlink for auth-config.yaml!"
         exit 1
     fi
-    echo "✓ Successfully linked auth-config.yaml"
+    echo "Successfully linked auth-config.yaml"
 else
     echo "No auth-config.yaml found in secrets directory."
 fi
 
 # Start the application with error handling
 echo "Starting uvicorn server..."
-exec python -m uvicorn --factory aida:create_app \
+exec python -m uvicorn --factory "$APP_FACTORY" \
     --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
