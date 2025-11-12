@@ -713,7 +713,7 @@ async def process_with_agent(
                         else:
                             if metadata and "langgraph_node" in metadata:
                                 logger.debug(
-                                    f"Agent response Node: {metadata["langgraph_node"]}"
+                                    f"Agent response Node: {metadata['langgraph_node']}"
                                 )
                             else:
                                 logger.debug(f"Agent response: {metadata}")

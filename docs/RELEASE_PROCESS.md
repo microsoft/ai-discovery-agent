@@ -7,7 +7,7 @@ This document describes the automated release process for the AI Discovery Agent
 The project uses an automated release pipeline (`.github/workflows/10-release.yml`) that:
 
 1. Triggers on pull requests and pushes to the `main` and `dev` branches
-2. Extracts the version number from `src/pyproject.toml`
+2. Extracts the version number from `pyproject.toml`
 3. Creates a GitHub release with a version tag
 4. Builds the package using `uv build`
 5. Signs the distribution artifacts with [Sigstore](https://www.sigstore.dev/)
@@ -31,7 +31,7 @@ The pipeline supports two types of releases:
 
 ## Version Management
 
-The version number is stored in `src/pyproject.toml`:
+The version number is stored in `pyproject.toml`:
 
 ```toml
 [project]
@@ -91,7 +91,7 @@ The release pipeline will:
 
 Tag `v0.7.1` already exists. When merged, a `v0.7.1-patch` tag will be created instead.
 
-Consider updating the version in `src/pyproject.toml` to create a clean release.
+Consider updating the version in `pyproject.toml` to create a clean release.
 ```
 
 **❌ Cannot Release** (both tag and patch exist):
@@ -105,7 +105,7 @@ Consider updating the version in `src/pyproject.toml` to create a clean release.
 
 **Both `v0.7.1` and `v0.7.1-patch` tags already exist!**
 
-You must update the version in `src/pyproject.toml` before merging this PR.
+You must update the version in `pyproject.toml` before merging this PR.
 
 **Do not merge this PR until the version is updated.**
 ```
@@ -138,7 +138,7 @@ If a tag already exists for the current version:
 
 **Important**: If both `vX.Y.Z` and `vX.Y.Z-patch` exist, the workflow will fail. In this case:
 
-1. Update the version in `src/pyproject.toml` to a new version number
+1. Update the version in `pyproject.toml` to a new version number
 2. Commit and push the change
 3. The workflow will run again with the new version
 
@@ -148,14 +148,14 @@ If a tag already exists for the current version:
 
 #### Step 1: Update the Version
 
-1. Open `src/pyproject.toml`
+1. Open `pyproject.toml`
 2. Update the version number:
    ```toml
    version = "0.8.0"  # New version
    ```
 3. Commit the change:
    ```bash
-   git add src/pyproject.toml
+   git add pyproject.toml
    git commit -m "Bump version to 0.8.0"
    ```
 
@@ -237,13 +237,13 @@ Expected output:
 
 **Problem**: Both `vX.Y.Z` and `vX.Y.Z-patch` tags exist.
 
-**Solution**: Update the version in `src/pyproject.toml` to a new version number.
+**Solution**: Update the version in `pyproject.toml` to a new version number.
 
 ### Workflow Fails: "Invalid version format"
 
 **Problem**: Version doesn't follow semantic versioning (X.Y.Z).
 
-**Solution**: Update the version in `src/pyproject.toml` to match the format `X.Y.Z` (e.g., `0.8.0`).
+**Solution**: Update the version in `pyproject.toml` to match the format `X.Y.Z` (e.g., `0.8.0`).
 
 ### Build Fails
 

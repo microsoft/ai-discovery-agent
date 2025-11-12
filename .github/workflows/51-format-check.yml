@@ -1,4 +1,4 @@
-name: PR Format Check
+name: 51 PR Format Check
 
 on:
   pull_request:
@@ -31,11 +31,10 @@ jobs:
         run: |
           # Install dependencies
           uv sync --only-group dev --directory src
-          . src/.venv/bin/activate
 
           # Run pre-commit to check if formatting is needed
           set +e
-          uv run pre-commit run --all-files --show-diff-on-failure
+          uv run pre-commit run --all-files --show-diff-on-failure -c .tools/.pre-commit-config.yaml
           format_needed=$?
           set -e
 
@@ -61,7 +60,7 @@ jobs:
               This PR has formatting issues that need to be fixed. You can:
 
               1. **Auto-format**: Comment \`/format\` on this PR to automatically apply formatting fixes
-              2. **Manual fix**: Run \`uv run pre-commit run --all-files\` locally and commit the changes
+              2. **Manual fix**: Run \`uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml\` locally and commit the changes
 
               The CI will update once formatting is applied.`
             });

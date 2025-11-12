@@ -90,7 +90,7 @@ Development guide including:
 - Updated workflow to use configuration
 
 **Bandit Configuration (Python SAST):**
-- Created `src/.bandit`
+- Created `.tools/.bandit`
 - Standardized exclusions and severity levels
 - Configured confidence thresholds
 - Updated CI workflow

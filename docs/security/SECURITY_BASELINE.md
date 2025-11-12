@@ -134,7 +134,7 @@ resource storageAccount 'Microsoft.Storage/storageAccounts@2023-01-01' = {
 
 **Bandit Configuration:**
 ```bash
-uv run bandit -c .bandit.yml -r .
+uv run bandit -c .tools/.bandit.yml -r .
 ```
 
 **Suppressions:**
@@ -184,7 +184,7 @@ uv run bandit -x .venv -s B101 -r .
 
 ### 2.3 Pre-commit Security Hooks
 
-**Configuration:** `.pre-commit-config.yaml`
+**Configuration:** `.tools/.pre-commit-config.yaml`
 
 **Hooks:**
 - `check-yaml`: Validate YAML files

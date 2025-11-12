@@ -11,8 +11,13 @@ The application is designed to be deployed on Azure App Service and includes
 proper health check endpoints for container orchestration.
 """
 
+import os
+import shutil
+from pathlib import Path
+
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI, status
+from fastapi.responses import FileResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
 
@@ -27,6 +32,39 @@ class HealthCheck(BaseModel):
     status: str = "OK"
 
 
+def ensure_folder_from_static(target_folder: str, static_subfolder: str) -> None:
+    """
+    Ensure that the target folder exists by copying it from the static assets if necessary.
+
+    Args:
+        target_folder: The name of the folder to create (e.g., "public").
+        static_subfolder: The subfolder in static to copy from (e.g., "public").
+    """
+    if not os.path.exists(target_folder):
+        logger.info(f"Creating {target_folder} folder from static assets")
+        src_folder = os.path.join(
+            os.path.dirname(__file__), f"static/{static_subfolder}"
+        )
+        if not os.path.exists(src_folder):
+            logger.error(f"Source {target_folder} folder does not exist: {src_folder}")
+        else:
+            try:
+                shutil.copytree(src_folder, target_folder)
+            except Exception as e:
+                logger.error(
+                    f"Failed to copy {target_folder} folder from {src_folder} to '{target_folder}': {e}",
+                    exc_info=True,
+                )
+
+
+def init_app():
+    """Initialize application by ensuring necessary folders exist."""
+    logger.info("Initializing application folders")
+    ensure_folder_from_static("public", "public")
+    ensure_folder_from_static("config", "config")
+    ensure_folder_from_static("prompts", "prompts")
+
+
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application.
 
@@ -34,6 +72,8 @@ def create_app() -> FastAPI:
         FastAPI: Configured FastAPI application instance with health check
             endpoints and Chainlit integration mounted at the root path.
     """
+    init_app()
+
     # FastAPI application instance for the AI Discovery Agent
     # Provides REST API endpoints and serves as the main server entry point
     app = FastAPI(
@@ -41,6 +81,28 @@ def create_app() -> FastAPI:
         description="FastAPI server for AI-powered workshop facilitation with Chainlit integration",
         version="1.0.0",
     )
+
+    @app.get(
+        "/public/elements/MermaidViewer.jsx",
+        name="MermaidViewer.jsx",
+        tags=["static"],
+        summary="Get Mermaid Diagram Source",
+    )
+    def get_mermaid_source() -> FileResponse:
+        """Get the Mermaid diagram source from static assets.
+
+        Returns:
+            FileResponse: Mermaid diagram source as a file response.
+        """
+        mermaid_file_path = os.path.join(
+            Path.cwd(), "public/elements/MermaidViewer.jsx"
+        )
+        if not os.path.exists(mermaid_file_path):
+            mermaid_file_path = os.path.join(
+                os.path.dirname(__file__),
+                "static/elements/MermaidViewer.jsx",
+            )
+        return FileResponse(mermaid_file_path)
 
     @app.get(
         "/health",
@@ -69,6 +131,8 @@ def create_app() -> FastAPI:
     # This integrates the Chainlit chat interface with the FastAPI server
     # The target "aida/__main__.py" contains the Chainlit application logic
     logger.info("Mounting Chainlit application at root path '/'")
-    mount_chainlit(app, target="aida/chainlit.py", path="/")
+    mount_chainlit(
+        app, target=os.path.join(os.path.dirname(__file__), "chainlit.py"), path="/"
+    )
 
     return app
