@@ -4,6 +4,7 @@ on:
     branches: ["dev", "main"]
     paths:
       - "infra/**"
+      - "src/**"
       - ".github/workflows/03-checkov-security.yml"
   pull_request:
     branches: ["dev", "main"]
