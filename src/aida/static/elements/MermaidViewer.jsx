@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { useEffect } from "react";
-props;
 
 export default function MermaidViewer() {
   useEffect(() => {
