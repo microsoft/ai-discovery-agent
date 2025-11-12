@@ -87,9 +87,8 @@ def create_app() -> FastAPI:
         name="MermaidViewer.jsx",
         tags=["static"],
         summary="Get Mermaid Diagram Source",
-        response_class=FileResponse,
     )
-    def get_mermaid_source() -> str:
+    def get_mermaid_source() -> FileResponse:
         """Get the Mermaid diagram source from static assets.
 
         Returns:
@@ -103,7 +102,7 @@ def create_app() -> FastAPI:
                 os.path.dirname(__file__),
                 "static/elements/MermaidViewer.jsx",
             )
-        return mermaid_file_path
+        return FileResponse(mermaid_file_path)
 
     @app.get(
         "/health",
