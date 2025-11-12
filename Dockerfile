@@ -58,10 +58,10 @@ COPY config/ /app/config/
 COPY .chainlit/ /app/.chainlit/
 COPY src/. .
 
-# Create user and set up directories
+# Create user and set up directories,
+# set permissions and prepare runtime environment
 RUN adduser --system --no-create-home --group nonroot && \
     mkdir -p /app/.files && \
-# Set permissions and prepare runtime environment
     chmod +x /app/startup.sh && \
     chown -R nonroot:nonroot /app/config /app/.files && \
     chmod 700 /app/.files && \
