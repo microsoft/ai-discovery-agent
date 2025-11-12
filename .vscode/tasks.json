@@ -48,7 +48,7 @@
     {
       "label": "bandit",
       "type": "shell",
-      "command": "cd src && uv run bandit -c .bandit.yml -r .",
+      "command": "uv run bandit -c .tools/.bandit.yml -r .",
       "group": "test",
       "problemMatcher": "$python"
     },
