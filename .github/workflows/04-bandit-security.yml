@@ -34,7 +34,7 @@ jobs:
       - name: bandit security scan (SARIF)
         working-directory: src
         if: always()
-        run: uv run bandit -c .bandit.yml -r -f sarif -o results.sarif . || true
+        run: uv run bandit -c .tools/.bandit.yml -r -f sarif -o results.sarif . || true
 
       - name: Upload SARIF file
         if: (!cancelled())

@@ -23,6 +23,6 @@
   "bandit.cwd": "${workspaceFolder}/src",
   "bandit.args": [
     "-c",
-    "${workspaceFolder}/src/.bandit.yml"
+    "${workspaceFolder}/.tools/.bandit.yml"
   ]
 }
