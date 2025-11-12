@@ -9,9 +9,9 @@ echo "Loading azd .env file from current environment..."
 # EOF
 
 echo "Generating azd .azure.env file from current environment..."
-azd env get-values > src/.azure.env
+azd env get-values > .azure.env
 echo "azd .env file loaded successfully."
-. src/.azure.env
+. .azure.env
 
 # Check if GITHUB_SECRET is not set before setting GitHub variables
 # This prevents overwriting secrets when running in GitHub Actions
