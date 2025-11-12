@@ -14,9 +14,14 @@ RUN uv sync --locked --no-install-project --no-editable --no-dev
 
 # Final stage -------------------------------------------------------------------------
 FROM python:3.12-slim
-ENV VIRTUAL_ENV=/app/.venv
-ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
-    PYTHONUNBUFFERED=1
+ENV VIRTUAL_ENV=/app/.venv \
+    PATH="$VIRTUAL_ENV/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    WEB_CONCURRENCY=1 \
+    WORKER_TIMEOUT=1200 \
+    PORT=8000 \
+    HOST=0.0.0.0 \
+    LOG_LEVEL=info
 
 RUN adduser --system --no-create-home --group nonroot
 
@@ -27,18 +32,11 @@ COPY --from=builder /app/.venv /app/.venv
 COPY prompts/ /app/prompts/
 COPY config/ /app/config/
 COPY .chainlit/ /app/.chainlit/
-
-ENV WEB_CONCURRENCY=1 \
-    WORKER_TIMEOUT=1200 \
-    PORT=8000 \
-    HOST=0.0.0.0 \
-    LOG_LEVEL=info
-
 COPY src/. .
-RUN chmod +x /app/startup.sh
 
 # Set permissions for config directory and create .files directory
-RUN chown nonroot:nonroot -R /app/config && \
+RUN chmod +x /app/startup.sh \
+    chown nonroot:nonroot -R /app/config && \
     mkdir -p /app/.files && \
     chown nonroot:nonroot /app/.files && \
     chmod 700 /app/.files && \
