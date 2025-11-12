@@ -5,7 +5,7 @@
 
 # Welcome to Aida, the AI Discovery Agent and Workshop Facilitator
 
-This is a set of agents to help during the AI Discovery Workshop training or to help the facilitator of a workshop in real cases too. It runs on [Chainlit](https://chainlit.io/).
+Aida is a set of AI agents designed to support the AI Discovery Workshop—a collaborative session that helps teams identify, define, and prioritize practical AI use cases for their business or organization. These agents assist both during workshop training and when facilitating real-world workshops by guiding discussions, managing tasks, and answering participant questions. The solution runs on [Chainlit](https://chainlit.io/).
 
 ## Prerequisites
 
@@ -44,6 +44,9 @@ This is a set of agents to help during the AI Discovery Workshop training or to 
 
    The application supports both password-based and OAuth authentication.
 
+   > **⚠️ WARNING: The password authentication mechanism shown here is NOT SECURE and is ONLY for demonstration or workshop purposes.**
+   > **Do NOT use this authentication setup in any production or public-facing environment, as it lacks essential security features and user management.**
+
    **Password Authentication (Optional)**:
    Rename the file [src/config/auth-config-example.yaml](src/config/auth-config-example.yaml) to `src/config/auth-config.yaml` and create users and passwords. This is a simple example, so we are not providing a secure authentication mechanism, nor a user maintenance interface. The authentication file is as simple as this:
 
@@ -54,7 +57,7 @@ This is a set of agents to help during the AI Discovery Workshop training or to 
          email: attendee@domain.com
          first_name: John
          last_name: Doe
-         password: write_a_password # passwords will be encrypted after first use
+         password: write_a_password # REPLACE this example password before deployment. Passwords will be hashed using bcrypt after first use and not stored in plain text.
          roles:
            - user # set user or admin
        facilitator:
@@ -121,6 +124,10 @@ docker run --rm -p 10000:10000 -p 10001:10001 -p 10002:10002 mcr.microsoft.com/a
 3. NPM (if you already have Node): `npm install -g azurite` then `azurite`.
 
 Then set the environment variable in your local `.env` (or export it in your shell) before starting the app:
+
+> **⚠️ WARNING:**
+> The below connection string is **for local development only** and contains the default Azurite/Storage Emulator account key, which is **publicly known and should _never_ be used in production environments**.
+> Always use a secure, provisioned Azure Storage account (with a unique key or Managed Identity) for production and CI/CD deployments.
 
 ```bash
 AZURE_STORAGE_CONNECTION_STRING= "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://127.0.0.1:10000/devstoreaccount1;"
@@ -287,7 +294,11 @@ To enable automated deployment to Azure using GitHub Actions and managed identit
 
 - `AUTH_CONFIG_YAML`: The full YAML content for `src/config/auth-config.yaml` (used to provide authentication configuration securely at deploy time).
 - `AZURE_CREDENTIALS` (optional): Only required if not using OIDC federation. For managed identity federation, this is not needed.
-- `PUSH_PAT`: A Personal Access Token with Contents write permissions, required for the format-pr action to push formatted code changes back to pull request branches.
+- `PUSH_PAT`: A Personal Access Token (PAT) with **minimum required scope**: `contents: write` (Repository content permissions). It is needed for the format-pr action to push code changes back to pull request branches. For security:
+  - Set an expiration date (e.g., 90 days or less) and rotate regularly
+  - Use a fine-grained PAT instead of classic PAT when possible
+  - Limit the PAT to only the repositories that need it
+  - Store the PAT securely in GitHub Secrets and never commit it to the repository
 - `COSIGN_PRIVATE_KEY`: The private key for signing container images (generated via `cosign generate-key-pair`). Used in the release workflow to sign container images with Cosign.
 - `COSIGN_PASSWORD`: The password protecting the Cosign private key. Set when generating the key pair with `cosign generate-key-pair`.
 
