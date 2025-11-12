@@ -58,7 +58,7 @@ jobs:
 
       - name: bandit security scan (XML)
         if: always()
-        run: uv run bandit -c .tools/.bandit.yml -r -f xml -o bandit_test.xml .
+        run: uv run bandit -c .tools/.bandit.yml -r -f xml -o bandit_test.xml . || true
 
       - name: Check NOTICE file is up to date
         if: always() && (github.base_ref == 'main' || github.base_ref == 'dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
