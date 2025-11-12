@@ -209,15 +209,16 @@ __marimo__/
 # local azd files
 .azure
 # auth config contains passwords
-src/**/auth-config.yaml
+auth-config.yaml
 # local chainlit db stuff
-src/.chainlit/.langchain.db
+**/.chainlit/.langchain.db
+
 **/.files/**/*
 
 # Ignore the compiled requirements file, using uv
 src/requirements.txt
 # Ignore local environment variables file, which may contain secrets
-src/.azure.env
+.azure.env
 
 # Ignore Azurite files
 __azurite*
@@ -232,8 +233,5 @@ copyright-header-check.json
 src/public/
 src/prompts/
 src/config/
-# Exclude root-level runtime config directories
-.chainlit/
-config/
-prompts/
-public/
+
+.chainlit/translations

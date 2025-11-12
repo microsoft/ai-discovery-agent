@@ -220,7 +220,7 @@ whether by implication, estoppel or otherwise.
 
     notice_content += f"""================================================================================
 
-This NOTICE file was generated on {datetime.now().strftime('%Y-%m-%d %H:%M:%S UTC')}
+This NOTICE file was generated on {datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")}
 
 For more information about open source licenses, visit:
 - https://opensource.org/licenses/

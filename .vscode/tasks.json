@@ -16,7 +16,7 @@
     {
       "label": "lint",
       "type": "shell",
-      "command": "cd src && uv run pre-commit run --all-files -v",
+      "command": "uv run pre-commit run --all-files -v -c .tools/.pre-commit-config.yaml",
       "group": "build"
     },
     {
@@ -61,7 +61,7 @@
     {
       "label": "bicep-checkov",
       "type": "shell",
-      "command": "uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.checkov.yml --quiet",
+      "command": "uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.tools/.checkov.yml --quiet",
       "group": "test",
       "dependsOn": [
         "bicep-validate"
@@ -70,7 +70,7 @@
     {
       "label": "bicep-checkov-debug",
       "type": "shell",
-      "command": "LOG_LEVEL=debug uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.checkov.yml --compact",
+      "command": "LOG_LEVEL=debug uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.tools/.checkov.yml --compact",
       "group": "test",
       "dependsOn": [
         "bicep-validate"
@@ -87,7 +87,9 @@
       "label": "generate-notice",
       "type": "shell",
       "command": "./scripts/generate-notice.sh",
-      "args": ["--verbose"],
+      "args": [
+        "--verbose"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,

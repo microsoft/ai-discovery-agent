@@ -37,6 +37,8 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --show-diff-on-failure -c .tools/.pre-commit-config.yaml
 
       - name: Check Copyright Headers
         id: copyright-check

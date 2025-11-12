@@ -747,7 +747,7 @@ The AI Discovery Agent is deployed as a **Docker container behind Azure App Serv
 **Implication for DAST Testing:**
 Infrastructure-level security controls (headers, HTTPS, cookies) are handled by Azure, not the container. The ZAP scan should focus on **application-level vulnerabilities** that require code fixes.
 
-### 8.2 ZAP Rules Configuration (`.zap-rules.conf`)
+### 8.2 ZAP Rules Configuration (`.tools/.zap-rules.conf`)
 
 The configuration file uses a simple format based on [ZAP full-scan documentation](https://www.zaproxy.org/docs/docker/full-scan/):
 
@@ -823,7 +823,7 @@ The configuration file uses a simple format based on [ZAP full-scan documentatio
   with:
     docker_name: "ghcr.io/zaproxy/zaproxy:stable"
     target: "http://localhost:8000"
-    cmd_options: "-a -j -l WARN -c .zap-rules.conf"
+    cmd_options: "-a -j -l WARN -c .tools/.zap-rules.conf"
 ```
 
 **Parameter Breakdown:**
@@ -831,7 +831,7 @@ The configuration file uses a simple format based on [ZAP full-scan documentatio
 - `-a`: Include alpha scan rules (more comprehensive)
 - `-j`: Use Ajax spider for SPAs like Chainlit (JavaScript execution)
 - `-l WARN`: Show warnings and above (hide INFO/PASS)
-- `-c .zap-rules.conf`: Custom rules configuration
+- `-c .tools/.zap-rules.conf`: Custom rules configuration
 
 ### 8.5 Exit Codes and CI/CD Integration
 
@@ -860,7 +860,7 @@ The configuration file uses a simple format based on [ZAP full-scan documentatio
      -t https://your-app.azurewebsites.net -g zap-default.conf
    ```
 
-2. **Edit `.zap-rules.conf`** to change actions:
+2. **Edit `.tools/.zap-rules.conf`** to change actions:
 
    ```
    # Change WARN to FAIL for stricter enforcement
@@ -874,7 +874,7 @@ The configuration file uses a simple format based on [ZAP full-scan documentatio
    ```bash
    docker run -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable \
      zap-full-scan.py -t http://localhost:8000 \
-     -c .zap-rules.conf -r report.html
+     -c .tools/.zap-rules.conf -r report.html
    ```
 
 ### 8.7 Azure App Service Security Hardening

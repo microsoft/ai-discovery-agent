@@ -1,3 +1,4 @@
+#!/bin/sh
 # Check if GITHUB_SECRET is not set before setting GitHub variables
 # This prevents running this script when running in GitHub Actions
 # The script is intended for local development environment setup.
