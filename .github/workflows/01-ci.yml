@@ -54,7 +54,7 @@ jobs:
 
       - name: Run tests
         if: always()
-        run: uv run pytest --junit-xml pytest.xml
+        run: uv run pytest src/tests --junit-xml pytest.xml
 
       - name: bandit security scan (XML)
         if: always()
