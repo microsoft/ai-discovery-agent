@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-source "$SCRIPT_DIR/../src/.azure.env"
-source "$SCRIPT_DIR/../src/.env"
+source "$SCRIPT_DIR/../.azure.env"
+source "$SCRIPT_DIR/../.env"
 
 # run only when $GITHUB_SECRET is not set to avoid overwriting secrets in GitHub Actions
 if [ -z "$GITHUB_SECRET" ]; then

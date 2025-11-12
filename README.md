@@ -329,14 +329,14 @@ This project includes automated tooling to generate OSS-compliant NOTICE files t
 
 ### Generating NOTICE Files
 
-The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `src/pyproject.toml`:
+The project includes scripts to automatically generate NOTICE files based on the dependencies listed in `pyproject.toml`:
 
 ```bash
+# Generate NOTICE file including both runtime and development dependencies (default behavior)
+./scripts/generate-notice.sh
+
 # Generate NOTICE file with runtime dependencies only (excludes dev dependencies)
 ./scripts/generate-notice.sh --no-dev
-
-# Include development dependencies (default behavior)
-./scripts/generate-notice.sh
 # Generate with verbose output
 ./scripts/generate-notice.sh --verbose
 ```
@@ -347,9 +347,11 @@ You can also generate NOTICE files directly from VS Code using the built-in task
 
 1. Open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`)
 2. Type "Tasks: Run Task"
-3. Select either:
-   - **generate-notice**: Runtime dependencies only
-   - **generate-notice-with-dev**: Include development dependencies
+3. Select **generate-notice** to generate the NOTICE file (includes both runtime and development dependencies by default).
+   - To generate a NOTICE file with runtime dependencies only (excluding dev dependencies), run the script manually:
+     ```bash
+     ./scripts/generate-notice.sh --no-dev
+     ```
 
 ### Compliance Requirements
 

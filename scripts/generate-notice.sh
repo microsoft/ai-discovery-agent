@@ -11,7 +11,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # Default values
-PYPROJECT_PATH="$PROJECT_ROOT/src/pyproject.toml"
+PYPROJECT_PATH="$PROJECT_ROOT/pyproject.toml"
 OUTPUT_PATH="$PROJECT_ROOT/NOTICE"
 INCLUDE_DEV=true
 VERBOSE=false
@@ -24,14 +24,14 @@ Usage: $0 [OPTIONS]
 Generate NOTICE file for OSS compliance based on pyproject.toml dependencies.
 
 OPTIONS:
-    -p, --pyproject-path PATH   Path to pyproject.toml file (default: src/pyproject.toml)
+    -p, --pyproject-path PATH   Path to pyproject.toml file (default: pyproject.toml)
     -o, --output PATH          Output path for NOTICE file (default: NOTICE)
-    --no-dev                   Exclude development dependencies (dev deps included by default)
+    --no-dev                   Exclude development dependencies (development dependencies included by default)
     -v, --verbose              Enable verbose output
     -h, --help                 Show this help message
 
 EXAMPLES:
-    $0                                    # Generate NOTICE file with default settings (includes dev deps)
+    $0                                    # Generate NOTICE file with default settings (includes development dependencies)
     $0 --no-dev                          # Exclude development dependencies
     $0 --output NOTICE.txt --verbose     # Custom output path with verbose logging
     $0 --pyproject-path custom/pyproject.toml  # Custom pyproject.toml path
@@ -96,7 +96,7 @@ if [[ "$VERBOSE" == "true" ]]; then
 fi
 
 # Try to use uv if available (project uses uv)
-if command -v uv &> /dev/null && [[ -f "$PROJECT_ROOT/src/pyproject.toml" ]]; then
+if command -v uv &> /dev/null && [[ -f "$PYPROJECT_PATH" ]]; then
     if [[ "$VERBOSE" == "true" ]]; then
         echo "Using uv to run the script..."
     fi

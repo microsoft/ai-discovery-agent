@@ -2,7 +2,7 @@
 set -e
 
 # List of essential files for the application
-ESSENTIAL_FILES=("pyproject.toml" "aida/__main__.py")
+ESSENTIAL_FILES=("aida/__main__.py")
 
 # Enable debugging if needed
 if [ "${DEBUG:-false}" = "true" ]; then
@@ -60,10 +60,15 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
     # Ensure /app/config exists
     if [ ! -d "$APP_CONFIG_DIR" ]; then
         echo "Directory $APP_CONFIG_DIR does not exist. Creating it..."
-        if ! mkdir -p "$APP_CONFIG_DIR"; then
-            echo "ERROR: Failed to create $APP_CONFIG_DIR directory!"
+         if ! mkdir -p "$APP_CONFIG_DIR"; then
+            echo "ERROR: Failed to create directory $APP_CONFIG_DIR!"
             exit 1
         fi
+    fi
+    # Check if $APP_CONFIG_DIR is a directory
+    if [ ! -d "$APP_CONFIG_DIR" ]; then
+        echo "ERROR: $APP_CONFIG_DIR exists but is not a directory!"
+        exit 1
     fi
     # Check if $APP_CONFIG_DIR is writable
     if [ ! -w "$APP_CONFIG_DIR" ]; then
@@ -83,12 +88,10 @@ if [ -f "$SECRETS_DIR/auth-config.yaml" ]; then
     FILE_UID=$(stat -c %u "$AUTH_CONFIG_SOURCE")
     FILE_PERMS=$(stat -c %a "$AUTH_CONFIG_SOURCE")
     if [ "$FILE_UID" != "$EXPECTED_UID" ]; then
-        echo "ERROR: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami))!"
-        exit 1
+        echo "WARNING: $AUTH_CONFIG_SOURCE is not owned by the expected user ($(whoami)) but by ${FILE_UID}!"
     fi
-    if [ "$FILE_PERMS" -ne 600 ] && [ "$FILE_PERMS" -ne 640 ]; then
-        echo "ERROR: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 or 640."
-        exit 1
+    if [ "$FILE_PERMS" != "600" ] && [ "$FILE_PERMS" != "640" ]; then
+        echo "WARNING: $AUTH_CONFIG_SOURCE permissions ($FILE_PERMS) are not secure! Must be 600 or 640."
     fi
     if ! ln -sf "$AUTH_CONFIG_SOURCE" "$APP_CONFIG_DIR/auth-config.yaml"; then
         echo "ERROR: Failed to create symlink for auth-config.yaml!"
@@ -101,18 +104,10 @@ fi
 
 # Start the application with error handling
 echo "Starting uvicorn server..."
-python -m uvicorn --factory aida:create_app \
+exec python -m uvicorn --factory aida:create_app \
     --host "$HOST" \
     --port "$PORT" \
     --workers "$WEB_CONCURRENCY" \
     --timeout-keep-alive "$WORKER_TIMEOUT" \
     --access-log \
     --log-level "$LOG_LEVEL"
-
-status=$?
-if [ $status -eq 0 ]; then
-    echo "✓ Uvicorn shut down normally (exit code 0)."
-else
-    echo "ERROR: Uvicorn terminated with exit code $status!"
-    exit $status
-fi

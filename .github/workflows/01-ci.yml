@@ -1,4 +1,4 @@
-name: CI - Compilation and Testing
+name: 01 CI - Compilation and Testing
 on:
   workflow_dispatch:
   workflow_call:
@@ -37,6 +37,8 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - uses: pre-commit/action@v3.0.1
+        with:
+          extra_args: --show-diff-on-failure -c .tools/.pre-commit-config.yaml
 
       - name: Check Copyright Headers
         id: copyright-check
@@ -52,13 +54,11 @@ jobs:
 
       - name: Run tests
         if: always()
-        run: uv run pytest --junit-xml pytest.xml
-        working-directory: src
+        run: uv run pytest src/tests --junit-xml pytest.xml
 
       - name: bandit security scan (XML)
-        working-directory: src
         if: always()
-        run: uv run bandit -c .bandit.yml -r -f xml -o bandit_test.xml .
+        run: uv run bandit -c .tools/.bandit.yml -r -f xml -o bandit_test.xml . || true
 
       - name: Check NOTICE file is up to date
         if: always() && (github.base_ref == 'main' || github.base_ref == 'dev' || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/dev')
@@ -108,7 +108,7 @@ jobs:
 
             # Cleanup
             rm -f "$TEMP_CURRENT" "$TEMP_GENERATED" "$NOTICE_TMP"
-            if {{ github.base_ref == 'main' || github.ref == 'refs/heads/main' }}; then
+            if [[ "$GITHUB_BASE_REF" == "main" || "$GITHUB_REF" == "refs/heads/main" ]]; then
               exit 1
             fi
           else

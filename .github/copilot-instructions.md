@@ -441,9 +441,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 
 **Setup Steps:**
 ```bash
-cd src
 uv sync                          # Install all dependencies including dev tools
-uv run pre-commit install        # Install pre-commit hooks
+uv run pre-commit install -c .tools/.pre-commit-config.yaml         # Install pre-commit hooks
 ```
 
 ### Running Quality Checks
@@ -452,7 +451,7 @@ uv run pre-commit install        # Install pre-commit hooks
 
 ```bash
 # 1. Run pre-commit hooks (Black, Ruff, file checks)
-uv run pre-commit run --all-files
+uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml
 
 # 2. Run linting
 uv run ruff check .
@@ -461,10 +460,10 @@ uv run ruff check .
 uv run -m compileall src/
 
 # 4. Run tests with coverage
-uv run pytest tests/ -v --cov=aida --cov-report=term-missing
+cd src && uv run pytest tests/ -v --cov=aida --cov-report=term-missing
 
 # 5. Run security checks
-uv run bandit -r aida/ -f sarif -o bandit-results.sarif
+cd src && uv run bandit -r aida/
 ```
 
 **Fix Common Issues:**
@@ -718,9 +717,10 @@ azd up                                         # Provision + deploy
 
 **Quality Checks:**
 ```bash
-uv run pre-commit run --all-files              # All pre-commit hooks
+uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml # All pre-commit hooks
 ./scripts/check-copyright-headers.sh           # Copyright headers
-./scripts/generate-notice.sh --no-dev          # Update NOTICE file
+./scripts/generate-notice.sh                   # Update NOTICE file (includes dev dependencies by default)
+./scripts/generate-notice.sh --no-dev          # Update NOTICE file (runtime dependencies only, excludes dev dependencies)
 ```
 
 By following these comprehensive guidelines, we ensure that the AI Discovery Workshop Facilitator codebase remains maintainable, extensible, and aligned with the project's specific requirements for workshop facilitation and multi-agent AI interactions.
