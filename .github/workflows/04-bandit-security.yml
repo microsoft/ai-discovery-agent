@@ -32,7 +32,6 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: bandit security scan (SARIF)
-        working-directory: src
         if: always()
         run: uv run bandit -c .tools/.bandit.yml -r -f sarif -o results.sarif . || true
 
