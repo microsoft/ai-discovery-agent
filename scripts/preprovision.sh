@@ -8,7 +8,7 @@ if [ -z "$GITHUB_SECRET" ]; then
 fi
 
 WEB_APP_NAME=$(azd env get-value WEB_APP_NAME)
-# if error then skip next part
+# If azd env get-value fails, set WEB_APP_NAME to empty string to skip OAuth settings fetch
 if [ $? -ne 0 ]; then
     WEB_APP_NAME=""
 fi
