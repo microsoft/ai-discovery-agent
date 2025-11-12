@@ -130,7 +130,7 @@ The default Azurite blob endpoint will be `http://127.0.0.1:10000/devstoreaccoun
 
 Notes:
 
-- The files `__azurite_db_blob__.json` and `__azurite_db_blob_extent__.json` in the repo root are Azurite local state; you can delete them safely if you want a clean slate—Azarite recreates them.
+- The files `__azurite_db_blob__.json` and `__azurite_db_blob_extent__.json` in the repo root are Azurite local state; you can delete them safely if you want a clean slate—Azurite recreates them.
 - Do NOT use Azurite for production. In CI/CD or real deployments rely on the provisioned Azure Storage resource and either a fully formed connection string or Managed Identity (see deployment section).
 
 ## Deployment
