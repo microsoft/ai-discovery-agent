@@ -49,10 +49,6 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
     HOST=0.0.0.0 \
     LOG_LEVEL=info
 
-# Create user and set up directories
-RUN adduser --system --no-create-home --group nonroot && \
-    mkdir -p /app/.files
-
 WORKDIR /app
 
 # Copy files from builder and local
@@ -62,8 +58,11 @@ COPY config/ /app/config/
 COPY .chainlit/ /app/.chainlit/
 COPY src/. .
 
+# Create user and set up directories
+RUN adduser --system --no-create-home --group nonroot && \
+    mkdir -p /app/.files && \
 # Set permissions and prepare runtime environment
-RUN chmod +x /app/startup.sh && \
+    chmod +x /app/startup.sh && \
     chown -R nonroot:nonroot /app/config /app/.files && \
     chmod 700 /app/.files && \
     touch /app/.env && \
