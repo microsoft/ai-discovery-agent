@@ -40,7 +40,7 @@ jobs:
         uses: github/codeql-action/upload-sarif@v4
         with:
           # Path to SARIF file relative to the root of the repository
-          sarif_file: ${{github.workspace}}/src/results.sarif
+          sarif_file: ${{github.workspace}}/results.sarif
           # Optional category for the results
           # Used to differentiate multiple results for one commit
           category: bandit-scan
