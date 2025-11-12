@@ -4,7 +4,7 @@
 # The script is intended for local development environment setup.
 if [ -z "$GITHUB_SECRET" ]; then
     echo "Finding current CLIENT_IP_ADDRESS (for development network permissions)..."
-    azd env set CLIENT_IP_ADDRESS $(curl ifconfig.me 2>/dev/null | tr -d '\r')
+    azd env set CLIENT_IP_ADDRESS $(dig +short myip.opendns.com @resolver1.opendns.com | tr -d '\r')
 fi
 
 WEB_APP_NAME=$(azd env get-value WEB_APP_NAME)
@@ -18,8 +18,8 @@ if [ $? -ne 0 ]; then
 fi
 if [ -n "$WEB_APP_NAME" ]; then
     echo "Fetching OAUTH_ settings from Web App: $WEB_APP_NAME ..."
-    oauth_values=$(az webapp config appsettings list -n $WEB_APP_NAME -g $RESOURCE_GROUP_NAME --query "[] | [? contains(name,'OAUTH_')]")
-    oauth_values_staging=$(az webapp config appsettings list -n $WEB_APP_NAME -g $RESOURCE_GROUP_NAME --slot staging --query "[] | [? contains(name,'OAUTH_')]")
+    oauth_values=$(az webapp config appsettings list -n "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME" --query "[] | [? contains(name,'OAUTH_')]")
+    oauth_values_staging=$(az webapp config appsettings list -n "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME" --slot staging --query "[] | [? contains(name,'OAUTH_')]")
     oauth_values=$(echo "$oauth_values" | tr -d '\r\n')
     oauth_values_staging=$(echo "$oauth_values_staging" | tr -d '\r\n')
 
