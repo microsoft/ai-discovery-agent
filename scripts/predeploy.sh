@@ -73,16 +73,18 @@ log "Container image built and pushed: $FULL_IMAGE_NAME"
 log "Updating sidecar container in staging slot..."
 az rest --method PUT \
     --url "https://management.azure.com/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Web/sites/${WEB_APP_NAME}/slots/staging/sitecontainers/main?api-version=${API_VERSION}" \
-    --body '{
-        "properties": {
-            "image": "'$FULL_IMAGE_NAME'",
-            "isMain": true,
-            "targetPort": "8000",
-            "authType": "SystemIdentity",
-            "userManagedIdentityClientId": "SystemIdentity",
-            "inheritAppSettingsAndConnectionStrings": true
-        }
-    }' || error_exit "Failed to update staging sidecar container"
+    --body "$(jq -n \
+        --arg image "$FULL_IMAGE_NAME" \
+        '{
+          properties: {
+            image: $image,
+            isMain: true,
+            targetPort: "8000",
+            authType: "SystemIdentity",
+            userManagedIdentityClientId: "SystemIdentity",
+            inheritAppSettingsAndConnectionStrings: true
+          }
+        }')" || error_exit "Failed to update staging sidecar container"
 
 log "Staging sidecar container updated successfully!"
 
@@ -143,7 +145,7 @@ if [ "${UPDATE_PRODUCTION:-false}" = "true" ]; then
         --resource-group "$RESOURCE_GROUP_NAME" || error_exit "Failed to restart production app"
 
     # Verify production deployment
-    echo "Waiting for production deployment to complete..."
+    log "Waiting for production deployment to complete..."
     sleep 60
 
     PROD_URL="https://${WEB_APP_NAME}.azurewebsites.net"
