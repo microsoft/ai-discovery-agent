@@ -184,7 +184,7 @@ uv run bandit -x .venv -s B101 -r .
 
 ### 2.3 Pre-commit Security Hooks
 
-**Configuration:** `.pre-commit-config.yaml`
+**Configuration:** `.tools/.pre-commit-config.yaml`
 
 **Hooks:**
 - `check-yaml`: Validate YAML files

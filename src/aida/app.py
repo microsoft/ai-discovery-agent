@@ -10,6 +10,7 @@ and integrates with Chainlit for the chat interface.
 The application is designed to be deployed on Azure App Service and includes
 proper health check endpoints for container orchestration.
 """
+
 import os
 import shutil
 from pathlib import Path

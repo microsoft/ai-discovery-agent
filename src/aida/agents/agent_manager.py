@@ -1,12 +1,47 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
+"""
+Agent Manager Module
+
+This module manages agent configurations and provides functionality to load, cache,
+and retrieve agent information based on user roles and permissions.
+
+The module loads agent configurations from YAML files and provides:
+- Global configuration management for agents and pages
+- Role-based agent filtering
+- Cached agent extraction for improved performance
+- Agent information retrieval
+
+Global Variables:
+-----------------
+_agents_config : dict[str, Any]
+    Global dictionary storing agent configurations
+_pages_config : dict[str, Any]
+    Global dictionary storing pages configurations
+PAGES_CONFIG_FILE : Path
+    Path to the pages configuration YAML file
+
+Functions:
+----------
+load_configurations() -> None
+    Load agent and page configurations from YAML files
+get_available_agents(user_roles: list[str] | None = None) -> dict[str, dict[str, Any]]
+    Get available agents filtered by user roles
+get_agent_info(agent_key: str) -> dict[str, Any] | None
+    Retrieve configuration information for a specific agent
+
+Notes:
+------
+- The module uses LRU caching to optimize repeated agent queries
+- Admin users have access to all agents including admin-only ones
+- Configuration is loaded at module initialization
+"""
 
 import functools
 from pathlib import Path
 from typing import Any
 
 import yaml
-from yaml import SafeLoader
 
 from aida.utils.logging_setup import get_logger
 
@@ -15,7 +50,6 @@ PAGES_CONFIG_FILE = Path.cwd() / "config/pages.yaml"
 logger = get_logger(__name__)
 
 
-"""Initialize the agent manager with global configuration."""
 # Global configuration state (shared across all threads)
 _agents_config: dict[str, Any] = {}
 _pages_config: dict[str, Any] = {}
@@ -28,7 +62,7 @@ def load_configurations() -> None:
     try:
         logger.info(f"Loading pages configuration from {PAGES_CONFIG_FILE}")
         with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
-            pages_config = yaml.load(file, Loader=SafeLoader)
+            pages_config = yaml.load(file, Loader=yaml.SafeLoader)
         agents_config = pages_config.get("agents", {})
 
         # Store in global variables

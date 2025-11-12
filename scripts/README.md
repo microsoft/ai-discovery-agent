@@ -131,7 +131,7 @@ You can integrate NOTICE file generation into your build process by adding it to
 ```
 
 ### Pre-commit Hook
-Add to `.pre-commit-config.yaml`:
+Add to `.tools/.pre-commit-config.yaml`:
 ```yaml
 - repo: local
   hooks:
