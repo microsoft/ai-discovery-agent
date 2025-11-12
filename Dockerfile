@@ -1,3 +1,4 @@
+#checkov:skip=CKV_DOCKER_3:by now we need root due to file share permission issues
 # Install uv
 FROM python:3.12-slim AS builder
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
@@ -17,8 +18,7 @@ ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
-RUN adduser --system --no-create-home nonroot && \
-    addgroup --system nonroot && usermod -a -G nonroot nonroot
+# RUN adduser --system --no-create-home --group --uid 10000 nonroot
 
 WORKDIR /app
 
@@ -31,20 +31,27 @@ ENV WEB_CONCURRENCY=1 \
     HOST=0.0.0.0 \
     LOG_LEVEL=info
 
-COPY . .
+COPY src/. .
 RUN chmod +x /app/startup.sh
+
 # Set permissions for config directory and create .files directory
-RUN chown nonroot:nonroot -R /app/config && \
-    mkdir /app/.files && \
-    chown nonroot:nonroot /app/.files && \
+# RUN python -m aida init && \
+#     chown nonroot:nonroot -R /app/config && \
+#     mkdir -p /app/.files && \
+#     chown nonroot:nonroot /app/.files && \
+#     chmod 700 /app/.files && \
+#     touch /app/.env && \
+#     chown nonroot:nonroot /app/.env
+
+RUN python -m aida init && \
+    mkdir -p /app/.files && \
     chmod 700 /app/.files && \
-    touch /app/.env && \
-    chown nonroot:nonroot /app/.env
+    touch /app/.env
 
 HEALTHCHECK --interval=30s --timeout=30s --start-period=60s --retries=3 \
     CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"
 
-USER nonroot
+# USER nonroot
 EXPOSE 8000
 # Run the application
 CMD ["/app/startup.sh"]

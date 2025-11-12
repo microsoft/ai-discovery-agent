@@ -75,8 +75,7 @@ The migration addresses the following key requirements:
 az acr build \
   --registry $ACR_NAME \
   --image $IMAGE_TAG \
-  --file src/Dockerfile \
-  src/
+  --file Dockerfile .
 ```
 
 ### 2. Staging Update

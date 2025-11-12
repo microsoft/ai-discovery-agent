@@ -1,4 +1,4 @@
-name: Bandit Security Scan
+name: 04 Bandit Security Scan
 on:
   workflow_dispatch:
   push:
@@ -32,16 +32,15 @@ jobs:
         uses: astral-sh/setup-uv@v7
 
       - name: bandit security scan (SARIF)
-        working-directory: src
         if: always()
-        run: uv run bandit -c .bandit.yml -r -f sarif -o results.sarif . || true
+        run: uv run bandit -c .tools/.bandit.yml -r -f sarif -o results.sarif . || true
 
       - name: Upload SARIF file
         if: (!cancelled())
         uses: github/codeql-action/upload-sarif@v4
         with:
           # Path to SARIF file relative to the root of the repository
-          sarif_file: ${{github.workspace}}/src/results.sarif
+          sarif_file: ${{github.workspace}}/results.sarif
           # Optional category for the results
           # Used to differentiate multiple results for one commit
           category: bandit-scan

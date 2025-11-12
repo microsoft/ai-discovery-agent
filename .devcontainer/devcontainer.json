@@ -29,7 +29,7 @@
         "nwgh.bandit"
       ],
       "settings": {
-        "python.defaultInterpreterPath": "${workspaceFolder}/src/.venv/bin/python"
+        "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"
       }
     }
   },

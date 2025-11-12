@@ -1,8 +1,8 @@
-name: Apply Format
+name: 52 Apply Format
 
 on:
   workflow_run:
-    workflows: ["Format Request"]
+    workflows: ["50 Format Request"]
     types:
       - completed
 
@@ -106,7 +106,6 @@ jobs:
           echo "pr_head_ref=$PR_HEAD_REF" >> $GITHUB_OUTPUT
           echo "requester=$REQUESTER" >> $GITHUB_OUTPUT
 
-
       - name: Checkout PR code
         uses: actions/checkout@v5
         with:
@@ -125,12 +124,11 @@ jobs:
           done
 
           # Ensure pyproject.toml hasn't been modified to include malicious build scripts
-          if [ -f src/pyproject.toml ]; then
-            if grep -E "(build-backend|build_meta|build\.py)" src/pyproject.toml; then
+          if [ -f pyproject.toml ]; then
+            if grep -E "(build-backend|build_meta|build\.py)" pyproject.toml; then
               echo "Build scripts detected in pyproject.toml - manual review required"
             fi
           fi
-
 
       - name: Install Python
         if: steps.extract.outputs.should_format == 'true'
@@ -146,9 +144,9 @@ jobs:
         if: steps.extract.outputs.should_format == 'true'
         run: |
           # Ensure pre-commit config hasn't been tampered with
-          if [ -f .pre-commit-config.yaml ]; then
+          if [ -f .tools/.pre-commit-config.yaml ]; then
             # Check for suspicious patterns in pre-commit config
-            if grep -E "(exec|eval|system|subprocess|shell|bash|sh\ |cmd)" .pre-commit-config.yaml; then
+            if grep -E "(exec|eval|system|subprocess|shell|bash|sh\ |cmd)" .tools/.pre-commit-config.yaml; then
               echo "Suspicious patterns found in pre-commit config"
               exit 1
             fi
@@ -162,12 +160,12 @@ jobs:
 
           # Install only formatting dependencies with pinned versions
           uv sync --only-group dev
-          if uv run pre-commit run --all-files; then
+          if uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml; then
               echo "Pre-commit checks passed or made changes."
           else
               # set -e # If the next one still fails, just fail the job
               echo "Pre-commit checks failed. Running a second time to fix issues."
-              uv run pre-commit run --all-files
+              uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml
           fi
 
       - name: Commit and push changes

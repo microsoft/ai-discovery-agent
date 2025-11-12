@@ -8,7 +8,7 @@ Tests configuration loading, logging setup, and other utility functions.
 """
 
 import os
-from unittest.mock import mock_open, patch
+from unittest.mock import patch
 
 from pydantic import SecretStr
 
@@ -48,47 +48,66 @@ class TestConfigModule:
                 ".env", "CHAINLIT_AUTH_SECRET", "generated_secret"
             )
 
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("aida.utils.config.tomllib.load")
-    def test_load_program_info_success(self, mock_tomllib_load, mock_file):
+    @patch("aida.utils.config.distribution")
+    def test_load_program_info_success(self, mock_distribution):
         """Test successful program info loading."""
         # Arrange
-        expected_project_info = {
-            "name": "ai-discovery-agent",
-            "version": "0.5.0",
-            "description": "AI Discovery Agent",
-            "authors": [{"name": "jmservera"}],
-            "urls": {
-                "homepage": "https://github.com/jmservera/ai-discovery-agent",
-                "repository": "https://github.com/jmservera/ai-discovery-agent",
-                "documentation": "https://github.com/jmservera/ai-discovery-agent/blob/main/README.md",
-            },
+        mock_metadata = {
+            "Name": "ai-discovery-agent",
+            "Version": "0.5.0",
+            "Summary": "AI Discovery Agent",
+            "Author": "jmservera",
+            "Author-Email": "test@example.com",
+            "Home-Page": "https://github.com/jmservera/ai-discovery-agent",
         }
-        mock_tomllib_load.return_value = {"project": expected_project_info}
+        mock_project_urls = [
+            "Repository, https://github.com/jmservera/ai-discovery-agent",
+            "Documentation, https://github.com/jmservera/ai-discovery-agent/blob/main/README.md",
+        ]
+
+        # Create mock metadata object
+        from unittest.mock import MagicMock
+
+        mock_meta = MagicMock()
+        mock_meta.get.side_effect = lambda key, default=None: mock_metadata.get(
+            key, default
+        )
+        mock_meta.get_all.return_value = mock_project_urls
+
+        # Create mock distribution object
+        mock_dist = MagicMock()
+        mock_dist.metadata = mock_meta
+        mock_distribution.return_value = mock_dist
 
         # Act
         result = load_program_info()
 
         # Assert
-        # The function returns a formatted string, not the dict
         assert "ai-discovery-agent version 0.5.0" in result
         assert "AI Discovery Agent" in result
-        assert "jmservera" in result
-        mock_tomllib_load.assert_called_once()
+        assert "jmservera <test@example.com>" in result
+        mock_distribution.assert_called_once_with("aida")
 
-    @patch("builtins.open", side_effect=FileNotFoundError)
-    def test_load_program_info_file_not_found(self, mock_file):
-        """Test program info loading when file is missing."""
+    @patch("aida.utils.config.distribution")
+    def test_load_program_info_package_not_found(self, mock_distribution):
+        """Test program info loading when package is not found."""
+        # Arrange
+        from aida.utils.config import PackageNotFoundError
+
+        mock_distribution.side_effect = PackageNotFoundError("Package not found")
+
         # Act
         result = load_program_info()
 
         # Assert
-        assert result == "Error retrieving program information."
+        assert result == "Error: Package not found in installed packages."
 
-    @patch("builtins.open", new_callable=mock_open)
-    @patch("aida.utils.config.tomllib.load", side_effect=Exception("Parse error"))
-    def test_load_program_info_parse_error(self, mock_tomllib_load, mock_file):
-        """Test program info loading with parsing error."""
+    @patch("aida.utils.config.distribution")
+    def test_load_program_info_metadata_error(self, mock_distribution):
+        """Test program info loading with metadata access error."""
+        # Arrange
+        mock_distribution.side_effect = Exception("Metadata error")
+
         # Act
         result = load_program_info()
 
