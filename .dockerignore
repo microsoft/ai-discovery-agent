@@ -48,8 +48,8 @@ tests/*
 .gitignore
 
 # Documentation
-README.md
-*.md
+# README.md
+# *.md
 
 # Chainlit local data
 .chainlit/.langchain.db
