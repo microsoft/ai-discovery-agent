@@ -1,6 +1,6 @@
 NOTICE
 
-aida version 0.7.3
+aida version 0.9.1
 Copyright (c) Microsoft Corporation.
 
 This product includes software developed by Microsoft Corporation and third-party libraries.
@@ -42,13 +42,13 @@ RUNTIME DEPENDENCIES:
   Author: Microsoft Corporation
   Dependency specification: azure-monitor-opentelemetry>=1.8.1
 
-* azure-storage-blob 12.27.0
+* azure-storage-blob 12.27.1
   Homepage: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob
   License: MIT License
   Author: Microsoft Corporation
   Dependency specification: azure-storage-blob>=12.26.0
 
-* chainlit 2.8.3
+* chainlit 2.9.0
   Homepage: https://chainlit.io/
   License: Apache-2.0
   Author: Willy Douhard, Dan Andre Constantini
@@ -78,7 +78,7 @@ RUNTIME DEPENDENCIES:
   Author: N/A
   Dependency specification: langgraph>=0.6.7
 
-* openai 2.6.0
+* openai 2.7.1
   Homepage: https://github.com/openai/openai-python
   License: Apache-2.0
   Author: N/A
@@ -90,10 +90,10 @@ RUNTIME DEPENDENCIES:
   Author: N/A
   Dependency specification: opentelemetry-instrumentation-fastapi>=0.58b0
 
-* python-dotenv 1.1.1
-  Homepage: https://github.com/theskumar/python-dotenv
-  License: BSD-3-Clause
-  Author: Saurabh Kumar
+* python-dotenv 1.2.1
+  Homepage: N/A
+  License: N/A
+  Author: N/A
   Dependency specification: python-dotenv>=1.1.0
 
 * tiktoken 0.12.0
@@ -122,7 +122,7 @@ DEVELOPMENT DEPENDENCIES:
   Author: N/A
   Dependency specification: black==25.9.0
 
-* checkov 3.2.488
+* checkov 3.2.491
   Homepage: https://github.com/bridgecrewio/checkov
   License: Apache License 2.0
   Author: bridgecrew
@@ -134,13 +134,19 @@ DEVELOPMENT DEPENDENCIES:
   Author: N/A
   Dependency specification: isort==7.0.0
 
+* mypy 1.18.2
+  Homepage: https://www.mypy-lang.org/
+  License: MIT
+  Author: N/A
+  Dependency specification: mypy>=1.18.2
+
 * pip 25.3
   Homepage: https://pip.pypa.io/
   License: N/A
   Author: N/A
   Dependency specification: pip>=25.3
 
-* pre_commit 4.3.0
+* pre_commit 4.4.0
   Homepage: https://github.com/pre-commit/pre-commit
   License: MIT
   Author: Anthony Sottile
@@ -176,9 +182,15 @@ DEVELOPMENT DEPENDENCIES:
   Author: N/A
   Dependency specification: ruff==0.14.2
 
+* types-PyYAML 6.0.12.20250915
+  Homepage: https://github.com/python/typeshed
+  License: N/A
+  Author: N/A
+  Dependency specification: types-pyyaml>=6.0.12.20250915
+
 ================================================================================
 
-This NOTICE file was generated on 2025-11-05 13:52:28 UTC
+This NOTICE file was generated on 2025-11-13 08:43:12 UTC
 
 For more information about open source licenses, visit:
 - https://opensource.org/licenses/

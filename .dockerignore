@@ -48,8 +48,8 @@ tests/*
 .gitignore
 
 # Documentation
-README.md
-*.md
+# README.md
+# *.md
 
 # Chainlit local data
 .chainlit/.langchain.db
@@ -69,3 +69,15 @@ config/*-example.yaml
 .bandit.yml
 
 **/auth-config.yaml
+.azure
+.devcontainer
+.files
+.github
+.pytest_cache
+.ruff_cache
+.venv
+.vscode
+dist
+docs
+infra
+scripts

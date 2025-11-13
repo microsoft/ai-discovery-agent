@@ -16,7 +16,7 @@
     {
       "label": "lint",
       "type": "shell",
-      "command": "cd src && uv run pre-commit run --all-files -v",
+      "command": "uv run pre-commit run --all-files -v -c .tools/.pre-commit-config.yaml",
       "group": "build"
     },
     {
@@ -29,20 +29,26 @@
     {
       "label": "build",
       "type": "shell",
-      "command": "uv build --directory src",
+      "command": "uv build",
       "group": "build",
       "problemMatcher": "$python",
-      "dependsOn": ["lint"]
+      "dependsOn": [
+        "lint"
+      ]
     },
     {
       "label": "validate all",
       "group": "build",
-      "dependsOn": ["build", "bandit", "bicep-checkov"]
+      "dependsOn": [
+        "build",
+        "bandit",
+        "bicep-checkov"
+      ]
     },
     {
       "label": "bandit",
       "type": "shell",
-      "command": "cd src && uv run bandit -c .bandit.yml -r .",
+      "command": "uv run bandit -c .tools/.bandit.yml -r .",
       "group": "test",
       "problemMatcher": "$python"
     },
@@ -55,26 +61,35 @@
     {
       "label": "bicep-checkov",
       "type": "shell",
-      "command": "source src/.venv/bin/activate && uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.checkov.yml --quiet",
+      "command": "uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.tools/.checkov.yml --quiet",
       "group": "test",
-      "dependsOn": ["bicep-validate"]
+      "dependsOn": [
+        "bicep-validate"
+      ]
     },
     {
       "label": "bicep-checkov-debug",
       "type": "shell",
-      "command": "source src/.venv/bin/activate && LOG_LEVEL=debug uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.checkov.yml --compact",
+      "command": "LOG_LEVEL=debug uv run checkov -d ${workspaceFolder} --config-file ${workspaceFolder}/.tools/.checkov.yml --compact",
       "group": "test",
-      "dependsOn": ["bicep-validate"]
+      "dependsOn": [
+        "bicep-validate"
+      ]
     },
     {
       "label": "preLaunch",
-      "dependsOn": ["build", "start_azurite"]
+      "dependsOn": [
+        "build",
+        "start_azurite"
+      ]
     },
     {
       "label": "generate-notice",
       "type": "shell",
       "command": "./scripts/generate-notice.sh",
-      "args": ["--verbose"],
+      "args": [
+        "--verbose"
+      ],
       "group": "build",
       "presentation": {
         "echo": true,

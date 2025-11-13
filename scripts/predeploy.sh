@@ -50,8 +50,6 @@ log "ACR: $ACR_NAME"
 log "Web App: $WEB_APP_NAME"
 log "Resource Group: $RESOURCE_GROUP_NAME"
 
-# Change to source directory
-cd src
 
 log "Building and pushing container image to ACR..."
 # Use ACR build to work with private endpoints

@@ -3,21 +3,21 @@
 # Run on all files (first time) with: pre-commit run --all-files
 
 repos:
-  - repo: https://github.com/psf/black
-    rev: 25.9.0
-    hooks:
-      - id: black
-        language_version: python3.12
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.7.0
+    rev: v0.14.4
     hooks:
-      - id: ruff
-        args: ["--fix"]
-        additional_dependencies: []
-
+      - id: ruff-check
+        args:
+          - "--fix"
+          - "--show-fixes"
+      - id: ruff-format
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-yaml
+      - id: check-docstring-first
+      - id: check-toml
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable

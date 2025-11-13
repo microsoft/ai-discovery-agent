@@ -33,7 +33,7 @@ from .agent import Agent
 from .graph_agent import GraphAgent
 from .single_agent import SingleAgent
 
-PAGES_FILE = Path(__file__).parent.parent.parent / "config/pages.yaml"
+PAGES_FILE = Path.cwd() / "config/pages.yaml"
 
 logger = get_logger(__name__)
 
