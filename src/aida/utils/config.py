@@ -6,6 +6,7 @@ Configuration loading utilities for AI Discovery Workshop Agent.
 """
 
 import os
+import re
 from importlib.metadata import PackageNotFoundError, distribution
 
 import dotenv
@@ -73,18 +74,33 @@ def load_program_info() -> str:
         documentation_url = "N/A"
 
         for url_line in project_urls:
-            if url_line and ", " in url_line:
+            if not url_line:
+                continue
+
+            # Use regex to flexibly parse label and URL with various separators
+            # Matches: "label, url", "label,url", "label: url", "label:url", etc.
+            match = re.match(r"^([^,:\s]+(?:\s+[^,:\s]+)*)\s*[,:]\s*(.+)$", url_line)
+
+            if match:
                 try:
-                    label, url = url_line.split(", ", 1)
+                    label, url = match.groups()
+                    label = label.strip()
+                    url = url.strip()
+
                     if "repository" in label.lower() or "github" in label.lower():
                         repository_url = url
                     elif "documentation" in label.lower() or "docs" in label.lower():
                         documentation_url = url
-                except ValueError:
+                except Exception as e:
                     logger.warning(
-                        f"Malformed Project-URL entry: {url_line}. Expected format: 'label, url'"
+                        f"Error processing Project-URL entry: {url_line}. Error: {e}"
                     )
                     continue
+            else:
+                logger.warning(
+                    f"Malformed Project-URL entry: {url_line}. Expected format: 'label, url' or 'label: url'"
+                )
+                continue
 
         program_info += f"- Repository: {repository_url}\n"
         program_info += f"- Documentation: {documentation_url}\n"
