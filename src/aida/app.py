@@ -46,7 +46,9 @@ def ensure_folder_from_static(target_folder: str, static_subfolder: str) -> None
             os.path.dirname(__file__), f"static/{static_subfolder}"
         )
         if not os.path.exists(src_folder):
-            logger.error(f"Source {target_folder} folder does not exist: {src_folder}")
+            logger.error(
+                f"Source static/{static_subfolder} folder does not exist: {src_folder}"
+            )
         else:
             try:
                 shutil.copytree(src_folder, target_folder)
