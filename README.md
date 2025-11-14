@@ -57,7 +57,7 @@ Aida is a set of AI agents designed to support the AI Discovery Workshop—a col
          email: attendee@domain.com
          first_name: John
          last_name: Doe
-         password: write_a_password # REPLACE this example password before deployment. Passwords will be hashed using bcrypt after first use and not stored in plain text.
+         password: write_a_password # REPLACE this example password before deployment. Passwords will be hashed using PBKDF2-HMAC-SHA256 after first use and not stored in plain text.
          roles:
            - user # set user or admin
        facilitator:
