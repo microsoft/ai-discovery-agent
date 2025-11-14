@@ -55,6 +55,7 @@ WORKDIR /app
 COPY --from=runtime-builder /app/.venv /app/.venv
 COPY prompts/ /app/prompts/
 COPY config/ /app/config/
+COPY public/ /app/public/
 COPY .chainlit/ /app/.chainlit/
 COPY src/. .
 
