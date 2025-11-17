@@ -11,7 +11,6 @@ The application is designed to be deployed on Azure App Service and includes
 proper health check endpoints for container orchestration.
 """
 
-import os
 import shutil
 from pathlib import Path
 
@@ -40,18 +39,15 @@ def ensure_folder_from_static(target_folder: str, static_subfolder: str) -> None
         target_folder: The name of the folder to create (e.g., "public").
         static_subfolder: The subfolder in static to copy from (e.g., "public").
     """
-    if not os.path.exists(target_folder):
+    target_path = Path(target_folder)
+    if not target_path.exists():
         logger.info(f"Creating {target_folder} folder from static assets")
-        src_folder = os.path.join(
-            os.path.dirname(__file__), f"static/{static_subfolder}"
-        )
-        if not os.path.exists(src_folder):
-            logger.error(
-                f"Source static/{static_subfolder} folder does not exist: {src_folder}"
-            )
+        src_folder = Path(__file__).parent / "static" / static_subfolder
+        if not src_folder.exists():
+            logger.error(f"Source static/{static_subfolder} folder does not exist in {src_folder}")
         else:
             try:
-                shutil.copytree(src_folder, target_folder)
+                shutil.copytree(src_folder, target_path)
             except Exception as e:
                 logger.error(
                     f"Failed to copy {target_folder} folder from {src_folder} to '{target_folder}': {e}",
@@ -96,13 +92,10 @@ def create_app() -> FastAPI:
         Returns:
             FileResponse: Mermaid diagram source as a file response.
         """
-        mermaid_file_path = os.path.join(
-            Path.cwd(), "public/elements/MermaidViewer.jsx"
-        )
-        if not os.path.exists(mermaid_file_path):
-            mermaid_file_path = os.path.join(
-                os.path.dirname(__file__),
-                "static/elements/MermaidViewer.jsx",
+        mermaid_file_path = Path.cwd() / "public" / "elements" / "MermaidViewer.jsx"
+        if not mermaid_file_path.exists():
+            mermaid_file_path = (
+                Path(__file__).parent / "static" / "elements" / "MermaidViewer.jsx"
             )
         return FileResponse(mermaid_file_path)
 
@@ -133,8 +126,6 @@ def create_app() -> FastAPI:
     # This integrates the Chainlit chat interface with the FastAPI server
     # The target "aida/__main__.py" contains the Chainlit application logic
     logger.info("Mounting Chainlit application at root path '/'")
-    mount_chainlit(
-        app, target=os.path.join(os.path.dirname(__file__), "chainlit.py"), path="/"
-    )
+    mount_chainlit(app, target=str(Path(__file__).parent / "chainlit.py"), path="/")
 
     return app
