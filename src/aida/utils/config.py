@@ -79,7 +79,7 @@ def load_program_info() -> str:
 
             # Use regex to flexibly parse label and URL with various separators
             # Matches: "label, url", "label,url", "label: url", "label:url", etc.
-            match = re.match(r"^([^,:\s]+(?:\s+[^,:\s]+)*)\s*[,:]\s*(.+)$", url_line)
+            match = re.match(r"^([^,:]+?)\s*[,:]\s*(.+)$", url_line)
 
             if match:
                 try:
