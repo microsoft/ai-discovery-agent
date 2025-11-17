@@ -100,7 +100,6 @@ def load_program_info() -> str:
                 logger.warning(
                     f"Malformed Project-URL entry: {url_line}. Expected format: 'label, url' or 'label: url'"
                 )
-                continue
 
         program_info += f"- Repository: {repository_url}\n"
         program_info += f"- Documentation: {documentation_url}\n"
