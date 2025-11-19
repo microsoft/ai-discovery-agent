@@ -31,22 +31,21 @@ jobs:
       code-scanning-enabled: ${{ steps.check-code-scanning.outputs.enabled }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Run Checkov Action
         id: checkov
-        uses: bridgecrewio/checkov-action@v12
+        uses: bridgecrewio/checkov-action@2b3c20ea200d530ec8d3d6a21cad1d01c1f5413a # v12.1347.0
         with:
           directory: .
           output_format: sarif, junitxml, cli
-          output_file_path: bicep_results.sarif,bicep_results.xml,console
           config_file: .tools/.checkov.yml # Use project-specific configuration
 
       # Check if code scanning is enabled in the repository
       - name: Check if Code Scanning is enabled
         id: check-code-scanning
         if: (!cancelled())
-        uses: actions/github-script@v8
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8.0.0
         with:
           script: |
             try {
@@ -77,14 +76,14 @@ jobs:
       - name: Upload SARIF Results to GitHub
         if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled == 'true')
         id: upload-sarif-results
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v4.1.0
         with:
           sarif_file: bicep_results.sarif
           category: bicep-scan
       - name: Upload Test Results
         id: upload-test-results
         if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled != 'true')
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v5.0.2
         with:
           name: Bicep Test Results
           path: bicep_results.xml
@@ -108,11 +107,11 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v6.1.0
         with:
           path: artifacts
 
       - name: Publish Infra Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@e780361cd1fc1b1a170624547b3ffda64787d365 # v2.18.0
         with:
           files: "artifacts/**/*.xml"
