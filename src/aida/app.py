@@ -17,6 +17,7 @@ from pathlib import Path
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI, status
 from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
 
@@ -70,6 +71,8 @@ def create_app() -> FastAPI:
         FastAPI: Configured FastAPI application instance with health check
             endpoints and Chainlit integration mounted at the root path.
     """
+    init_app()
+
     init_app()
 
     # FastAPI application instance for the AI Discovery Agent
