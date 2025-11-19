@@ -55,7 +55,7 @@
     {
       "label": "bicep-validate",
       "type": "shell",
-      "command": "bicep build infra/main.bicep --stdout --no-restore > /dev/null",
+      "command": "az bicep build --file infra/main.bicep --stdout --no-restore > /dev/null",
       "group": "test"
     },
     {

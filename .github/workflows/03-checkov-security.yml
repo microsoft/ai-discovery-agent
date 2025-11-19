@@ -76,14 +76,14 @@ jobs:
       - name: Upload SARIF Results to GitHub
         if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled == 'true')
         id: upload-sarif-results
-        uses: github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v4.1.0
+        uses: github/codeql-action/upload-sarif@e12f0178983d466f2f6028f5cc7a6d786fd97f4b # v4.31.4
         with:
           sarif_file: bicep_results.sarif
           category: bicep-scan
       - name: Upload Test Results
         id: upload-test-results
         if: (!cancelled()) && (steps.check-code-scanning.outputs.enabled != 'true')
-        uses: actions/upload-artifact@6f51ac03b9356f520e9adb1b1b7802705f340c2b # v5.0.2
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.2
         with:
           name: Bicep Test Results
           path: bicep_results.xml
@@ -107,11 +107,11 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v6.1.0
+        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.1.0
         with:
           path: artifacts
 
       - name: Publish Infra Test Results
-        uses: EnricoMi/publish-unit-test-result-action@e780361cd1fc1b1a170624547b3ffda64787d365 # v2.18.0
+        uses: EnricoMi/publish-unit-test-result-action@34d7c956a59aed1bfebf31df77b8de55db9bbaaf # v2.18.0
         with:
           files: "artifacts/**/*.xml"

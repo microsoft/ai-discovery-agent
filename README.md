@@ -9,9 +9,18 @@ Aida is a set of AI agents designed to support the AI Discovery Workshop—a col
 
 ## Prerequisites
 
+- WSL or Linux machine
+- VSCode
 - Python 3.12
-- Azure OpenAI account with deployed models
-- Git (for cloning the repository)
+- Azure account
+- Additional tools:
+  - (az cli)[https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt]
+  - (azd cli)[https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-linux]
+  - curl
+  - uv
+  - git
+  - jq
+  - dig (from bind9-dnsutils)
 
 ## Installation
 
@@ -28,7 +37,12 @@ Aida is a set of AI agents designed to support the AI Discovery Workshop—a col
 
 3. **Install dependencies**:
 
-   Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
+  Install basic tools:
+  ```bash
+  sudo apt-get update && sudo apt-get install curl git jq bind9-dnsutils -y
+  ```
+
+  Install [uv](https://docs.astral.sh/uv/getting-started/installation/) for managing the virtual environment and dependencies:
 
    ```bash
    curl -LsSf https://astral.sh/uv/install.sh | sh

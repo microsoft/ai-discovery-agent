@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - dev
 
 concurrency:
   group: release-${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -23,16 +22,17 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    # run only on pushes to main branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
         with:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6
         with:
           python-version: "3.12"
 
@@ -133,7 +133,7 @@ jobs:
           ls -lh dist/
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@975c1b265e11dd76618af1c374e7981f9a6ff44a # v2.2.0
+        uses: softprops/action-gh-release@5be0e66d93ac7ed76da52eca8bb058f665c3a5fe # v2.4.2
         with:
           tag_name: ${{ steps.check_tag.outputs.tag }}
           name: Release ${{ steps.check_tag.outputs.tag }}
@@ -175,7 +175,7 @@ jobs:
           fetch-depth: 0
 
       - name: Install Python
-        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v6.0.0
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6
         with:
           python-version: "3.12"
 
