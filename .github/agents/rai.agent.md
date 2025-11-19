@@ -1,3 +1,4 @@
+---
 name: rai-reviewer
 description: Specializes in Responsible AI assessments of code and AI features with a focus on safety, fairness, privacy, transparency, and governance—without modifying production code
 ---
