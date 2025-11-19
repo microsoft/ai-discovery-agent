@@ -391,7 +391,7 @@ jobs:
       STAGING_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}
     steps:
       - name: Log in with Azure (Federated Credentials)
-        uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
         with:
           client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
@@ -399,7 +399,7 @@ jobs:
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in with Azure (Client Credentials)
-        uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
+        uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
         if: ${{ env.AZURE_CREDENTIALS != '' }}
         with:
           creds: ${{ env.AZURE_CREDENTIALS }}
