@@ -147,8 +147,8 @@ sections:
         to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
     - type: agent
       agent: auto_claims_customer
-      title: Auto Claims Customer
+      title: Auto Claims Call Center
       icon: 🚗
       url_path: AutoClaimsCustomer
-      header: 🚗 Auto Claims Customer Use Case
-      subtitle: I'm John, a customer who recently had a car accident. I want to use AI tools to quickly and efficiently file my insurance claim and get my car repaired.
+      header: 🚗 Auto Claims Call Center Use Case
+      subtitle: I'm a call center agent at an Automaker Customer Helpdesk. Ask me about handling vehicle damage reports, evidence capture, and claim coordination processes.
