@@ -146,7 +146,7 @@ jobs:
           # Ensure pre-commit config hasn't been tampered with
           if [ -f .tools/.pre-commit-config.yaml ]; then
             # Check for suspicious patterns in pre-commit config
-            if grep -E "(exec\ |eval|system|subprocess|shell|bash|sh\ |cmd)" .tools/.pre-commit-config.yaml; then
+            if grep -E "\b(exec|eval|system|subprocess|shell|bash|sh|cmd)\b" .tools/.pre-commit-config.yaml; then
               echo "Suspicious patterns found in pre-commit config"
               exit 1
             fi
