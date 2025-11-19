@@ -194,6 +194,63 @@ This README intentionally stays concise—`ARCHITECTURE.md` covers:
 - Verification & troubleshooting checklists
 - Extensibility patterns for adding new Azure services
 
+## Responsible AI
+
+This project is committed to responsible AI development and deployment. We follow [Microsoft's Responsible AI Principles](https://www.microsoft.com/ai/responsible-ai) across six key dimensions:
+
+- **Fairness:** No discrimination; inclusive design; regular fairness audits
+- **Reliability & Safety:** Content safety filters; prompt injection protection; abuse monitoring
+- **Privacy & Security:** Data encryption; minimal data collection; 90-day auto-deletion
+- **Inclusiveness:** Accessible design; support for diverse users and industries
+- **Transparency:** Clear AI disclosure; documented limitations; user-facing transparency guide
+- **Accountability:** RAI governance process; human oversight; comprehensive monitoring
+
+### RAI Documentation
+
+📋 **[RAI Review](docs/RAI_REVIEW.md)** - Comprehensive responsible AI assessment including:
+- Risk summary and mitigation strategies
+- Detailed findings across all RAI dimensions
+- Implementation recommendations with code examples
+- Evaluation plans and monitoring strategies
+
+📊 **[Model Card](docs/MODEL_CARD.md)** - Technical documentation of AI models:
+- Model architecture and components
+- Intended uses and limitations
+- Performance metrics and known failure modes
+- Ethical considerations
+
+🎯 **[RAI Principles](docs/RESPONSIBLE_AI_PRINCIPLES.md)** - Governance framework:
+- Core principles and commitments
+- Roles and responsibilities
+- Change control process
+- Incident response procedures
+
+🤝 **[AI Transparency Guide](docs/AI_TRANSPARENCY_GUIDE.md)** - User-facing documentation:
+- What the AI can and cannot do
+- Privacy protections explained
+- When to seek human help
+- Tips for best results
+
+### Quick Start: RAI Best Practices
+
+**For Users:**
+- ✅ Verify AI suggestions with human experts
+- ✅ Don't share sensitive or confidential information
+- ✅ Provide feedback using thumbs up/down buttons
+- ✅ Escalate to human facilitators for complex issues
+
+**For Developers:**
+- ✅ Review [RAI Review](docs/RAI_REVIEW.md) before making AI-related changes
+- ✅ Follow security checklist in [docs/security/SECURITY_REVIEW_CHECKLIST.md](docs/security/SECURITY_REVIEW_CHECKLIST.md)
+- ✅ Test with diverse personas and scenarios
+- ✅ Update RAI documentation when adding new features
+
+**For Facilitators:**
+- ✅ Read [AI Transparency Guide](docs/AI_TRANSPARENCY_GUIDE.md) to understand capabilities
+- ✅ Maintain human oversight during workshops
+- ✅ Validate AI suggestions against workshop methodologies
+- ✅ Report concerning AI behavior
+
 ## Configuration
 
 ### Authentication
