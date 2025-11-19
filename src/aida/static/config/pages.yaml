@@ -18,12 +18,12 @@
 agents:
   example_expert:
     persona: prompts/example_persona.md
-    document: prompts/example_document.md
+    document: prompts/example_knowledge.md
     temperature: 0.5
     model: gpt-4o
   example_expert2:
     persona: prompts/example_persona.md
-    document: prompts/example_document.md
+    document: prompts/example_knowledge.md
     temperature: 1
     model: o4-mini
   multi_agent:
