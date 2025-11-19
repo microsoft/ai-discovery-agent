@@ -46,7 +46,7 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@1ca63896ae95c13855c1e2b0e172f06f771cf74f # v3.11.1
+        uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
 
       - name: Build container
         run: docker build -t ai-discovery-agent:test .
@@ -92,7 +92,7 @@ jobs:
           echo "✓ Root endpoint returned HTML content"
 
       - name: Run ZAP OWASP full scan
-        uses: zaproxy/action-full-scan@948ba8de0ff1be5fd3dc3662762cdbebf5e55de8 # v0.13.0
+        uses: zaproxy/action-full-scan@3c58388149901b9a03b7718852c5ba889646c27c # v0.13.0
         with:
           docker_name: "ghcr.io/zaproxy/zaproxy:stable"
           token: ${{ secrets.GITHUB_TOKEN }}
