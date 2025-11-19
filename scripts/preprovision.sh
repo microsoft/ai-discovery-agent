@@ -4,7 +4,7 @@
 # The script is intended for local development environment setup.
 if [ -z "$GITHUB_SECRET" ]; then
     echo "Finding current CLIENT_IP_ADDRESS (for development network permissions)..."
-    azd env set CLIENT_IP_ADDRESS "$(dig +short myip.opendns.com @resolver1.opendns.com | tr -d '\r')"
+    azd env set CLIENT_IP_ADDRESS "$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null | tr -d '\r' || curl -s ifconfig.me | tr -d '\r')"
 fi
 
 WEB_APP_NAME=$(azd env get-value WEB_APP_NAME 2>/dev/null || echo "")
