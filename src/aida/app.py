@@ -44,7 +44,9 @@ def ensure_folder_from_static(target_folder: str, static_subfolder: str) -> None
         logger.info(f"Creating {target_folder} folder from static assets")
         src_folder = Path(__file__).parent / "static" / static_subfolder
         if not src_folder.exists():
-            logger.error(f"Source static/{static_subfolder} folder does not exist in {src_folder}")
+            logger.error(
+                f"Source static/{static_subfolder} folder does not exist in {src_folder}"
+            )
         else:
             try:
                 shutil.copytree(src_folder, target_path)
@@ -71,7 +73,6 @@ def create_app() -> FastAPI:
             endpoints and Chainlit integration mounted at the root path.
     """
     init_app()
-
 
     # FastAPI application instance for the AI Discovery Agent
     # Provides REST API endpoints and serves as the main server entry point

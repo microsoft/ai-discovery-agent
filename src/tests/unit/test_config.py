@@ -116,7 +116,11 @@ class TestLoadProgramInfo:
         assert "test-package" in result
         # All valid formats should be parsed, but only the first matching entry for each type is used
         # repo3 should be used as it's the last "github" match
-        assert "https://github.com/test/repo3" in result or "https://github.com/test/repo2" in result or "https://github.com/test/repo1" in result
+        assert (
+            "https://github.com/test/repo3" in result
+            or "https://github.com/test/repo2" in result
+            or "https://github.com/test/repo1" in result
+        )
         # docs.example.com should be parsed
         assert "docs.example.com" in result
 
