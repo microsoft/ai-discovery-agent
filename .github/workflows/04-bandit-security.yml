@@ -21,15 +21,15 @@ jobs:
       security-events: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Install Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v6.0.0
         with:
           python-version: 3.12
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@5a7eac68fb9809dea845d802897dc5c723910fa3 # v7.1.3
 
       - name: bandit security scan (SARIF)
         if: always()
@@ -37,7 +37,7 @@ jobs:
 
       - name: Upload SARIF file
         if: (!cancelled())
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@ea9e4e37992a54ee68a9622e985e60c8e8f12d9f # v4.1.0
         with:
           # Path to SARIF file relative to the root of the repository
           sarif_file: ${{github.workspace}}/results.sarif

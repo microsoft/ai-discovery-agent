@@ -57,10 +57,10 @@ jobs:
       ACR_NAME: ${{ steps.provision.outputs.ACR_NAME }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Install azd
-        uses: Azure/setup-azd@v2.2.0
+        uses: Azure/setup-azd@cf638ffd167fc81e1851241a478a723c05fa9cb3 # v2.2.0
 
       - name: Log in with Azure (Federated Credentials)
         if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
@@ -117,10 +117,10 @@ jobs:
       PROD_URL: ${{ steps.deploy-info.outputs.PROD_URL }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Log in with Azure (Federated Credentials)
-        uses: azure/login@v2
+        uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
         if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
         with:
           client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
@@ -391,7 +391,7 @@ jobs:
       STAGING_OAUTH_GITHUB_CLIENT_SECRET: ${{ secrets.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}
     steps:
       - name: Log in with Azure (Federated Credentials)
-        uses: azure/login@v2
+        uses: azure/login@a65d910e8af852a8061c627c456678983e180302 # v2.2.0
         if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
         with:
           client-id: ${{ env.AZURE_GH_FED_CLIENT_ID }}
