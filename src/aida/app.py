@@ -72,7 +72,6 @@ def create_app() -> FastAPI:
     """
     init_app()
 
-    init_app()
 
     # FastAPI application instance for the AI Discovery Agent
     # Provides REST API endpoints and serves as the main server entry point
