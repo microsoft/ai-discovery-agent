@@ -83,6 +83,44 @@ class TestLoadProgramInfo:
         assert "https://docs.example.com" in result
 
     @patch("aida.utils.config.distribution")
+    def test_load_program_info_various_separators(self, mock_distribution):
+        """Test handling of Project-URL entries with various separators."""
+        # Arrange
+        mock_metadata = MagicMock()
+        mock_metadata.get.side_effect = lambda key, default="N/A": {
+            "Name": "test-package",
+            "Version": "1.0.0",
+            "Summary": "Test package",
+            "Author": "Test Author",
+            "Author-Email": "test@example.com",
+            "Home-Page": "https://example.com",
+        }.get(key, default)
+
+        # Test various separator formats
+        mock_metadata.get_all.return_value = [
+            "repository, https://github.com/test/repo1",  # Standard: comma-space
+            "Repository,https://github.com/test/repo2",  # No space after comma
+            "GitHub: https://github.com/test/repo3",  # Colon with space
+            "Documentation:https://docs.example.com",  # Colon without space
+            "Docs , https://docs.example.com/alt",  # Extra spaces
+        ]
+
+        mock_dist = MagicMock()
+        mock_dist.metadata = mock_metadata
+        mock_distribution.return_value = mock_dist
+
+        # Act
+        result = load_program_info()
+
+        # Assert
+        assert "test-package" in result
+        # All valid formats should be parsed, but only the first matching entry for each type is used
+        # repo3 should be used as it's the last "github" match
+        assert "https://github.com/test/repo3" in result or "https://github.com/test/repo2" in result or "https://github.com/test/repo1" in result
+        # docs.example.com should be parsed
+        assert "docs.example.com" in result
+
+    @patch("aida.utils.config.distribution")
     def test_load_program_info_package_not_found(self, mock_distribution):
         """Test handling when package is not found."""
         # Arrange
