@@ -17,7 +17,6 @@ from pathlib import Path
 from chainlit.utils import mount_chainlit
 from fastapi import FastAPI, status
 from fastapi.responses import FileResponse
-from fastapi.responses import FileResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
 
