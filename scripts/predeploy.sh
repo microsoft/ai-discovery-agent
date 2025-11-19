@@ -37,6 +37,11 @@ if [ -z "${AZURE_SUBSCRIPTION_ID:-}" ]; then
     error_exit "AZURE_SUBSCRIPTION_ID environment variable is required"
 fi
 
+# Check if jq is available
+if ! command -v jq &> /dev/null; then
+    error_exit "jq is required but not installed. Please install jq: https://jqlang.github.io/jq/download/"
+fi
+
 # Generate unique image tag
 TIMESTAMP=$(date +%s)
 GIT_SHA=${GITHUB_SHA:-$(git rev-parse --short HEAD 2>/dev/null || echo "local")}
