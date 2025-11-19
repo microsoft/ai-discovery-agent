@@ -9,7 +9,6 @@ on:
   push:
     branches:
       - main
-      - dev
 
 concurrency:
   group: release-${{ github.workflow }}-${{ github.ref || github.run_id }}
@@ -23,7 +22,8 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
-    if: github.event_name == 'push'
+    # run only on pushes to main branch
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
