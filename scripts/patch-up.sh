@@ -2,6 +2,12 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
+# Ensure script is run from project root
+if [[ ! -f "pyproject.toml" ]]; then
+    echo "Error: This script must be run from the project root directory"
+    exit 1
+fi
+
 # Script to increment patch version, run checks, and prepare for release
 
 echo "🔧 Incrementing patch version in pyproject.toml..."
@@ -9,6 +15,12 @@ echo "🔧 Incrementing patch version in pyproject.toml..."
 # Get current version and increment patch
 CURRENT_VERSION=$(grep '^version = ' pyproject.toml | sed 's/version = "\(.*\)"/\1/')
 echo "Current version: $CURRENT_VERSION"
+
+# Validate semantic versioning format (X.Y.Z)
+if ! echo "$CURRENT_VERSION" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+    echo "Error: Version '$CURRENT_VERSION' does not follow semantic versioning (X.Y.Z)"
+    exit 1
+fi
 
 # Split version into major.minor.patch
 IFS='.' read -ra VERSION_PARTS <<< "$CURRENT_VERSION"
