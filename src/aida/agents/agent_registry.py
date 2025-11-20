@@ -221,7 +221,7 @@ class AgentRegistry:
                 error_msg,
                 exc_info=True,
             )
-            raise AgentConfigurationError(agent_key, error_msg) from None
+            raise AgentConfigurationError(agent_key, error_msg) from e
         except Exception as e:
             error_msg = f"unexpected error: {e}"
             logger.error(
