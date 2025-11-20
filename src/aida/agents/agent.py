@@ -19,13 +19,43 @@ Agent
     Base class for agent implementations, now using LangGraph workflows for
     chat completion instead of direct Azure OpenAI API calls.
 
+Usage Example:
+--------------
+Creating a custom agent by subclassing Agent:
+
+    >>> from aida.agents.agent import Agent
+    >>> from langchain_core.messages import SystemMessage
+    >>> from langchain_core.runnables import Runnable
+    >>> 
+    >>> class MyCustomAgent(Agent):
+    ...     def get_system_prompts(self) -> list[SystemMessage]:
+    ...         return [SystemMessage(content="You are a helpful assistant.")]
+    ...     
+    ...     def create_chain(self) -> Runnable:
+    ...         llm = self._get_azure_chat_openai(tag="my-agent")
+    ...         # Create and return your custom LangChain workflow
+    ...         return llm
+    >>> 
+    >>> # Instantiate the agent
+    >>> agent = MyCustomAgent(
+    ...     agent_key="my_agent",
+    ...     model="gpt-4o",
+    ...     temperature=0.7
+    ... )
+    >>> 
+    >>> # Use the agent to process messages
+    >>> messages = [{"role": "user", "content": "Hello!"}]
+    >>> config = RunnableConfig()
+    >>> async for chunk in agent.astream(messages, config):
+    ...     print(chunk)
+
 Dependencies:
 -------------
 - os
 - typing (Dict, List)
 - workflows.chat_graph (LangGraph implementation)
-- streamlit
-- streamlit.logger
+- langchain_core
+- langchain_openai
 """
 
 import abc
