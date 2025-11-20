@@ -35,17 +35,17 @@ Usage Example:
 Loading and accessing agent configurations:
 
     >>> from aida.agents import agent_manager
-    >>> 
+    >>>
     >>> # Load configurations (called automatically at module import)
     >>> agent_manager.load_configurations()
-    >>> 
+    >>>
     >>> # Get all available agents for a user with standard role
     >>> user_agents = agent_manager.get_available_agents(user_roles=["user"])
     >>> for agent_key, agent_info in user_agents.items():
     ...     print(f"{agent_key}: {agent_info['title']}")
     facilitator: Workshop Facilitator
     customer_rep: Bank Representative
-    >>> 
+    >>>
     >>> # Get all available agents for admin user (includes admin-only agents)
     >>> admin_agents = agent_manager.get_available_agents(user_roles=["admin", "user"])
     >>> for agent_key, agent_info in admin_agents.items():
@@ -53,7 +53,7 @@ Loading and accessing agent configurations:
     facilitator: Workshop Facilitator
     customer_rep: Bank Representative
     admin_agent: Admin Tools  # Only visible to admins
-    >>> 
+    >>>
     >>> # Get specific agent configuration
     >>> facilitator_config = agent_manager.get_agent_info("facilitator")
     >>> print(facilitator_config)
@@ -68,7 +68,7 @@ The pages.yaml file should follow this structure:
         persona: prompts/facilitator_persona.md
         model: gpt-4o
         temperature: 0.7
-    
+
     sections:
       Coach:
         - type: agent

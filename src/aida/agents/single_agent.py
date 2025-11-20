@@ -19,7 +19,7 @@ Creating and using a SingleAgent:
 
     >>> from aida.agents.single_agent import SingleAgent
     >>> from langchain_core.runnables import RunnableConfig
-    >>> 
+    >>>
     >>> # Create a simple agent with just a persona
     >>> agent = SingleAgent(
     ...     agent_key="facilitator",
@@ -27,7 +27,7 @@ Creating and using a SingleAgent:
     ...     model="gpt-4o",
     ...     temperature=0.7
     ... )
-    >>> 
+    >>>
     >>> # Create an agent with a persona and a single document
     >>> customer_agent = SingleAgent(
     ...     agent_key="customer_rep",
@@ -36,7 +36,7 @@ Creating and using a SingleAgent:
     ...     model="gpt-4o-mini",
     ...     temperature=0.5
     ... )
-    >>> 
+    >>>
     >>> # Create an agent with multiple documents
     >>> expert_agent = SingleAgent(
     ...     agent_key="multi_doc_expert",
@@ -47,7 +47,7 @@ Creating and using a SingleAgent:
     ...     ]),
     ...     model="gpt-4o"
     ... )
-    >>> 
+    >>>
     >>> # Use the agent to process messages
     >>> messages = [{"role": "user", "content": "Help me understand AI."}]
     >>> config = RunnableConfig()

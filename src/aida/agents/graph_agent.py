@@ -22,7 +22,7 @@ Creating and using a GraphAgent for intelligent routing:
 
     >>> from aida.agents.graph_agent import GraphAgent
     >>> from langchain_core.runnables import RunnableConfig
-    >>> 
+    >>>
     >>> # Define routing configuration
     >>> routing_config = {
     ...     "agent_key": "smart_router",
@@ -35,7 +35,7 @@ Creating and using a GraphAgent for intelligent routing:
     ...     "model": "gpt-4o",
     ...     "temperature": 0.5
     ... }
-    >>> 
+    >>>
     >>> # Create the graph agent
     >>> router = GraphAgent(
     ...     agent_key=routing_config["agent_key"],
@@ -44,7 +44,7 @@ Creating and using a GraphAgent for intelligent routing:
     ...     model=routing_config["model"],
     ...     temperature=routing_config["temperature"]
     ... )
-    >>> 
+    >>>
     >>> # Use the agent - it will automatically route to the appropriate sub-agent
     >>> messages = [{"role": "user", "content": "How do I optimize database queries?"}]
     >>> config = RunnableConfig()

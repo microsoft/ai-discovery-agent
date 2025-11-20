@@ -22,54 +22,54 @@ AzureStorageConversationManager : Complete conversation lifecycle management
 
 Usage Example:
 --------------
-Setting up conversation persistence:
+Setting up conversation persistence::
 
-    >>> from aida.persistence.conversation_manager import (
-    ...     AzureStorageConversationManager
-    ... )
-    >>> from aida.persistence.azure_storage import (
-    ...     AzureStorageManager,
-    ...     AzureTableManager
-    ... )
-    >>> 
-    >>> # Initialize storage managers
-    >>> blob_manager = AzureStorageManager(
-    ...     connection_string="your-connection-string"
-    ... )
-    >>> table_manager = AzureTableManager(
-    ...     endpoint="https://your-account.table.core.windows.net/"
-    ... )
-    >>> 
-    >>> # Combine into conversation manager
-    >>> storage_manager = blob_manager  # Simplified example
-    >>> conv_manager = AzureStorageConversationManager(
-    ...     storage_manager=storage_manager,
-    ...     openai_client=llm_client  # For title generation
-    ... )
-    >>> 
-    >>> # Create a new conversation
-    >>> conversation_id = await conv_manager.create_conversation(
-    ...     user_id="user123",
-    ...     agent_key="facilitator"
-    ... )
-    >>> 
-    >>> # Save conversation messages
-    >>> messages = [
-    ...     {"role": "user", "content": "Hello"},
-    ...     {"role": "assistant", "content": "Hi! How can I help?"}
-    ... ]
-    >>> await conv_manager.save_conversation(
-    ...     user_id="user123",
-    ...     agent_key="facilitator",
-    ...     conversation_id=conversation_id,
-    ...     messages=messages
-    ... )
-    >>> 
-    >>> # List user's conversations
-    >>> conversations = await conv_manager.list_conversations(
-    ...     user_id="user123",
-    ...     agent_key="facilitator"
-    ... )
+    from aida.persistence.conversation_manager import (
+        AzureStorageConversationManager
+    )
+    from aida.persistence.azure_storage import (
+        AzureStorageManager,
+        AzureTableManager
+    )
+
+    # Initialize storage managers
+    blob_manager = AzureStorageManager(
+        connection_string="your-connection-string"
+    )
+    table_manager = AzureTableManager(
+        endpoint="https://your-account.table.core.windows.net/"
+    )
+
+    # Combine into conversation manager
+    storage_manager = blob_manager  # Simplified example
+    conv_manager = AzureStorageConversationManager(
+        storage_manager=storage_manager,
+        openai_client=llm_client  # For title generation
+    )
+
+    # Create a new conversation
+    conversation_id = await conv_manager.create_conversation(
+        user_id="user123",
+        agent_key="facilitator"
+    )
+
+    # Save conversation messages
+    messages = [
+        {"role": "user", "content": "Hello"},
+        {"role": "assistant", "content": "Hi! How can I help?"}
+    ]
+    await conv_manager.save_conversation(
+        user_id="user123",
+        agent_key="facilitator",
+        conversation_id=conversation_id,
+        messages=messages
+    )
+
+    # List user's conversations
+    conversations = await conv_manager.list_conversations(
+        user_id="user123",
+        agent_key="facilitator"
+    )
 
 Features:
 ---------
@@ -83,13 +83,6 @@ See Also:
 ---------
 - aida.interfaces.ConversationManager : Abstract base class
 - Azure Storage documentation : https://docs.microsoft.com/azure/storage/
-"""
-
-"""
-Persistence layer for the AI Discovery Workshop Agent.
-
-This module provides conversation storage and management capabilities using Azure Storage,
-with support for user privacy, multiple conversations per agent, and automatic conversation titling.
 """
 
 from .azure_storage import AzureStorageManager

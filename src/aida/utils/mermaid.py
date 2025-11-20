@@ -7,20 +7,20 @@ import re
 def extract_mermaid(response: str) -> list[str]:
     """
     Extract mermaid code blocks from the response string.
-    
+
     This function parses markdown-formatted text to identify and extract
     mermaid diagram definitions enclosed in ```mermaid code blocks.
-    
+
     Parameters:
     -----------
     response : str
         The response string containing mermaid code blocks
-    
+
     Returns:
     --------
     list[str]
         A list of mermaid code blocks extracted from the response
-    
+
     Examples:
     ---------
     >>> text = "```mermaid\\ngraph TD\\nA-->B\\n```"
