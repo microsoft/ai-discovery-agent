@@ -3,7 +3,6 @@
 
 """Unit tests for the cached_loader module."""
 
-from pathlib import Path
 from unittest.mock import mock_open, patch
 
 import pytest
