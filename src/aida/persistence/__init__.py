@@ -22,7 +22,7 @@ AzureStorageConversationManager : Complete conversation lifecycle management
 
 Usage Example:
 --------------
-Setting up conversation persistence::
+Setting up conversation persistence:
 
     from aida.persistence.conversation_manager import (
         AzureStorageConversationManager
