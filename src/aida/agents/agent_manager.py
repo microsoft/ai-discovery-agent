@@ -108,7 +108,7 @@ def load_configurations() -> None:
         # Store empty configs in global variables as fallback
         _agents_config = {}
         _pages_config = {}
-        raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
+        raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
 
     # Clear the cache since the configuration data has changed
     _extract_agents_from_sections.cache_clear()
