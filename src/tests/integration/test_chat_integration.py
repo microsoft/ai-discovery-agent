@@ -312,9 +312,9 @@ class TestMessageRoutingIntegration:
             # Conversation history should now contain user + assistant messages
             history = session_store.get("conversation_history")
             assert isinstance(history, list), "conversation_history should be a list"
-            assert (
-                len(history) == 2
-            ), "Expected two messages in history (user & assistant)"
+            assert len(history) == 2, (
+                "Expected two messages in history (user & assistant)"
+            )
             assert history[0]["role"] == "user"
             assert history[0]["content"] == "Hi there"
             assert history[1]["role"] == "assistant"

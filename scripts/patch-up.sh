@@ -4,8 +4,6 @@
 
 # Script to increment patch version, run checks, and prepare for release
 
-set -e  # Exit on error
-
 echo "🔧 Incrementing patch version in pyproject.toml..."
 
 # Get current version and increment patch
@@ -34,16 +32,16 @@ echo "📝 Generating NOTICE file (runtime dependencies only)..."
 ./scripts/generate-notice.sh --no-dev
 
 echo ""
-echo "🔍 Running pre-commit hooks..."
-uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml
-
-echo ""
 echo "🧹 Running Ruff linter..."
 uv run ruff check .
 
 echo ""
 echo "🎨 Running Black formatter..."
 uv run black .
+
+echo ""
+echo "🔍 Running pre-commit hooks..."
+uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml
 
 echo ""
 echo "©️ Checking copyright headers..."
