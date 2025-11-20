@@ -12,9 +12,6 @@ and diagnostics throughout the application.
 class AidaBaseException(Exception):
     """Base exception class for all AIDA-specific exceptions."""
 
-    pass
-
-
 class AuthenticationError(AidaBaseException):
     """Raised when authentication fails."""
 
