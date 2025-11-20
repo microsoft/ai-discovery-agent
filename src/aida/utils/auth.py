@@ -157,20 +157,22 @@ async def password_auth_callback(username: str, password: str) -> cl.User | None
             )
             raise ConfigurationError(
                 f"Invalid authentication configuration: {e}", str(AUTH_CONFIG_FILE)
-            )
+            ) from e
         except OSError as e:
             logger.error(
                 f"Failed to read authentication config file: {e}", exc_info=True
             )
             raise ConfigurationError(
                 f"Cannot read authentication configuration: {e}", str(AUTH_CONFIG_FILE)
-            )
+            ) from e
 
         credentials = config.get("credentials", {}).get("usernames", {})
 
         if username not in credentials:
             auth_logger.warning("Authentication failed: user not found")
-            raise AuthenticationError("Invalid username or password", username)
+            raise AuthenticationError(
+                "Invalid username or password", username
+            ) from None
 
         user_data = credentials[username]
         stored_password = user_data.get("password", "")
@@ -178,7 +180,9 @@ async def password_auth_callback(username: str, password: str) -> cl.User | None
         # Use the new password verification function
         if not _verify_password(password, stored_password):
             auth_logger.warning("Authentication failed: incorrect password")
-            raise AuthenticationError("Invalid username or password", username)
+            raise AuthenticationError(
+                "Invalid username or password", username
+            ) from None
 
         # If this was a plain text password, upgrade it to hashed
         if not stored_password.startswith(("pbkdf2_sha256$", "$2b$")):
@@ -221,7 +225,7 @@ async def password_auth_callback(username: str, password: str) -> cl.User | None
             f"Unexpected authentication error for user '{username}': {e}",
             exc_info=True,
         )
-        raise AuthenticationError(f"Authentication system error: {e}", username)
+        raise AuthenticationError(f"Authentication system error: {e}", username) from e
 
     return None
 
@@ -260,7 +264,9 @@ async def oauth_callback(
     oauth_logger = get_structured_logger(__name__, user_id=default_user.identifier)
 
     try:
-        oauth_logger.info(f"OAuth authentication successful via provider: {provider_id}")
+        oauth_logger.info(
+            f"OAuth authentication successful via provider: {provider_id}"
+        )
         # You can add custom logic here based on provider_id
         # For example, domain restrictions or role mapping
         return default_user
@@ -271,7 +277,7 @@ async def oauth_callback(
         )
         raise AuthenticationError(
             f"OAuth authentication failed: {e}", default_user.identifier
-        )
+        ) from e
 
 
 def is_oauth_enabled() -> bool:

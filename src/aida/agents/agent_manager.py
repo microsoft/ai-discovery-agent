@@ -66,7 +66,7 @@ def load_configurations() -> None:
         if not PAGES_CONFIG_FILE.exists():
             error_msg = f"Configuration file not found: {PAGES_CONFIG_FILE}"
             logger.error(error_msg)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
 
         try:
             with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
@@ -74,16 +74,16 @@ def load_configurations() -> None:
         except yaml.YAMLError as e:
             error_msg = f"Invalid YAML in configuration file: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
         except OSError as e:
             error_msg = f"Failed to read configuration file: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
 
         if not pages_config:
             error_msg = "Configuration file is empty"
             logger.error(error_msg)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
 
         agents_config = pages_config.get("agents", {})
 
@@ -108,7 +108,7 @@ def load_configurations() -> None:
         # Store empty configs in global variables as fallback
         _agents_config = {}
         _pages_config = {}
-        raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+        raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
 
     # Clear the cache since the configuration data has changed
     _extract_agents_from_sections.cache_clear()

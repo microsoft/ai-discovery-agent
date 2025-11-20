@@ -27,9 +27,7 @@ class StructuredLoggerAdapter(LoggerAdapter):
     user_id, session_id, agent_key, and conversation_id for better traceability.
     """
 
-    def process(
-        self, msg: str, kwargs: dict[str, Any]
-    ) -> tuple[str, dict[str, Any]]:
+    def process(self, msg: str, kwargs: dict[str, Any]) -> tuple[str, dict[str, Any]]:
         """
         Process log message to add context.
 

@@ -77,19 +77,19 @@ def load_prompt_files(
     except FileNotFoundError as e:
         error_msg = f"Persona file not found: {persona_file_path}"
         logger.error(error_msg)
-        raise PromptLoadError(persona_file_path, str(e))
+        raise PromptLoadError(persona_file_path, str(e)) from e
     except PermissionError as e:
         error_msg = f"Permission denied reading persona file: {persona_file_path}"
         logger.error(error_msg)
-        raise PromptLoadError(persona_file_path, str(e))
+        raise PromptLoadError(persona_file_path, str(e)) from e
     except UnicodeDecodeError as e:
         error_msg = f"Failed to decode persona file: {persona_file_path}"
         logger.error(error_msg)
-        raise PromptLoadError(persona_file_path, str(e))
+        raise PromptLoadError(persona_file_path, str(e)) from e
     except OSError as e:
         error_msg = f"OS error reading persona file: {persona_file_path}"
         logger.error(error_msg, exc_info=True)
-        raise PromptLoadError(persona_file_path, str(e))
+        raise PromptLoadError(persona_file_path, str(e)) from e
 
     # Add security instructions to the system prompt
     logger.info("Adding guardrails to system prompt")
@@ -134,16 +134,18 @@ def load_prompt_files(
                 raise
             except FileNotFoundError as e:
                 logger.error(f"Document file not found: {file_path}")
-                raise PromptLoadError(file_path, str(e))
+                raise PromptLoadError(file_path, str(e)) from e
             except PermissionError as e:
                 logger.error(f"Permission denied reading document file: {file_path}")
-                raise PromptLoadError(file_path, str(e))
+                raise PromptLoadError(file_path, str(e)) from e
             except UnicodeDecodeError as e:
                 logger.error(f"Failed to decode document file: {file_path}")
-                raise PromptLoadError(file_path, str(e))
+                raise PromptLoadError(file_path, str(e)) from e
             except OSError as e:
-                logger.error(f"OS error reading document file: {file_path}", exc_info=True)
-                raise PromptLoadError(file_path, str(e))
+                logger.error(
+                    f"OS error reading document file: {file_path}", exc_info=True
+                )
+                raise PromptLoadError(file_path, str(e)) from e
 
     logger.info(f"Successfully loaded {len(messages)} prompt messages")
     return messages

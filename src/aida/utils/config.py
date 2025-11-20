@@ -39,11 +39,11 @@ def setup_auth_secret() -> None:
         except OSError as e:
             error_msg = f"Failed to save CHAINLIT_AUTH_SECRET to .env file: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, ".env")
+            raise ConfigurationError(error_msg, ".env") from e
         except Exception as e:
             error_msg = f"Unexpected error setting up auth secret: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, ".env")
+            raise ConfigurationError(error_msg, ".env") from e
 
 
 def load_program_info() -> str:

@@ -154,19 +154,21 @@ class AzureStorageManager:
         except ClientAuthenticationError as e:
             error_msg = f"Authentication failed for container {container_name}: {e}"
             logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg)
+            raise StorageAccessError(error_msg) from e
         except ServiceRequestError as e:
             error_msg = f"Network error accessing container {container_name}: {e}"
             logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg)
+            raise StorageAccessError(error_msg) from e
         except AzureError as e:
             error_msg = f"Azure Storage error for container {container_name}: {e}"
             logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg)
+            raise StorageAccessError(error_msg) from e
         except Exception as e:
-            error_msg = f"Unexpected error ensuring container {container_name} exists: {e}"
+            error_msg = (
+                f"Unexpected error ensuring container {container_name} exists: {e}"
+            )
             logger.error(error_msg, exc_info=True)
-            raise StorageError(error_msg)
+            raise StorageError(error_msg) from e
 
     async def save_conversation(
         self,
@@ -191,7 +193,10 @@ class AzureStorageManager:
             StorageAccessError: If storage access fails.
         """
         storage_logger = get_structured_logger(
-            __name__, user_id=user_id, agent_key=agent_key, conversation_id=conversation_id
+            __name__,
+            user_id=user_id,
+            agent_key=agent_key,
+            conversation_id=conversation_id,
         )
 
         try:
@@ -218,7 +223,7 @@ class AzureStorageManager:
             except (TypeError, ValueError) as e:
                 error_msg = f"Failed to serialize conversation data: {e}"
                 storage_logger.error(error_msg)
-                raise StorageError(error_msg, user_id, conversation_id)
+                raise StorageError(error_msg, user_id, conversation_id) from e
 
             # Upload blob with JSON content type
             blob_client = self.blob_service_client.get_blob_client(
@@ -239,19 +244,19 @@ class AzureStorageManager:
         except ClientAuthenticationError as e:
             error_msg = f"Authentication failed while saving conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except ServiceRequestError as e:
             error_msg = f"Network error while saving conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except AzureError as e:
             error_msg = f"Azure Storage error while saving conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except Exception as e:
             error_msg = f"Unexpected error saving conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageError(error_msg, user_id, conversation_id)
+            raise StorageError(error_msg, user_id, conversation_id) from e
 
     async def load_conversation(
         self, user_id: str, agent_key: str, conversation_id: str
@@ -272,7 +277,10 @@ class AzureStorageManager:
             StorageAccessError: If storage access fails.
         """
         storage_logger = get_structured_logger(
-            __name__, user_id=user_id, agent_key=agent_key, conversation_id=conversation_id
+            __name__,
+            user_id=user_id,
+            agent_key=agent_key,
+            conversation_id=conversation_id,
         )
 
         try:
@@ -291,33 +299,33 @@ class AzureStorageManager:
             except (json.JSONDecodeError, UnicodeDecodeError) as e:
                 error_msg = f"Failed to parse conversation data: {e}"
                 storage_logger.error(error_msg)
-                raise StorageError(error_msg, user_id, conversation_id)
+                raise StorageError(error_msg, user_id, conversation_id) from e
 
             storage_logger.info("Successfully loaded conversation")
             return conversation_data
 
         except ResourceNotFoundError:
             storage_logger.debug("Conversation not found")
-            raise ConversationNotFoundError(user_id, conversation_id)
+            raise ConversationNotFoundError(user_id, conversation_id) from None
         except (ConversationNotFoundError, StorageError):
             # Re-raise our custom exceptions
             raise
         except ClientAuthenticationError as e:
             error_msg = f"Authentication failed while loading conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except ServiceRequestError as e:
             error_msg = f"Network error while loading conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except AzureError as e:
             error_msg = f"Azure Storage error while loading conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except Exception as e:
             error_msg = f"Unexpected error loading conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageError(error_msg, user_id, conversation_id)
+            raise StorageError(error_msg, user_id, conversation_id) from e
 
     async def list_conversations(
         self, user_id: str, agent_key: str | None = None
@@ -373,24 +381,26 @@ class AzureStorageManager:
             return conversations
 
         except ResourceNotFoundError:
-            storage_logger.debug("No conversations container found - returning empty list")
+            storage_logger.debug(
+                "No conversations container found - returning empty list"
+            )
             return []
         except ClientAuthenticationError as e:
             error_msg = f"Authentication failed while listing conversations: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id)
+            raise StorageAccessError(error_msg, user_id) from e
         except ServiceRequestError as e:
             error_msg = f"Network error while listing conversations: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id)
+            raise StorageAccessError(error_msg, user_id) from e
         except AzureError as e:
             error_msg = f"Azure Storage error while listing conversations: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id)
+            raise StorageAccessError(error_msg, user_id) from e
         except Exception as e:
             error_msg = f"Unexpected error listing conversations: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageError(error_msg, user_id)
+            raise StorageError(error_msg, user_id) from e
 
     async def delete_conversation(
         self, user_id: str, agent_key: str, conversation_id: str
@@ -411,7 +421,10 @@ class AzureStorageManager:
             StorageAccessError: If storage access fails.
         """
         storage_logger = get_structured_logger(
-            __name__, user_id=user_id, agent_key=agent_key, conversation_id=conversation_id
+            __name__,
+            user_id=user_id,
+            agent_key=agent_key,
+            conversation_id=conversation_id,
         )
 
         try:
@@ -428,20 +441,20 @@ class AzureStorageManager:
 
         except ResourceNotFoundError:
             storage_logger.warning("Conversation not found for deletion")
-            raise ConversationNotFoundError(user_id, conversation_id)
+            raise ConversationNotFoundError(user_id, conversation_id) from None
         except ClientAuthenticationError as e:
             error_msg = f"Authentication failed while deleting conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except ServiceRequestError as e:
             error_msg = f"Network error while deleting conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except AzureError as e:
             error_msg = f"Azure Storage error while deleting conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageAccessError(error_msg, user_id, conversation_id)
+            raise StorageAccessError(error_msg, user_id, conversation_id) from e
         except Exception as e:
             error_msg = f"Unexpected error deleting conversation: {e}"
             storage_logger.error(error_msg, exc_info=True)
-            raise StorageError(error_msg, user_id, conversation_id)
+            raise StorageError(error_msg, user_id, conversation_id) from e

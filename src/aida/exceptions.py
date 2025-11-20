@@ -74,9 +74,7 @@ class ConfigurationError(AidaBaseException):
 class AgentError(AidaBaseException):
     """Base exception for agent-related errors."""
 
-    def __init__(
-        self, message: str = "Agent error", agent_key: str | None = None
-    ):
+    def __init__(self, message: str = "Agent error", agent_key: str | None = None):
         """
         Initialize AgentError.
 

@@ -82,7 +82,7 @@ class AgentRegistry:
             if not pages_file.exists():
                 error_msg = f"Agent configuration file not found: {pages_file}"
                 logger.error(error_msg)
-                raise ConfigurationError(error_msg, str(pages_file))
+                raise ConfigurationError(error_msg, str(pages_file)) from None
 
             with open(pages_file, encoding="utf-8") as f:
                 try:
@@ -90,20 +90,22 @@ class AgentRegistry:
                 except yaml.YAMLError as e:
                     error_msg = f"Invalid YAML in agent configuration: {e}"
                     logger.error(error_msg, exc_info=True)
-                    raise ConfigurationError(error_msg, str(pages_file))
+                    raise ConfigurationError(error_msg, str(pages_file)) from None
 
                 if not config:
                     error_msg = "Agent configuration file is empty"
                     logger.error(error_msg)
-                    raise ConfigurationError(error_msg, str(pages_file))
+                    raise ConfigurationError(error_msg, str(pages_file)) from None
 
                 if "agents" not in config:
                     error_msg = "No 'agents' section in configuration"
                     logger.error(error_msg)
-                    raise ConfigurationError(error_msg, str(pages_file))
+                    raise ConfigurationError(error_msg, str(pages_file)) from None
 
                 self._agents = config["agents"]
-                logger.info(f"Successfully loaded {len(self._agents)} agent definitions")
+                logger.info(
+                    f"Successfully loaded {len(self._agents)} agent definitions"
+                )
 
         except ConfigurationError:
             # Re-raise our custom exception
@@ -111,11 +113,11 @@ class AgentRegistry:
         except OSError as e:
             error_msg = f"Failed to read agent configuration file: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(pages_file))
+            raise ConfigurationError(error_msg, str(pages_file)) from None
         except Exception as e:
             error_msg = f"Unexpected error loading agent configuration: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(pages_file))
+            raise ConfigurationError(error_msg, str(pages_file)) from None
 
     def get(self, agent_key: str) -> dict | None:
         """
@@ -206,7 +208,7 @@ class AgentRegistry:
                     agent_key,
                     error_msg,
                 )
-                raise AgentConfigurationError(agent_key, error_msg)
+                raise AgentConfigurationError(agent_key, error_msg) from None
 
         except AgentConfigurationError:
             # Re-raise our custom exception
@@ -214,15 +216,21 @@ class AgentRegistry:
         except KeyError as e:
             error_msg = f"missing required field: {e}"
             logger.error(
-                "Invalid agent configuration for key '%s': %s", agent_key, error_msg, exc_info=True
+                "Invalid agent configuration for key '%s': %s",
+                agent_key,
+                error_msg,
+                exc_info=True,
             )
-            raise AgentConfigurationError(agent_key, error_msg)
+            raise AgentConfigurationError(agent_key, error_msg) from None
         except Exception as e:
             error_msg = f"unexpected error: {e}"
             logger.error(
-                "Error creating agent for key '%s': %s", agent_key, error_msg, exc_info=True
+                "Error creating agent for key '%s': %s",
+                agent_key,
+                error_msg,
+                exc_info=True,
             )
-            raise AgentConfigurationError(agent_key, error_msg)
+            raise AgentConfigurationError(agent_key, error_msg) from None
 
     def all(self) -> dict:
         """

@@ -140,7 +140,9 @@ class TestPasswordAuthentication:
         password = "testpass"  # nosec B105
 
         # Act & Assert
-        with pytest.raises(ConfigurationError, match="Authentication configuration missing"):
+        with pytest.raises(
+            ConfigurationError, match="Authentication configuration missing"
+        ):
             await password_auth_callback(username, password)
 
     @patch("builtins.open", new_callable=mock_open, read_data="invalid: yaml: content")
@@ -158,7 +160,9 @@ class TestPasswordAuthentication:
         password = "testpass"  # nosec B105
 
         # Act & Assert
-        with pytest.raises(ConfigurationError, match="Invalid authentication configuration"):
+        with pytest.raises(
+            ConfigurationError, match="Invalid authentication configuration"
+        ):
             await password_auth_callback(username, password)
 
 

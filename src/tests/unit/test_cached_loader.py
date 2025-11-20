@@ -34,9 +34,7 @@ class TestCachedLoader:
 
     @patch("aida.utils.cached_loader.Path.exists", return_value=True)
     @patch("aida.utils.cached_loader.open", new_callable=mock_open)
-    def test_load_prompt_files_with_documents_string(
-        self, mock_file_open, mock_exists
-    ):
+    def test_load_prompt_files_with_documents_string(self, mock_file_open, mock_exists):
         """Test loading persona with single document as string."""
         mock_file_open.side_effect = [
             mock_open(read_data="Persona content").return_value,
