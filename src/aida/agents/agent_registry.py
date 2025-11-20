@@ -117,7 +117,7 @@ class AgentRegistry:
         except Exception as e:
             error_msg = f"Unexpected error loading agent configuration: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(pages_file)) from None
+            raise ConfigurationError(error_msg, str(pages_file)) from e
 
     def get(self, agent_key: str) -> dict | None:
         """
