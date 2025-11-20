@@ -174,7 +174,8 @@ jobs:
           draft: false
           prerelease: ${{ steps.get_version.outputs.branch == 'dev' || steps.check_tag.outputs.tag_exists == 'true' }}
 
-      - uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a #v3
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@977bb373ede98d70efdf65b84cb5f73e068dcc2a #v3
         with:
           subject-name: ${{ steps.sign.outputs.artifact-name }}
           subject-digest: sha256:${{ steps.sign.outputs.artifact-digest }}
