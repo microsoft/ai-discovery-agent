@@ -705,11 +705,17 @@ async def process_with_agent(
         The current user
     """
     # Create structured logger with full context
+    # Get session_id safely, handling cases where Chainlit context isn't available (e.g., in tests)
+    try:
+        session_id = cl.context.session.id
+    except Exception:
+        session_id = None
+
     process_logger = get_structured_logger(
         __name__,
         user_id=user.identifier,
         agent_key=agent_key,
-        session_id=cl.context.session.id,
+        session_id=session_id,
     )
 
     try:
