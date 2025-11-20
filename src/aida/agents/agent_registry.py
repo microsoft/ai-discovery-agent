@@ -230,7 +230,7 @@ class AgentRegistry:
                 error_msg,
                 exc_info=True,
             )
-            raise AgentConfigurationError(agent_key, error_msg) from None
+            raise AgentConfigurationError(agent_key, error_msg) from e
 
     def all(self) -> dict:
         """
