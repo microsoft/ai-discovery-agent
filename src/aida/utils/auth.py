@@ -228,7 +228,6 @@ async def password_auth_callback(username: str, password: str) -> cl.User | None
         raise AuthenticationError(f"Authentication system error: {e}", username) from e
 
 
-
 async def oauth_callback(
     provider_id: str,
     token: str,
