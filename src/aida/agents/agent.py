@@ -51,11 +51,13 @@ Creating a custom agent by subclassing Agent:
 
 Dependencies:
 -------------
-- os
-- typing (Dict, List)
-- workflows.chat_graph (LangGraph implementation)
-- langchain_core
-- langchain_openai
+- abc: Abstract base class support
+- os: Environment variable access
+- collections.abc: AsyncIterator for streaming
+- typing: Type annotations (Any)
+- langchain_core: Language model interfaces and message types
+- aida.utils.cached_llm: LLM instance creation
+- aida.utils.logging_setup: Logging configuration
 """
 
 import abc
