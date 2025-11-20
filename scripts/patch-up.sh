@@ -34,8 +34,8 @@ NEW_VERSION="$MAJOR.$MINOR.$NEW_PATCH"
 
 echo "New version: $NEW_VERSION"
 
-# Update version in pyproject.toml
-sed -i "s/^version = \".*\"/version = \"$NEW_VERSION\"/" pyproject.toml
+# Update version in pyproject.toml (portable across macOS and Linux)
+sed "s/^version = \".*\"/version = \"$NEW_VERSION\"/" pyproject.toml > pyproject.toml.tmp && mv pyproject.toml.tmp pyproject.toml
 
 echo "✅ Version updated to $NEW_VERSION"
 
