@@ -65,7 +65,7 @@ COPY src/. .
 RUN adduser --system --no-create-home --group nonroot && \
     mkdir -p /app/.files && \
     chmod +x /app/startup.sh && \
-    chown -R nonroot:nonroot /app/config /app/.files && \
+    chown -R nonroot:nonroot /app/config /app/.files /app/.chainlit && \
     chmod 700 /app/.files && \
     touch /app/.env && \
     chown nonroot:nonroot /app/.env
