@@ -41,15 +41,19 @@ echo "✅ Version updated to $NEW_VERSION"
 
 echo ""
 echo "📝 Generating NOTICE file (runtime dependencies only)..."
-./scripts/generate-notice.sh --no-dev
+./scripts/generate-notice.sh
 
-echo ""
-echo "🧹 Running Ruff linter..."
-uv run ruff check .
-
-echo ""
 echo "🎨 Running Black formatter..."
-uv run black .
+if ! uv run black .; then
+    echo "❌ Black formatter failed. Please fix formatting issues."
+    exit 1
+fi
+
+echo "🧹 Running Ruff linter..."
+if ! uv run ruff check .; then
+    echo "❌ Ruff linter found issues. Please fix them before proceeding."
+    exit 1
+fi
 
 echo ""
 echo "🔍 Running pre-commit hooks..."
