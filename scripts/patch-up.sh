@@ -59,13 +59,16 @@ fi
 
 echo ""
 echo "🔍 Running pre-commit hooks..."
-uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml
+if ! uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml; then
+    echo "❌ Pre-commit hooks failed. Please fix the issues."
+    exit 1
+fi
 
-echo ""
 echo "©️ Checking copyright headers..."
-./scripts/check-copyright-headers.sh
-
-echo ""
+if ! ./scripts/check-copyright-headers.sh; then
+    echo "❌ Copyright header check failed. Please fix missing headers."
+    exit 1
+fi
 echo "✨ All checks completed successfully!"
 echo "Version bumped from $CURRENT_VERSION to $NEW_VERSION"
 echo ""
