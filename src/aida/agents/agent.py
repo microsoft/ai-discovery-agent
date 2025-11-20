@@ -191,7 +191,7 @@ class Agent(abc.ABC):
         List[BaseMessage]
             List of LangChain message objects.
         """
-        langchain_messages = []
+        langchain_messages: list[BaseMessage] = []
 
         for message in messages:
             role = message.get("role", "")

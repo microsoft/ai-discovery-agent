@@ -22,8 +22,8 @@ Dependencies:
 - langgraph: For state graph workflow construction
 """
 
-from collections.abc import Sequence
-from typing import Annotated, Any, TypedDict
+from collections.abc import Hashable, Sequence
+from typing import Annotated, Any, TypedDict, cast
 
 from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -220,7 +220,7 @@ class GraphAgent(Agent):
                 workflow = StateGraph(AgentState)
                 # Add the nodes (start_agent, stock_agent, rag_agent)
                 workflow.add_node("start", self._start_agent)
-                decisions = {}
+                decisions: dict[str, str] = {}
                 for agent in self.agents:
                     workflow.add_node(
                         agent["agent"],
@@ -232,10 +232,11 @@ class GraphAgent(Agent):
                     decisions[agent["agent"]] = agent["condition"]
 
                 # Add the conditional edge from start -> lamba (decision) -> defined agents
+                # Cast to dict[Hashable, str] to satisfy mypy type checking
                 workflow.add_conditional_edges(
                     "start",
                     lambda x: x["decision"],
-                    decisions,
+                    cast(dict[Hashable, str], decisions),
                 )
                 # Set the workflow entry point
                 workflow.set_entry_point("start")
