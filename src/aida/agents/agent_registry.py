@@ -27,6 +27,11 @@ from pathlib import Path
 
 import yaml
 
+from aida.exceptions import (
+    AgentConfigurationError,
+    AgentNotFoundError,
+    ConfigurationError,
+)
 from aida.utils.logging_setup import get_logger
 
 from .agent import Agent
@@ -65,10 +70,52 @@ class AgentRegistry:
         -----------
         pages_file : Path, optional
             The path to the YAML file containing agent definitions. Defaults to PAGES_FILE.
+
+        Raises:
+        -------
+        ConfigurationError:
+            If the configuration file is missing, invalid, or cannot be read.
         """
         logger.info("Loading agent definitions from %s", pages_file)
-        with open(pages_file, encoding="utf-8") as f:
-            self._agents = yaml.safe_load(f)["agents"]
+
+        try:
+            if not pages_file.exists():
+                error_msg = f"Agent configuration file not found: {pages_file}"
+                logger.error(error_msg)
+                raise ConfigurationError(error_msg, str(pages_file))
+
+            with open(pages_file, encoding="utf-8") as f:
+                try:
+                    config = yaml.safe_load(f)
+                except yaml.YAMLError as e:
+                    error_msg = f"Invalid YAML in agent configuration: {e}"
+                    logger.error(error_msg, exc_info=True)
+                    raise ConfigurationError(error_msg, str(pages_file))
+
+                if not config:
+                    error_msg = "Agent configuration file is empty"
+                    logger.error(error_msg)
+                    raise ConfigurationError(error_msg, str(pages_file))
+
+                if "agents" not in config:
+                    error_msg = "No 'agents' section in configuration"
+                    logger.error(error_msg)
+                    raise ConfigurationError(error_msg, str(pages_file))
+
+                self._agents = config["agents"]
+                logger.info(f"Successfully loaded {len(self._agents)} agent definitions")
+
+        except ConfigurationError:
+            # Re-raise our custom exception
+            raise
+        except OSError as e:
+            error_msg = f"Failed to read agent configuration file: {e}"
+            logger.error(error_msg, exc_info=True)
+            raise ConfigurationError(error_msg, str(pages_file))
+        except Exception as e:
+            error_msg = f"Unexpected error loading agent configuration: {e}"
+            logger.error(error_msg, exc_info=True)
+            raise ConfigurationError(error_msg, str(pages_file))
 
     def get(self, agent_key: str) -> dict | None:
         """
@@ -103,14 +150,16 @@ class AgentRegistry:
 
         Raises:
         -------
-        ValueError:
+        AgentNotFoundError:
+            If the agent key is not found in the registry.
+        AgentConfigurationError:
             If the agent configuration is invalid or missing required fields.
         """
 
         agent_config = self.get(agent_key)
         if not agent_config:
             logger.warning("Agent key '%s' not found in registry", agent_key)
-            return None
+            raise AgentNotFoundError(agent_key)
 
         try:
             model = agent_config.get("model", "gpt-4o")
@@ -138,6 +187,11 @@ class AgentRegistry:
                     temperature=temperature,
                 )
             elif "condition" in agent_config:
+                logger.info(
+                    "Creating GraphAgent for key '%s' with model '%s'",
+                    agent_key,
+                    model,
+                )
                 return GraphAgent(
                     agent_key=agent_key,
                     condition=agent_config["condition"],
@@ -146,17 +200,29 @@ class AgentRegistry:
                     agents=agent_config.get("agents", []),
                 )
             else:
+                error_msg = "missing 'persona' or 'condition' field"
                 logger.error(
-                    "Invalid agent configuration for key '%s': missing 'persona' or 'personas'",
+                    "Invalid agent configuration for key '%s': %s",
                     agent_key,
-                    stack_info=True,
+                    error_msg,
                 )
-                raise ValueError(
-                    f"Invalid agent configuration for '{agent_key}': missing 'persona' or 'personas'"
-                )
-        except Exception as e:
-            logger.exception("Error creating agent for key '%s': %s", agent_key, e)
+                raise AgentConfigurationError(agent_key, error_msg)
+
+        except AgentConfigurationError:
+            # Re-raise our custom exception
             raise
+        except KeyError as e:
+            error_msg = f"missing required field: {e}"
+            logger.error(
+                "Invalid agent configuration for key '%s': %s", agent_key, error_msg, exc_info=True
+            )
+            raise AgentConfigurationError(agent_key, error_msg)
+        except Exception as e:
+            error_msg = f"unexpected error: {e}"
+            logger.error(
+                "Error creating agent for key '%s': %s", agent_key, error_msg, exc_info=True
+            )
+            raise AgentConfigurationError(agent_key, error_msg)
 
     def all(self) -> dict:
         """
