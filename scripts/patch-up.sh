@@ -2,6 +2,8 @@
 # Copyright (c) Microsoft Corporation.
 # Licensed under the MIT license.
 
+set -euo pipefail
+
 # Ensure script is run from project root
 if [[ ! -f "pyproject.toml" ]]; then
     echo "Error: This script must be run from the project root directory"
