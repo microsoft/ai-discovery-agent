@@ -90,7 +90,7 @@ class AgentRegistry:
                 except yaml.YAMLError as e:
                     error_msg = f"Invalid YAML in agent configuration: {e}"
                     logger.error(error_msg, exc_info=True)
-                    raise ConfigurationError(error_msg, str(pages_file)) from None
+                    raise ConfigurationError(error_msg, str(pages_file)) from e
 
                 if not config:
                     error_msg = "Agent configuration file is empty"
