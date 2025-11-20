@@ -66,7 +66,7 @@ def load_configurations() -> None:
         if not PAGES_CONFIG_FILE.exists():
             error_msg = f"Configuration file not found: {PAGES_CONFIG_FILE}"
             logger.error(error_msg)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
 
         try:
             with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
