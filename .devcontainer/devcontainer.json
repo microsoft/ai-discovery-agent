@@ -26,7 +26,8 @@
         "ms-python.vscode-python-envs",
         "Upstash.context7-mcp",
         "GitHub.copilot",
-        "nwgh.bandit"
+        "nwgh.bandit",
+        "TeamsDevApp.vscode-ai-foundry"
       ],
       "settings": {
         "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python"

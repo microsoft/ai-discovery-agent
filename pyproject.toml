@@ -56,6 +56,7 @@ dev = [
     "pip>=25.3",
     "types-pyyaml>=6.0.12.20250915",
     "mypy>=1.18.2",
+    "azure-ai-projects>=1.0.0",
 ]
 
 [tool.black]
