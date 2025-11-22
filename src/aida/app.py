@@ -64,8 +64,11 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
         response.headers["X-Frame-Options"] = "SAMEORIGIN"
 
         # Content-Security-Policy: Mitigate XSS and injection attacks
-        # Note: Chainlit requires 'unsafe-inline' and 'unsafe-eval' for its React-based UI
-        # In production, Azure App Service can override this with stricter policies
+        # Note: Chainlit's React-based UI requires 'unsafe-inline' and 'unsafe-eval'
+        # These directives weaken XSS protection but are necessary for framework functionality
+        # Chainlit dynamically generates inline styles and uses eval for React components
+        # Nonces/hashes are not feasible as Chainlit doesn't expose CSP configuration hooks
+        # Mitigation: Strict input validation and output encoding at application level
         csp_directives = [
             "default-src 'self'",
             "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
@@ -155,15 +158,17 @@ def create_app() -> FastAPI:
     app.add_middleware(SecurityHeadersMiddleware)
 
     # Configure CORS for Chainlit WebSocket support
-    # Note: In production, CORS should be further restricted via Azure App Service configuration
-    allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+    # Default to localhost for development; production should set ALLOWED_ORIGINS env var
+    allowed_origins = os.getenv(
+        "ALLOWED_ORIGINS", "http://localhost:8000,http://localhost:3000"
+    ).split(",")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allow_headers=["*"],
-        expose_headers=["*"],
+        allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
+        expose_headers=["Content-Type"],
     )
 
     @app.get(
