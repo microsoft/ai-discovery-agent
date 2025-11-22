@@ -91,7 +91,7 @@ jobs:
           echo "✓ Root endpoint returned HTML content"
 
       - name: ZAP Scan using Automation Framework
-        uses: zaproxy/action-af@v0.2.0
+        uses: zaproxy/action-af@4dd5346bd6603523068d5ecbf3a366f57cdc1890 # v0.2.0
         env:
           TARGET_URL: "http://localhost:${{ env.CONTAINER_PORT }}"
           #ZAP_AUTH_HEADER: Authorization
@@ -100,6 +100,19 @@ jobs:
           plan: '.tools/.zap-env.yaml'
           docker_env_vars: |
             TARGET_URL
+
+      - name: 'Fix SARIF URI schemes'
+        run: |
+          # ZAP generates SARIF with http:// URIs from scanning the running app
+          # GitHub requires file:// URIs or relative paths matching the repo
+          # Replace http://localhost:8000/ with empty string to make paths relative
+          if [ -f dast.sarif.json ]; then
+            sed -i 's|http://localhost:${{ env.CONTAINER_PORT }}/||g' dast.sarif.json
+            echo "✓ Fixed URI schemes in SARIF file"
+          else
+            echo "⚠ SARIF file not found at dast.sarif.json"
+            exit 1
+          fi
 
       - name: 'Save Scan Artifact'
         uses: actions/upload-artifact@v4
