@@ -1,6 +1,6 @@
 # ZAP DAST Findings Analysis
 
-> **Date:** November 22, 2024
+> **Date:** November 22, 2025
 > **Context:** Analysis of OWASP ZAP Dynamic Application Security Testing findings
 > **Deployment Context:** Docker container behind Azure App Service
 
