@@ -36,7 +36,7 @@ Internet → Azure App Service (HTTPS/Headers/WAF) → Docker Container → Chai
 
 ## Findings Analysis
 
-### Site: https://cdn.jsdelivr.net (Third-Party CDN)
+### Site: https://cdn.jsdelivr.net (Third-party CDN)
 
 #### ❌ FALSE POSITIVE: Cross-Domain Misconfiguration [10098]
 - **Status:** Out of scope
@@ -55,7 +55,7 @@ Internet → Azure App Service (HTTPS/Headers/WAF) → Docker Container → Chai
 
 **Configuration:**
 ```conf
-# Third-party CDN resources - Out of scope (not controlled by application)
+# Third-party CDN resources - OUTOFSCOPE (not controlled by application)
 *	OUTOFSCOPE	https://cdn.jsdelivr.net/.*
 ```
 
