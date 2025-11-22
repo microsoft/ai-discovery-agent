@@ -107,7 +107,7 @@ jobs:
           # GitHub requires file:// URIs or relative paths matching the repo
           # Replace http://localhost:8000/ with empty string to make paths relative
           if [ -f dast.sarif.json ]; then
-            sed -i 's|http://localhost:${{ env.CONTAINER_PORT }}/||g' dast.sarif.json
+            sed -i 's|http:\/\/localhost:${{ env.CONTAINER_PORT }}/||g' dast.sarif.json
             echo "✓ Fixed URI schemes in SARIF file"
           else
             echo "⚠ SARIF file not found at dast.sarif.json"
