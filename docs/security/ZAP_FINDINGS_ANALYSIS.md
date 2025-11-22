@@ -1,7 +1,7 @@
-# ZAP DAST Findings Analysis - Issue #19599939023
+# ZAP DAST Findings Analysis
 
 > **Date:** November 22, 2024
-> **Issue:** [GitHub Actions Run 19599939023](https://github.com/microsoft/ai-discovery-agent/actions/runs/19599939023)
+> **Context:** Analysis of OWASP ZAP Dynamic Application Security Testing findings
 > **Deployment Context:** Docker container behind Azure App Service
 
 ## Executive Summary
@@ -83,6 +83,34 @@ The Chainlit framework requires flexible CORS configuration for WebSocket connec
    - Application Gateway CORS rules
    - App Service CORS settings
    - Azure Front Door policies
+
+**Production Security Mitigation:**
+
+⚠️ **IMPORTANT:** While `allow_origins = ["*"]` is required for Chainlit, production deployments MUST restrict CORS at the Azure infrastructure level:
+
+```bicep
+// infra/modules/appservice.site.bicep
+resource webApp 'Microsoft.Web/sites@2022-03-01' = {
+  properties: {
+    siteConfig: {
+      cors: {
+        allowedOrigins: [
+          'https://your-production-domain.com'
+          'https://your-staging-domain.azurewebsites.net'
+        ]
+        supportCredentials: true
+      }
+    }
+  }
+}
+```
+
+**Alternative: Use Azure Front Door or Application Gateway** for centralized CORS policy enforcement across multiple services.
+
+**Recommendation for Development:**
+- Development: `allow_origins = ["*"]` is acceptable
+- Staging: Restrict to staging domain via Azure App Service
+- Production: Restrict to production domain(s) via Azure infrastructure
 
 **Mitigation:**
 ```toml
