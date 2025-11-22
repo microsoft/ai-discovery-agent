@@ -211,7 +211,7 @@ jobs:
               @${process.env.REQUESTER} Your formatting request has been processed. The code has been automatically formatted using pre-commit hooks.
 
               **Changes applied:**
-              - Code formatting with Black
+              - Code formatting with Ruff
               - Import sorting with isort
               - Linting fixes with Ruff
 

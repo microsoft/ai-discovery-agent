@@ -6,10 +6,6 @@
       "source.organizeImports": "always"
     }
   },
-  "isort.args": [
-    "--profile",
-    "black"
-  ],
   "python.analysis.typeCheckingMode": "standard",
   "python.testing.cwd": "${workspaceFolder}/src",
   "python.testing.unittestEnabled": false,
