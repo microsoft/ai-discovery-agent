@@ -22,9 +22,9 @@ jobs:
   parameters:
     maxDuration: 5
 - type: report
-  parameters: 
-    reportDescription: '' 
-    reportDir: /zap/wrk/ 
-    reportFile: dast.sarif 
-    reportTitle: ZAP Scanning Report 
+  parameters:
+    reportDescription: ''
+    reportDir: /zap/wrk/
+    reportFile: dast.sarif
+    reportTitle: ZAP Scanning Report
     template: sarif-json
