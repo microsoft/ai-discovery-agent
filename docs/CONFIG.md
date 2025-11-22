@@ -416,7 +416,7 @@ AZURE_TABLE_STORAGE_ENDPOINT=https://myaccount.table.core.windows.net/
 
 ### Security
 
-1. **Password Management**: 
+1. **Password Management**:
    - Use strong passwords in production
    - Consider migrating to OAuth for production deployments
    - Regularly rotate passwords
