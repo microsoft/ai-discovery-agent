@@ -763,7 +763,7 @@ async def process_with_agent(
                         configurable=configurable,
                     ),
                 ):
-                    response = ""
+                    chunk_content = ""
                     if isinstance(chunk, tuple):
                         message, metadata = chunk
                         if (
@@ -772,7 +772,7 @@ async def process_with_agent(
                             and RESPONSE_TAG in metadata["tags"]
                         ):
                             # Handle agent response chunk
-                            response = message.content
+                            chunk_content = message.content
                         else:
                             if metadata and "langgraph_node" in metadata:
                                 process_logger.debug(
@@ -788,38 +788,36 @@ async def process_with_agent(
                                 f"Agent response Node: {metadata['langgraph_node']}"
                             )
                     else:
-                        response = chunk.content
+                        chunk_content = chunk.content
                     if cb.usage_metadata:
                         step.output = cb.usage_metadata
-                    if response:
+                    if chunk_content:
                         step.output = "Generating response..."
-                        await msg.stream_token(response)
+                        await msg.stream_token(chunk_content)
                 step.output = cb.usage_metadata
                 await step.send()
 
-        response = msg.content.strip() if msg.content else None
+        final_response: str | None = msg.content.strip() if msg.content else None
         # check if any mermaid tags are present in the response and extract the code
         # there may be multiple mermaid code blocks, so create a list of them
-        if response:
-            mermaid_codes = extract_mermaid(response)
+        if final_response:
+            mermaid_codes = extract_mermaid(final_response)
             # If mermaid codes are found, send them as separate messages
             if mermaid_codes:
-                process_logger.debug(
-                    "Found %i mermaid code blocks.", len(mermaid_codes)
-                )
-                msg.elements = list(  # pyright: ignore[reportAttributeAccessIssue]
-                    map(
-                        lambda code, id: cl.CustomElement(
-                            name="MermaidViewer", props={"code": code, "id": id}
-                        ),
-                        mermaid_codes,
-                        range(1, len(mermaid_codes) + 1),
+                logger.debug("Found %i mermaid code blocks.", len(mermaid_codes))
+                # Create list of CustomElement objects for mermaid diagrams
+                elements: list[cl.CustomElement] = [
+                    cl.CustomElement(
+                        name="MermaidViewer",
+                        props={"code": code, "id": idx},
                     )
-                )
+                    for idx, code in enumerate(mermaid_codes, start=1)
+                ]
+                msg.elements = elements  # type: ignore[assignment]
 
             await msg.send()
             # Add assistant response to history
-            history.append({"role": "assistant", "content": response})
+            history.append({"role": "assistant", "content": final_response})
             cl.user_session.set("conversation_history", history)
             process_logger.info("Successfully generated and sent response")
 
@@ -887,16 +885,14 @@ async def rebuild_messages(conversation_history: list[dict[str, str]]) -> None:
                             "Found %i mermaid code blocks in restored message.",
                             len(mermaid_codes),
                         )
-                        elements = list(
-                            map(
-                                lambda code, id: cl.CustomElement(
-                                    name="MermaidViewer",
-                                    props={"code": code, "id": id},
-                                ),
-                                mermaid_codes,
-                                range(1, len(mermaid_codes) + 1),
+                        # Create list of CustomElement objects for mermaid diagrams
+                        elements = [
+                            cl.CustomElement(
+                                name="MermaidViewer",
+                                props={"code": code, "id": idx},
                             )
-                        )
+                            for idx, code in enumerate(mermaid_codes, start=1)
+                        ]
 
                 msg = cl.Message(content=content, author="Assistant", elements=elements)
 

@@ -130,12 +130,12 @@ class AgentRegistry:
 
         Returns:
         --------
-        dict or None
-            The agent definition if found, otherwise None.
+        Agent
+            The agent definition if found.
         """
         return self._agents.get(agent_key)
 
-    def get_agent(self, agent_key: str) -> Agent | None:
+    def get_agent(self, agent_key: str) -> Agent:
         """
         Create and return an Agent instance for the specified agent key.
 
