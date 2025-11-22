@@ -25,6 +25,13 @@ var siteConfig = {
   minimumElasticInstanceCount: 1
   numberOfWorkers: 1
   acrUseManagedIdentityCreds: true
+  // CORS configuration for production security
+  cors: {
+    allowedOrigins: [
+      'https://*.azurewebsites.net'
+    ]
+    supportCredentials: true
+  }
 }
 
 var sharedAppSettingsProperties = {

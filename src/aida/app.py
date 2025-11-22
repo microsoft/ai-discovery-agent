@@ -11,18 +11,87 @@ The application is designed to be deployed on Azure App Service and includes
 proper health check endpoints for container orchestration.
 """
 
+import os
 import shutil
 from pathlib import Path
 
 from chainlit.utils import mount_chainlit
-from fastapi import FastAPI, status
+from fastapi import FastAPI, Request, status
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 from pydantic import BaseModel
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.types import ASGIApp
 
 from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware to add security headers to all responses.
+
+    This middleware adds defense-in-depth security headers. In Azure App Service
+    deployment, these headers are also set at the infrastructure level, but setting
+    them in the application ensures they're present even in development environments.
+    """
+
+    def __init__(self, app: ASGIApp):
+        """Initialize the security headers middleware.
+
+        Args:
+            app: The ASGI application.
+        """
+        super().__init__(app)
+
+    async def dispatch(self, request: Request, call_next):
+        """Add security headers to the response.
+
+        Args:
+            request: The incoming request.
+            call_next: The next middleware in the chain.
+
+        Returns:
+            Response with security headers added.
+        """
+        response = await call_next(request)
+
+        # X-Content-Type-Options: Prevent MIME type sniffing
+        response.headers["X-Content-Type-Options"] = "nosniff"
+
+        # X-Frame-Options: Prevent clickjacking attacks
+        response.headers["X-Frame-Options"] = "SAMEORIGIN"
+
+        # Content-Security-Policy: Mitigate XSS and injection attacks
+        # Note: Chainlit requires 'unsafe-inline' and 'unsafe-eval' for its React-based UI
+        # In production, Azure App Service can override this with stricter policies
+        csp_directives = [
+            "default-src 'self'",
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+            "font-src 'self' data: https://fonts.gstatic.com",
+            "img-src 'self' data: https:",
+            "connect-src 'self' wss: ws: https:",
+            "frame-ancestors 'self'",
+            "base-uri 'self'",
+            "form-action 'self'",
+        ]
+        response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
+
+        # Permissions-Policy: Restrict access to browser features
+        # Allow camera and microphone if needed for future voice features
+        permissions_policy = [
+            "geolocation=()",
+            "payment=()",
+            "usb=()",
+        ]
+        response.headers["Permissions-Policy"] = ", ".join(permissions_policy)
+
+        # Referrer-Policy: Control referrer information
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+
+        return response
 
 
 class HealthCheck(BaseModel):
@@ -80,6 +149,21 @@ def create_app() -> FastAPI:
         title="AI Discovery Agent",
         description="FastAPI server for AI-powered workshop facilitation with Chainlit integration",
         version="1.0.0",
+    )
+
+    # Add security headers middleware for defense-in-depth
+    app.add_middleware(SecurityHeadersMiddleware)
+
+    # Configure CORS for Chainlit WebSocket support
+    # Note: In production, CORS should be further restricted via Azure App Service configuration
+    allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
+        allow_credentials=True,
+        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        allow_headers=["*"],
+        expose_headers=["*"],
     )
 
     @app.get(
