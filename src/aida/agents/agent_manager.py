@@ -74,11 +74,11 @@ def load_configurations() -> None:
         except yaml.YAMLError as e:
             error_msg = f"Invalid YAML in configuration file: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
         except OSError as e:
             error_msg = f"Failed to read configuration file: {e}"
             logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
 
         if not pages_config:
             error_msg = "Configuration file is empty"
