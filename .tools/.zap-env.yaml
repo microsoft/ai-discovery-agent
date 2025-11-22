@@ -27,4 +27,4 @@ jobs:
     reportDir: /zap/wrk/ 
     reportFile: dast.sarif 
     reportTitle: ZAP Scanning Report 
-    template: sarif-xml
+    template: sarif-json
