@@ -3,16 +3,29 @@
 > **Date:** November 22, 2025
 > **Context:** Analysis of OWASP ZAP Dynamic Application Security Testing findings
 > **Deployment Context:** Docker container behind Azure App Service
+> **Status:** ✅ Security issues resolved with code and infrastructure changes
 
 ## Executive Summary
 
-This document analyzes the OWASP ZAP Dynamic Application Security Testing (DAST) findings from the automated security scan. The application is deployed as a containerized application behind Azure App Service, which provides infrastructure-level security controls. Most findings are **false positives** that are handled by Azure's infrastructure or are acceptable for the Chainlit framework.
+This document analyzes the OWASP ZAP Dynamic Application Security Testing (DAST) findings from the automated security scan and describes the remediation implemented. The application is deployed as a containerized application behind Azure App Service.
 
-**Key Findings:**
-- ✅ All critical security headers are handled by Azure App Service
-- ✅ CORS configuration is appropriate for Chainlit WebSocket functionality
-- ✅ No true positive vulnerabilities requiring code changes
-- ✅ All findings appropriately categorized in `.tools/.zap-rules.conf`
+**Security Remediation Status:**
+- ✅ **Security headers implemented** at application level (FastAPI middleware)
+- ✅ **CORS properly configured** at both application and infrastructure levels
+- ✅ **Defense-in-depth approach** - headers set in app and can be overridden by Azure
+- ✅ **No critical vulnerabilities found** - all findings addressed
+
+**Changes Implemented:**
+1. Added `SecurityHeadersMiddleware` to FastAPI application setting:
+   - X-Content-Type-Options: nosniff
+   - X-Frame-Options: SAMEORIGIN
+   - Content-Security-Policy (Chainlit-compatible)
+   - Permissions-Policy
+   - Referrer-Policy
+
+2. Added CORS middleware to FastAPI with environment-based configuration
+
+3. Configured CORS in Azure App Service Bicep template to restrict origins in production
 
 ## Deployment Architecture Context
 
@@ -63,62 +76,49 @@ Internet → Azure App Service (HTTPS/Headers/WAF) → Docker Container → Chai
 
 ### Site: http://localhost:8000 (Application)
 
-#### 1. ❌ FALSE POSITIVE: CORS Misconfiguration [40040] - 15 instances
+#### 1. ✅ RESOLVED: CORS Misconfiguration [40040] - 15 instances
 
 **Alert Details:**
 - URLs affected: `/`, `/assets/*`, various endpoints
 - Finding: `allow_origins = ["*"]` in Chainlit configuration
 
-**Analysis:**
+**Resolution Status:** ✅ **FIXED**
 
-The Chainlit framework requires flexible CORS configuration for WebSocket connections. The configuration `allow_origins = ["*"]` in `/src/.chainlit/config.toml` is **intentional and necessary** for Chainlit's real-time chat functionality.
+**Implementation:**
 
-**Why this is a false positive:**
+CORS is now properly configured at both application and infrastructure levels:
 
-1. **Chainlit Framework Requirement:** Chainlit uses WebSocket connections for bidirectional communication. The framework needs to accept connections from various origins during development and deployment.
+1. **Application Level** (`src/aida/app.py`):
+   ```python
+   # CORS middleware with environment-based configuration
+   allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+   app.add_middleware(
+       CORSMiddleware,
+       allow_origins=allowed_origins,
+       allow_credentials=True,
+       allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+       allow_headers=["*"],
+   )
+   ```
 
-2. **Azure App Service CORS Control:** In production, Azure App Service provides CORS restriction capabilities at the infrastructure level, independent of the application configuration.
+2. **Infrastructure Level** (`infra/modules/appservice.site.bicep`):
+   ```bicep
+   var siteConfig = {
+     // ... other config ...
+     cors: {
+       allowedOrigins: [
+         'https://*.azurewebsites.net'
+       ]
+       supportCredentials: true
+     }
+   }
+   ```
 
-3. **Security Context:** The application runs behind Azure App Service reverse proxy, which can enforce stricter CORS policies via:
-   - Application Gateway CORS rules
-   - App Service CORS settings
-   - Azure Front Door policies
-
-**Production Security Mitigation:**
-
-⚠️ **IMPORTANT:** While `allow_origins = ["*"]` is required for Chainlit, production deployments MUST restrict CORS at the Azure infrastructure level:
-
-```bicep
-// infra/modules/appservice.site.bicep
-resource webApp 'Microsoft.Web/sites@2022-03-01' = {
-  properties: {
-    siteConfig: {
-      cors: {
-        allowedOrigins: [
-          'https://your-production-domain.com'
-          'https://your-staging-domain.azurewebsites.net'
-        ]
-        supportCredentials: true
-      }
-    }
-  }
-}
-```
-
-**Alternative: Use Azure Front Door or Application Gateway** for centralized CORS policy enforcement across multiple services.
-
-**Recommendation for Development:**
-- Development: `allow_origins = ["*"]` is acceptable
-- Staging: Restrict to staging domain via Azure App Service
-- Production: Restrict to production domain(s) via Azure infrastructure
-
-**Mitigation:**
-```toml
-# src/.chainlit/config.toml
-# Authorized origins - Flexible for Chainlit WebSocket functionality
-# Production: Restrict via Azure App Service configuration
-allow_origins = ["*"]
-```
+**Security Benefits:**
+- ✅ Development: Flexible CORS via `ALLOWED_ORIGINS` env var
+- ✅ Production: Restricted to `*.azurewebsites.net` via Bicep
+- ✅ Defense-in-depth: Both app and infrastructure enforce CORS
+- ✅ Chainlit WebSocket: Fully supported with proper configuration
 
 **ZAP Configuration:**
 ```conf
@@ -129,50 +129,57 @@ allow_origins = ["*"]
 
 ---
 
-#### 2. ❌ FALSE POSITIVE: Content Security Policy (CSP) Header Not Set [10038] - 5 instances
+#### 2. ✅ RESOLVED: Content Security Policy (CSP) Header Not Set [10038] - 5 instances
 
 **Alert Details:** CSP header not present in responses
 
-**Analysis:**
+**Resolution Status:** ✅ **FIXED**
 
-Content Security Policy headers are managed at the Azure App Service level, not in the containerized application. Azure App Service can inject CSP headers via:
-- Application Gateway custom headers
-- App Service configuration
-- Azure Front Door rules
+**Implementation:**
 
-**Why this is a false positive:**
-- Infrastructure-level security control
-- Not the application's responsibility in Azure deployment
-- Can be configured via Bicep/ARM templates if needed
+CSP is now set by the application's `SecurityHeadersMiddleware` (`src/aida/app.py`):
 
-**ZAP Configuration:**
-```conf
-10038	IGNORE	(Content Security Policy (CSP) Header Not Set) - Managed at App Service level
+```python
+csp_directives = [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net",
+    "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "img-src 'self' data: https:",
+    "connect-src 'self' wss: ws: https:",
+    "frame-ancestors 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+]
+response.headers["Content-Security-Policy"] = "; ".join(csp_directives)
 ```
 
-**Already configured correctly.**
+**Security Benefits:**
+- ✅ Mitigates XSS attacks
+- ✅ Restricts resource loading to trusted sources
+- ✅ Chainlit-compatible (`unsafe-inline` and `unsafe-eval` for React)
+- ✅ Defense-in-depth: Azure can override with stricter policies
 
 ---
 
-#### 3. ❌ FALSE POSITIVE: Missing Anti-clickjacking Header [10020] - 5 instances
+#### 3. ✅ RESOLVED: Missing Anti-clickjacking Header [10020] - 5 instances
 
 **Alert Details:** X-Frame-Options header not set
 
-**Analysis:**
+**Resolution Status:** ✅ **FIXED**
 
-Anti-clickjacking protection (X-Frame-Options or CSP frame-ancestors) is handled by Azure App Service infrastructure.
+**Implementation:**
 
-**Why this is a false positive:**
-- Azure App Service automatically adds `X-Frame-Options: SAMEORIGIN` header
-- Can be customized via App Service configuration
-- Container doesn't need to set this header
+X-Frame-Options is now set by the application's `SecurityHeadersMiddleware` (`src/aida/app.py`):
 
-**ZAP Configuration:**
-```conf
-10020	IGNORE	(X-Frame-Options Header Not Set) - Azure can add via web.config/headers
+```python
+response.headers["X-Frame-Options"] = "SAMEORIGIN"
 ```
 
-**Already configured correctly.**
+**Security Benefits:**
+- ✅ Prevents clickjacking attacks
+- ✅ Only allows framing from same origin
+- ✅ Works in both development and production
 
 ---
 
@@ -249,47 +256,50 @@ Spectre vulnerability mitigation headers (Cross-Origin-Embedder-Policy, Cross-Or
 
 ---
 
-#### 7. ❌ FALSE POSITIVE: Permissions Policy Header Not Set [10063] - 6 instances
+#### 7. ✅ RESOLVED: Permissions Policy Header Not Set [10063] - 6 instances
 
 **Alert Details:** Permissions-Policy header (formerly Feature-Policy) not present
 
-**Analysis:**
+**Resolution Status:** ✅ **FIXED**
 
-Permissions Policy headers control browser features like geolocation, camera, microphone. This is managed at Azure App Service level.
+**Implementation:**
 
-**Why this is a false positive:**
-- Infrastructure-level control
-- Can be configured via App Service settings
-- Not required for text-based chat application
+Permissions-Policy is now set by the application's `SecurityHeadersMiddleware` (`src/aida/app.py`):
 
-**ZAP Configuration:**
-```conf
-10063	IGNORE	(Permissions Policy Header Not Set) - Managed at App Service level
+```python
+permissions_policy = [
+    "geolocation=()",
+    "payment=()",
+    "usb=()",
+]
+response.headers["Permissions-Policy"] = ", ".join(permissions_policy)
 ```
 
-**Already configured correctly.**
+**Security Benefits:**
+- ✅ Restricts unnecessary browser features
+- ✅ Reduces attack surface
+- ✅ Can be extended as needed for future features
 
 ---
 
-#### 8. ❌ FALSE POSITIVE: X-Content-Type-Options Header Missing [10021] - 8 instances
+#### 8. ✅ RESOLVED: X-Content-Type-Options Header Missing [10021] - 8 instances
 
 **Alert Details:** X-Content-Type-Options header not set
 
-**Analysis:**
+**Resolution Status:** ✅ **FIXED**
 
-Azure App Service automatically adds `X-Content-Type-Options: nosniff` header to prevent MIME sniffing attacks.
+**Implementation:**
 
-**Why this is a false positive:**
-- Azure infrastructure adds this header
-- Not application responsibility
-- Standard App Service security feature
+X-Content-Type-Options is now set by the application's `SecurityHeadersMiddleware` (`src/aida/app.py`):
 
-**ZAP Configuration:**
-```conf
-10021	IGNORE	(X-Content-Type-Options Header Missing) - Azure adds X-Content-Type-Options
+```python
+response.headers["X-Content-Type-Options"] = "nosniff"
 ```
 
-**Already configured correctly.**
+**Security Benefits:**
+- ✅ Prevents MIME type sniffing attacks
+- ✅ Browsers respect declared content types
+- ✅ Reduces XSS attack vectors
 
 ---
 
