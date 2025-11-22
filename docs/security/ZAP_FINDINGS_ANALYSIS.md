@@ -91,13 +91,14 @@ CORS is now properly configured at both application and infrastructure levels:
 1. **Application Level** (`src/aida/app.py`):
    ```python
    # CORS middleware with environment-based configuration
-   allowed_origins = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+   # Defaults to localhost for development; production must set ALLOWED_ORIGINS
+   allowed_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:8000,http://localhost:3000").split(",")
    app.add_middleware(
        CORSMiddleware,
        allow_origins=allowed_origins,
        allow_credentials=True,
        allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-       allow_headers=["*"],
+       allow_headers=["Content-Type", "Authorization", "X-Requested-With", "Accept"],
    )
    ```
 
@@ -115,17 +116,22 @@ CORS is now properly configured at both application and infrastructure levels:
    ```
 
 **Security Benefits:**
-- ✅ Development: Flexible CORS via `ALLOWED_ORIGINS` env var
-- ✅ Production: Restricted to `*.azurewebsites.net` via Bicep
+- ✅ Secure defaults: localhost for development (HTTP acceptable for local dev)
+- ✅ Production: Must set `ALLOWED_ORIGINS` to HTTPS URLs explicitly
+- ✅ Infrastructure enforces `*.azurewebsites.net` in production
 - ✅ Defense-in-depth: Both app and infrastructure enforce CORS
 - ✅ Chainlit WebSocket: Fully supported with proper configuration
 
-**ZAP Configuration:**
-```conf
-40040	INFO	(CORS Misconfiguration) - Chainlit handles CORS for WebSocket connections; Azure restricts via App Service config
+**Production Configuration:**
+```bash
+# Set in Azure App Service environment variables
+ALLOWED_ORIGINS="https://your-production-domain.com,https://your-staging-domain.azurewebsites.net"
 ```
 
-**Recommendation:** Configure Azure App Service CORS settings to restrict origins in production if needed.
+**ZAP Configuration:**
+```conf
+40040	INFO	(CORS Misconfiguration) - CORS configured via FastAPI middleware and Azure App Service; production restricts to *.azurewebsites.net
+```
 
 ---
 
