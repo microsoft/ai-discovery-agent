@@ -585,6 +585,6 @@ The application follows security best practices for Azure App Service deployment
 ---
 
 **Document Version:** 1.0
-**Last Updated:** November 22, 2024
+**Last Updated:** November 22, 2025
 **Author:** Security Team / Copilot
 **Status:** Final
