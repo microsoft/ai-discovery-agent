@@ -95,6 +95,7 @@ from typing import Any
 
 import yaml
 
+from aida.exceptions import ConfigurationError
 from aida.utils.logging_setup import get_logger
 
 PAGES_CONFIG_FILE = Path.cwd() / "config/pages.yaml"
@@ -113,24 +114,57 @@ def load_configurations() -> None:
 
     try:
         logger.info(f"Loading pages configuration from {PAGES_CONFIG_FILE}")
-        with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
-            pages_config = yaml.load(file, Loader=yaml.SafeLoader)
+
+        if not PAGES_CONFIG_FILE.exists():
+            error_msg = f"Configuration file not found: {PAGES_CONFIG_FILE}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+
+        try:
+            with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
+                pages_config = yaml.load(file, Loader=yaml.SafeLoader)
+        except yaml.YAMLError as e:
+            error_msg = f"Invalid YAML in configuration file: {e}"
+            logger.error(error_msg, exc_info=True)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
+        except OSError as e:
+            error_msg = f"Failed to read configuration file: {e}"
+            logger.error(error_msg, exc_info=True)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
+
+        if not pages_config:
+            error_msg = "Configuration file is empty"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
+
         agents_config = pages_config.get("agents", {})
+
+        if not agents_config:
+            logger.warning("No agents defined in configuration")
 
         # Store in global variables
         _agents_config = agents_config
         _pages_config = pages_config
 
-    except (yaml.YAMLError, FileNotFoundError) as e:
-        logger.error(
-            f"Error loading pages configuration: {e}", exc_info=e, stack_info=True
+        logger.info(
+            f"Successfully loaded configuration: {len(agents_config)} agents, "
+            f"{len(pages_config.get('sections', {}))} sections"
         )
-        # Store empty configs in global variables
+
+    except ConfigurationError:
+        # Re-raise our custom exception
+        raise
+    except Exception as e:
+        error_msg = f"Unexpected error loading configuration: {e}"
+        logger.error(error_msg, exc_info=True)
+        # Store empty configs in global variables as fallback
         _agents_config = {}
         _pages_config = {}
+        raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
 
     # Clear the cache since the configuration data has changed
     _extract_agents_from_sections.cache_clear()
+    logger.debug("Cache cleared for agent extraction")
 
 
 def get_available_agents(

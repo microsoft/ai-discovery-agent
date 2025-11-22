@@ -17,7 +17,6 @@
         "ms-azuretools.azure-dev",
         "ms-azuretools.vscode-bicep",
         "ms-python.python",
-        "ms-python.black-formatter",
         "teamsdevapp.vscode-ai-foundry",
         "ms-python.isort",
         "charliermarsh.ruff",

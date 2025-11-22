@@ -17,6 +17,7 @@ from pathlib import Path
 
 import chainlit as cl
 
+from aida.exceptions import PromptLoadError
 from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -57,21 +58,51 @@ def load_prompt_files(
 
     Raises:
     -------
-    FileNotFoundError
-        If the persona file or any content file cannot be found.
-    PermissionError
-        If file access is denied.
-    UnicodeDecodeError
-        If file encoding is incompatible.
+    PromptLoadError
+        If the persona file or any content file cannot be found or loaded.
     """
     logger.debug("Loading system messages from persona file: %s", persona_file_path)
+
     # Read the persona file
-    with open(BASE_PATH / persona_file_path, encoding="utf-8") as f:
-        system_prompt = f.read()
-    logger.info("Adding guardrails to system prompt")
+    persona_path = BASE_PATH / persona_file_path
+    try:
+        if not persona_path.exists():
+            error_msg = f"Persona file not found: {persona_file_path}"
+            logger.error(error_msg)
+            raise PromptLoadError(persona_file_path, "file not found")
+
+        with open(persona_path, encoding="utf-8") as f:
+            system_prompt = f.read()
+
+    except FileNotFoundError as e:
+        error_msg = f"Persona file not found: {persona_file_path}"
+        logger.error(error_msg)
+        raise PromptLoadError(persona_file_path, str(e)) from e
+    except PermissionError as e:
+        error_msg = f"Permission denied reading persona file: {persona_file_path}"
+        logger.error(error_msg)
+        raise PromptLoadError(persona_file_path, str(e)) from e
+    except UnicodeDecodeError as e:
+        error_msg = f"Failed to decode persona file: {persona_file_path}"
+        logger.error(error_msg)
+        raise PromptLoadError(persona_file_path, str(e)) from e
+    except OSError as e:
+        error_msg = f"OS error reading persona file: {persona_file_path}"
+        logger.error(error_msg, exc_info=True)
+        raise PromptLoadError(persona_file_path, str(e)) from e
+
     # Add security instructions to the system prompt
-    with open(BASE_PATH / "prompts/guardrails.md", encoding="utf-8") as f:
-        system_prompt += f.read()
+    logger.info("Adding guardrails to system prompt")
+    guardrails_path = BASE_PATH / "prompts/guardrails.md"
+    try:
+        if not guardrails_path.exists():
+            logger.warning("Guardrails file not found, skipping")
+        else:
+            with open(guardrails_path, encoding="utf-8") as f:
+                system_prompt += f.read()
+    except (FileNotFoundError, PermissionError, UnicodeDecodeError, OSError) as e:
+        # Guardrails are important but not critical - log warning and continue
+        logger.warning(f"Failed to load guardrails file: {e}")
 
     messages = [system_prompt]
 
@@ -87,10 +118,34 @@ def load_prompt_files(
         for file_path in file_paths_to_process:
             try:
                 logger.debug("Loading content from file: %s", file_path)
-                with open(BASE_PATH / file_path, encoding="utf-8") as f:
+                content_path = BASE_PATH / file_path
+
+                if not content_path.exists():
+                    error_msg = f"Document file not found: {file_path}"
+                    logger.error(error_msg)
+                    raise PromptLoadError(file_path, "file not found")
+
+                with open(content_path, encoding="utf-8") as f:
                     system_document = f.read()
                     messages.append(f"\n<documents>{system_document}</documents>")
-            except (FileNotFoundError, PermissionError, UnicodeDecodeError) as e:
-                logger.exception("Error loading document file %s: %s", file_path, e)
 
+            except PromptLoadError:
+                # Re-raise our custom exception
+                raise
+            except FileNotFoundError as e:
+                logger.error(f"Document file not found: {file_path}")
+                raise PromptLoadError(file_path, str(e)) from e
+            except PermissionError as e:
+                logger.error(f"Permission denied reading document file: {file_path}")
+                raise PromptLoadError(file_path, str(e)) from e
+            except UnicodeDecodeError as e:
+                logger.error(f"Failed to decode document file: {file_path}")
+                raise PromptLoadError(file_path, str(e)) from e
+            except OSError as e:
+                logger.error(
+                    f"OS error reading document file: {file_path}", exc_info=True
+                )
+                raise PromptLoadError(file_path, str(e)) from e
+
+    logger.info(f"Successfully loaded {len(messages)} prompt messages")
     return messages

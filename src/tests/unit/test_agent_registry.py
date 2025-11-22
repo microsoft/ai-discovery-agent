@@ -108,25 +108,34 @@ class TestAgentRegistry:
 
     def test_get_agent_invalid_config(self, registry):
         """Test handling of invalid agent configuration."""
+        from aida.exceptions import AgentConfigurationError
+
         invalid_config = {"invalid": "config"}
 
         with patch.object(registry, "get", return_value=invalid_config):
-            with pytest.raises(ValueError, match="Invalid agent configuration"):
+            with pytest.raises(
+                AgentConfigurationError,
+                match="missing 'persona' or 'condition' field",
+            ):
                 registry.get_agent("invalid")
 
     def test_get_agent_empty_config(self, registry):
         """Test handling of empty agent configuration."""
-        empty_config = {}
+        from aida.exceptions import AgentNotFoundError
 
-        with patch.object(registry, "get", return_value=empty_config):
-            result = registry.get_agent("empty")
-            assert result is None
+        with patch.object(registry, "get", return_value=None):
+            with pytest.raises(AgentNotFoundError, match="Agent 'empty' not found"):
+                registry.get_agent("empty")
 
     def test_get_agent_not_found(self, registry):
         """Test handling when agent key is not found."""
+        from aida.exceptions import AgentNotFoundError
+
         with patch.object(registry, "get", return_value=None):
-            result = registry.get_agent("nonexistent")
-            assert result is None
+            with pytest.raises(
+                AgentNotFoundError, match="Agent 'nonexistent' not found"
+            ):
+                registry.get_agent("nonexistent")
 
     def test_all_method_returns_available_agents(self, registry):
         """Test the all() method returns agent configurations."""

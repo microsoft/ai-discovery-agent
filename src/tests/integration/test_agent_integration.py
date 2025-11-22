@@ -114,31 +114,24 @@ class TestAgentManagerErrorHandling:
 
     def test_missing_config_file(self):
         """Test behavior when config file is missing."""
+        from aida.exceptions import ConfigurationError
+
         with patch(
             "aida.agents.agent_manager.PAGES_CONFIG_FILE",
             Path("/nonexistent/config.yaml"),
         ):
             import aida.agents.agent_manager as agent_manager
 
-            # Load configuration (should handle missing file gracefully)
-            agent_manager.load_configurations()
-
-            # Should have empty configs
-            assert agent_manager._pages_config == {}
-            assert agent_manager._agents_config == {}
-
-            # Clear cache to ensure fresh lookup
-            agent_manager._extract_agents_from_sections.cache_clear()
-
-            # Operations should handle empty config gracefully
-            agents = agent_manager.get_available_agents(["user"])
-            assert agents == {}
-
-            agent_info = agent_manager.get_agent_info("any_agent")
-            assert agent_info is None
+            # Load configuration should raise ConfigurationError
+            with pytest.raises(
+                ConfigurationError, match="Configuration file not found"
+            ):
+                agent_manager.load_configurations()
 
     def test_malformed_config_file(self):
         """Test behavior with malformed YAML config."""
+        from aida.exceptions import ConfigurationError
+
         with NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: content: [")  # Invalid YAML
             f.flush()
@@ -147,12 +140,9 @@ class TestAgentManagerErrorHandling:
                 with patch("aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
                     import aida.agents.agent_manager as agent_manager
 
-                    # Load configuration (should handle parsing error gracefully)
-                    agent_manager.load_configurations()
-
-                    # Should have empty configs due to parsing error
-                    assert agent_manager._pages_config == {}
-                    assert agent_manager._agents_config == {}
+                    # Load configuration should raise ConfigurationError
+                    with pytest.raises(ConfigurationError, match="Invalid YAML"):
+                        agent_manager.load_configurations()
             finally:
                 # Cleanup
                 os.unlink(f.name)

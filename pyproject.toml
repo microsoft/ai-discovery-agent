@@ -42,7 +42,6 @@ aida = "aida.__main__:main"
 [dependency-groups]
 # Development / tooling dependencies (not included in runtime requirements compilation)
 dev = [
-    "black==25.9.0",
     "pre-commit>=3.8.0",
     "ruff==0.14.2",
     "pytest>=8.0.0",

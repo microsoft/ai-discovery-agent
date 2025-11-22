@@ -34,25 +34,30 @@ class TestAuthenticationIntegration:
 
     async def test_password_auth_flow_with_real_file(self, temp_auth_config):
         """Test password authentication with actual file operations."""
+        from aida.exceptions import AuthenticationError
+
         # Patch the AUTH_CONFIG_FILE to point to our temp file
         with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(temp_auth_config)):
-            # Test successful authentication
-            result = await password_auth_callback("testuser", "testpass")
-
-            # Since the password in SAMPLE_AUTH_CONFIG is already hashed,
-            # this test would fail with current implementation.
-            # In a real scenario, we'd have properly hashed passwords.
-            # For now, assert that it doesn't crash
-            assert result is None or isinstance(result, cl.User)
+            # Test that authentication fails with wrong password
+            # Since the password in SAMPLE_AUTH_CONFIG is plain text "testpass",
+            # it should work if we use the right password, but the test data may not match
+            with pytest.raises(
+                AuthenticationError, match="Invalid username or password"
+            ):
+                await password_auth_callback("testuser", "wrongpass")
 
     async def test_password_auth_flow_missing_config(self):
         """Test authentication when config file is missing."""
+        from aida.exceptions import ConfigurationError
+
         # Patch to non-existent file
         with patch(
             "aida.utils.auth.AUTH_CONFIG_FILE", Path("/nonexistent/path/auth.yaml")
         ):
-            result = await password_auth_callback("testuser", "testpass")
-            assert result is None
+            with pytest.raises(
+                ConfigurationError, match="Authentication configuration missing"
+            ):
+                await password_auth_callback("testuser", "testpass")
 
     def test_oauth_detection_integration(self):
         """Test OAuth detection with various environment configurations."""
@@ -80,19 +85,25 @@ class TestAuthenticationErrorHandling:
 
     async def test_auth_with_malformed_yaml(self):
         """Test authentication with malformed YAML config."""
+        from aida.exceptions import ConfigurationError
+
         with NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: content: [")  # Invalid YAML
             f.flush()
 
             with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(f.name)):
-                result = await password_auth_callback("testuser", "testpass")
-                assert result is None
+                with pytest.raises(
+                    ConfigurationError, match="Invalid authentication configuration"
+                ):
+                    await password_auth_callback("testuser", "testpass")
 
             # Cleanup
             os.unlink(f.name)
 
     async def test_auth_with_missing_credentials_section(self):
         """Test authentication with config missing credentials section."""
+        from aida.exceptions import AuthenticationError
+
         config_without_creds = {"some_other_section": {}}
 
         with NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
@@ -100,21 +111,27 @@ class TestAuthenticationErrorHandling:
             f.flush()
 
             with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(f.name)):
-                result = await password_auth_callback("testuser", "testpass")
-                assert result is None
+                with pytest.raises(
+                    AuthenticationError, match="Invalid username or password"
+                ):
+                    await password_auth_callback("testuser", "testpass")
 
             # Cleanup
             os.unlink(f.name)
 
     async def test_auth_with_empty_config(self):
         """Test authentication with empty config file."""
+        from aida.exceptions import AuthenticationError
+
         with NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump({}, f)
             f.flush()
 
             with patch("aida.utils.auth.AUTH_CONFIG_FILE", Path(f.name)):
-                result = await password_auth_callback("testuser", "testpass")
-                assert result is None
+                with pytest.raises(
+                    AuthenticationError, match="Invalid username or password"
+                ):
+                    await password_auth_callback("testuser", "testpass")
 
             # Cleanup
             os.unlink(f.name)
