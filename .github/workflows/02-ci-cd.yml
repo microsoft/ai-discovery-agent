@@ -60,7 +60,7 @@ jobs:
         uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
       - name: Install azd
-        uses: Azure/setup-azd@cf638ffd167fc81e1851241a478a723c05fa9cb3 # v2.2.0
+        uses: Azure/setup-azd@c495e71ba59e44bfaaac10a32c8ee90d191ca4a3 # v2.2.1
 
       - name: Log in with Azure (Federated Credentials)
         if: ${{ env.AZURE_GH_FED_CLIENT_ID != '' }}
