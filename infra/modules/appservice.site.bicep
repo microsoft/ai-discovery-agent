@@ -25,13 +25,8 @@ var siteConfig = {
   minimumElasticInstanceCount: 1
   numberOfWorkers: 1
   acrUseManagedIdentityCreds: true
-  // CORS configuration for production security
-  cors: {
-    allowedOrigins: [
-      'https://*.azurewebsites.net'
-    ]
-    supportCredentials: true
-  }
+  // CORS handled at application level (FastAPI middleware) for WebSocket support
+  // Azure App Service CORS doesn't support wildcard subdomains like *.azurewebsites.net
 }
 
 var sharedAppSettingsProperties = {
@@ -39,6 +34,10 @@ var sharedAppSettingsProperties = {
   AZURE_OPENAI_API_VERSION: '2025-01-01-preview'
   AZURE_STORAGE_ACCOUNT_URL: storageAccount.properties.primaryEndpoints.blob
   APPLICATIONINSIGHTS_CONNECTION_STRING: applicationInsightsConnectionString
+
+  // CORS configuration for production (handled at application level)
+  // Set to actual deployment URLs - both production and staging slots
+  ALLOWED_ORIGINS: 'https://web-${resourceToken}.azurewebsites.net,https://web-${resourceToken}-staging.azurewebsites.net'
 
   // Performance and warmup settings
   WEBSITE_HEALTHCHECK_MAXPINGFAILURES: '3'
