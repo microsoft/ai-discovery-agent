@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Run evergreen action
-        uses: github/evergreen@a1db228c4f7eed5e04d5e9e6f79392f8dfca9b3b # v1.24.6
+        uses: github/evergreen@4469dee2f3c007933f1e8a2356ac15e03f7a832c # v1.24.8
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}
