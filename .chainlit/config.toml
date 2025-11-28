@@ -22,7 +22,20 @@ allow_origins = ["*"]
 latex = false
 
 # Authorize users to upload files with messages
-upload_file = true
+#[features.spontaneous_file_upload]
+#    enabled = true
+#    # Define accepted file types using MIME types
+#    # Examples:
+#    # 1. For specific file types:
+#    #    accept = ["image/jpeg", "image/png", "application/pdf"]
+#    # 2. For all files of certain type:
+#    #    accept = ["image/*", "audio/*", "video/*"]
+#    # 3. For specific file extensions:
+#    #    accept = {{ "application/octet-stream" = [".xyz", ".pdb"] }}
+#    # Note: Using "*/*" is not recommended as it may cause browser warnings
+#    accept = ["*/*"]
+#    max_files = 20
+#    max_size_mb = 500
 
 # Allows user to use speech to text
 [features.speech_to_text]
@@ -32,7 +45,7 @@ language = "en"
 
 [features.audio]
 # Allows user to use audio messages
-enabled = false
+# enabled = true
 # Max number of seconds for audio recording
 max_duration = 60
 # Min number of seconds for audio recording
