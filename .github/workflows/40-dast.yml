@@ -138,6 +138,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           target: "http://localhost:${{ env.CONTAINER_PORT }}"
           cmd_options: "-a -j -l WARN -c .tools/.zap-rules.conf"
+          allow_issue_writing: false
 
       - name: Upload HTML report
         if: always()
