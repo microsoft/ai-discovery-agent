@@ -50,7 +50,6 @@ class TestConfigurationValidation:
             return root_prompts
         else:
             pytest.skip("Prompts directory not found")
-            return None
 
     def test_config_file_exists(self, config_path: Path) -> None:
         """Test that pages.yaml configuration file exists."""
