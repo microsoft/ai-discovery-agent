@@ -13,6 +13,7 @@ tests/
 ├── unit/                     # Unit tests for isolated component testing
 │   ├── test_auth.py         # Authentication module tests
 │   ├── test_agent_manager.py # Agent manager tests
+│   ├── test_config_validation.py # Configuration validation tests
 │   └── test_utils.py        # Utility modules tests
 ├── integration/             # Integration tests for component interaction
 │   ├── test_auth_integration.py    # Authentication flow integration
@@ -45,16 +46,19 @@ python -m pytest tests/ -v
 ### Run Specific Test Categories
 
 **Unit Tests Only:**
+
 ```bash
 python -m pytest tests/unit/ -v
 ```
 
 **Integration Tests Only:**
+
 ```bash
 python -m pytest tests/integration/ -v
 ```
 
 **Specific Module:**
+
 ```bash
 python -m pytest tests/unit/test_auth.py -v
 ```
@@ -76,14 +80,25 @@ This generates an HTML coverage report in `htmlcov/index.html`.
 Unit tests focus on testing individual components in isolation using mocks and stubs:
 
 - **Authentication Tests** (`test_auth.py`):
+
   - Password authentication with bcrypt
   - OAuth authentication flows
   - Configuration loading and error handling
 
 - **Agent Manager Tests** (`test_agent_manager.py`):
+
   - Configuration loading from YAML files
   - Role-based agent access control
   - Agent switching functionality
+
+- **Configuration Validation Tests** (`test_config_validation.py`):
+
+  - YAML file existence and validity
+  - Agent and page definition consistency
+  - Persona and document file existence
+  - Model and temperature value validation
+  - URL path and agent key uniqueness
+  - See [unit/README_CONFIG_VALIDATION.md](unit/README_CONFIG_VALIDATION.md) for details
 
 - **Utils Tests** (`test_utils.py`):
   - Configuration loading utilities
@@ -95,11 +110,13 @@ Unit tests focus on testing individual components in isolation using mocks and s
 Integration tests verify that components work correctly together with real file operations and data flows:
 
 - **Authentication Integration** (`test_auth_integration.py`):
+
   - End-to-end authentication with real file operations
   - Error handling with malformed configurations
   - OAuth environment detection
 
 - **Agent Integration** (`test_agent_integration.py`):
+
   - Complete agent switching workflows
   - Role-based access control flows
   - Configuration validation with real YAML files
@@ -137,6 +154,7 @@ Test fixtures in `tests/fixtures/data.py` provide:
 4. Use descriptive test method names
 
 Example:
+
 ```python
 def test_component_behavior_when_condition(self):
     """Test that component behaves correctly under specific condition."""
@@ -185,11 +203,13 @@ The test suite is designed to run in CI/CD environments:
 ### Debugging Tests
 
 Run tests with additional verbosity:
+
 ```bash
 python -m pytest tests/ -vv -s
 ```
 
 Run a specific test:
+
 ```bash
 python -m pytest tests/unit/test_auth.py::TestPasswordAuthentication::test_password_auth_callback_success -v
 ```

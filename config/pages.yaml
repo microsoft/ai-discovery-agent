@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./pages.v0.2.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/ai-discovery-agent/refs/heads/dev/src/aida/static/schema/pages.v0.2.schema.json
 # Pages configuration for AI Discovery Workshop Agent
 # This file defines all available pages in the application
 #
@@ -50,7 +50,7 @@ agents:
     document: prompts/hr_manager_talent_acquisition_use_case.md
     temperature: 0.5
     model: gpt-4o
-  auto_claims_customer:
+  auto_claims_call_center:
     persona: prompts/auto_claims_customer_persona.md
     document: prompts/auto_claims_damage_report_use_case.md
     temperature: 0.5
@@ -143,12 +143,11 @@ sections:
       icon: 👩‍💼
       url_path: HRManagerTalentAcquisition
       header: 👩‍💼 HR Manager Talent Acquisition Use Case
-      subtitle: I'm Alex, an HR manager focused on talent acquisition. I want to leverage AI
-        to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
+      subtitle: I'm Alex, an HR manager focused on talent acquisition. I want to leverage AI to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
     - type: agent
-      agent: auto_claims_customer
-      title: Auto Claims Customer
+      agent: auto_claims_call_center
+      title: Auto Claims Call Center
       icon: 🚗
-      url_path: AutoClaimsCustomer
-      header: 🚗 Auto Claims Customer Use Case
-      subtitle: I'm John, a customer who recently had a car accident. I want to use AI tools to quickly and efficiently file my insurance claim and get my car repaired.
+      url_path: AutoClaimsCallCenter
+      header: 🚗 Auto Claims Call Center Use Case
+      subtitle: I'm a call center agent at an Automaker Customer Helpdesk. Ask me about handling vehicle damage reports, evidence capture, and claim coordination processes.
