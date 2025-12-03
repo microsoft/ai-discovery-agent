@@ -95,7 +95,7 @@ jobs:
           AZURE_LOCATION: ${{ vars.AZURE_LOCATION }}
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           AZURE_PRINCIPAL_TYPE: "ServicePrincipal"
-
+          GH_TOKEN: ${{ github.token }}
   deploy:
     runs-on: ubuntu-latest
     environment:
