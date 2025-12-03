@@ -271,6 +271,7 @@ class TestConfigurationValidation:
             "o1-preview",
             "o1-mini",
             "o4-mini",
+            "gpt-4.1-nano",
         ]
 
         invalid_models = []
