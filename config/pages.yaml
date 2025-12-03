@@ -148,6 +148,6 @@ sections:
       agent: auto_claims_call_center
       title: Auto Claims Call Center
       icon: 🚗
-      url_path: AutoClaimsCustomer
+      url_path: AutoClaimsCallCenter
       header: 🚗 Auto Claims Call Center Use Case
       subtitle: I'm a call center agent at an Automaker Customer Helpdesk. Ask me about handling vehicle damage reports, evidence capture, and claim coordination processes.
