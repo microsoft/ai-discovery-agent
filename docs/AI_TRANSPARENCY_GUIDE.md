@@ -192,11 +192,11 @@ The system may suggest escalation to a human facilitator when:
 ## 💡 Tips for Best Results
 
 ### Be Specific
-❌ "Help me with AI"  
+❌ "Help me with AI"
 ✅ "I'm planning a 3-hour AI Discovery Workshop for a healthcare team of 12 people. What activities should I include?"
 
 ### Provide Context
-❌ "What should we do next?"  
+❌ "What should we do next?"
 ✅ "We're in step 5 of the workshop, focused on ideation. Our team is exploring AI for patient scheduling. What's a good next activity?"
 
 ### Ask Follow-Up Questions
@@ -249,7 +249,7 @@ This is by design and protects everyone.
 ### Report Concerning AI Behavior
 If the AI generates inappropriate, biased, or concerning content:
 
-**Email:** safety@your-org.com  
+**Email:** safety@your-org.com
 **Include:**
 - What you asked
 - What the AI responded
@@ -261,7 +261,7 @@ We take all reports seriously and investigate promptly.
 ### Report Technical Issues
 For bugs, errors, or technical problems:
 
-**Email:** support@your-org.com  
+**Email:** support@your-org.com
 **Include:**
 - What you were trying to do
 - What went wrong
@@ -271,7 +271,7 @@ For bugs, errors, or technical problems:
 ### Provide General Feedback
 We welcome suggestions for improvement!
 
-**Email:** feedback@your-org.com  
+**Email:** feedback@your-org.com
 **Topics:** Feature requests, usability improvements, documentation suggestions
 
 ---
@@ -298,20 +298,20 @@ We welcome suggestions for improvement!
 ## 🎯 Quick Reference Card
 
 ### DO:
-✅ Verify important information  
-✅ Provide context in your questions  
-✅ Use for workshop guidance and learning  
-✅ Give feedback on responses  
-✅ Report concerning behavior  
-✅ Protect your privacy (don't share sensitive data)  
+✅ Verify important information
+✅ Provide context in your questions
+✅ Use for workshop guidance and learning
+✅ Give feedback on responses
+✅ Report concerning behavior
+✅ Protect your privacy (don't share sensitive data)
 
 ### DON'T:
-❌ Rely solely on AI for critical decisions  
-❌ Share confidential or sensitive information  
-❌ Expect access to your company's systems  
-❌ Assume 100% accuracy  
-❌ Use for out-of-scope purposes (legal advice, etc.)  
-❌ Ignore human expertise  
+❌ Rely solely on AI for critical decisions
+❌ Share confidential or sensitive information
+❌ Expect access to your company's systems
+❌ Assume 100% accuracy
+❌ Use for out-of-scope purposes (legal advice, etc.)
+❌ Ignore human expertise
 
 ---
 
@@ -345,16 +345,16 @@ We welcome suggestions for improvement!
 
 ## 📞 Contact Information
 
-**General Support:** support@your-org.com  
-**Privacy Questions:** privacy@your-org.com  
-**Safety Concerns:** safety@your-org.com  
-**Feedback:** feedback@your-org.com  
+**General Support:** support@your-org.com
+**Privacy Questions:** privacy@your-org.com
+**Safety Concerns:** safety@your-org.com
+**Feedback:** feedback@your-org.com
 
 **Emergency Security Issues:** See [SECURITY.md](../SECURITY.md)
 
 ---
 
-**Last Updated:** November 19, 2024  
+**Last Updated:** November 19, 2024
 **Next Review:** February 19, 2025
 
 ---

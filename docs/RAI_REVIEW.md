@@ -1,9 +1,9 @@
 # Responsible AI Review - AI Discovery Workshop Facilitator
 
-**Document Version:** 1.0  
-**Review Date:** November 19, 2024  
-**System:** AI Discovery Workshop Facilitator (Aida)  
-**Reviewers:** RAI Review Team  
+**Document Version:** 1.0
+**Review Date:** November 19, 2024
+**System:** AI Discovery Workshop Facilitator (Aida)
+**Reviewers:** RAI Review Team
 **Next Review Date:** February 19, 2025
 
 ---
@@ -70,7 +70,7 @@ graph TD
     Filter -->|Filtered Response| User
     App -->|Conversation History| Storage[(Azure Blob Storage)]
     Storage -->|Encrypted at Rest| Data[User Conversations]
-    
+
     style OpenAI fill:#f9f,stroke:#333,stroke-width:2px
     style Storage fill:#bbf,stroke:#333,stroke-width:2px
     style Filter fill:#fbb,stroke:#333,stroke-width:2px
@@ -167,7 +167,7 @@ CONTENT_SAFETY_ENDPOINT = os.getenv("AZURE_CONTENT_SAFETY_ENDPOINT")
 def apply_content_safety_filter(text: str) -> tuple[str, bool]:
     """
     Apply Azure Content Safety analysis.
-    
+
     Returns:
         (filtered_text, is_safe): Tuple of filtered content and safety flag
     """
@@ -175,19 +175,19 @@ def apply_content_safety_filter(text: str) -> tuple[str, bool]:
         endpoint=CONTENT_SAFETY_ENDPOINT,
         credential=get_azure_credential()
     )
-    
+
     result = client.analyze_text(text)
-    
+
     # Block if any category exceeds threshold
     SEVERITY_THRESHOLD = 2  # 0-7 scale
     categories_flagged = [
-        cat for cat in result.categories_analysis 
+        cat for cat in result.categories_analysis
         if cat.severity > SEVERITY_THRESHOLD
     ]
-    
+
     if categories_flagged:
         return "⚠️ Content filtered for safety", False
-    
+
     return text, True
 ```
 
@@ -226,31 +226,31 @@ PROMPT_INJECTION_PATTERNS = [
 def detect_prompt_injection(text: str) -> Tuple[bool, str]:
     """
     Detect potential prompt injection attempts.
-    
+
     Returns:
         (is_suspicious, reason): Detection result and explanation
     """
     text_lower = text.lower()
-    
+
     for pattern in PROMPT_INJECTION_PATTERNS:
         if re.search(pattern, text_lower):
             return True, f"Suspicious pattern detected: {pattern}"
-    
+
     # Check for excessive system-like tokens
     system_tokens = text.count("###") + text.count("```")
     if system_tokens > 5:
         return True, "Excessive formatting markers detected"
-    
+
     return False, ""
 
 def sanitize_user_input(text: str) -> str:
     """Sanitize user input while preserving legitimate content."""
     # Remove potential HTML/JS injection
     text = re.sub(r'<script[^>]*>.*?</script>', '', text, flags=re.DOTALL)
-    
+
     # Escape markdown that could break rendering
     text = text.replace('```system', '``` system')
-    
+
     return text.strip()
 ```
 
@@ -268,7 +268,7 @@ Conduct quarterly red team exercises:
 
 ### Content Safety Tests
 1. Request for harmful/violent content
-2. Request for hate speech or discriminatory content  
+2. Request for hate speech or discriminatory content
 3. Request for privacy-violating information
 4. Request for copyrighted content generation
 
@@ -292,10 +292,10 @@ from collections import defaultdict
 
 class AbuseMonitor:
     """Monitor and flag potential abuse patterns."""
-    
+
     def __init__(self):
         self.user_activity = defaultdict(list)
-        
+
     def record_interaction(self, user_id: str, message: str):
         """Record user interaction for abuse detection."""
         self.user_activity[user_id].append({
@@ -303,7 +303,7 @@ class AbuseMonitor:
             'message': message,
             'length': len(message)
         })
-        
+
     def check_abuse_patterns(self, user_id: str) -> Tuple[bool, str]:
         """
         Check for abuse patterns:
@@ -313,24 +313,24 @@ class AbuseMonitor:
         """
         recent_window = datetime.utcnow() - timedelta(minutes=5)
         recent_messages = [
-            m for m in self.user_activity[user_id] 
+            m for m in self.user_activity[user_id]
             if m['timestamp'] > recent_window
         ]
-        
+
         # Check message rate
         if len(recent_messages) > 30:
             return True, "Excessive message rate"
-        
+
         # Check for repetition
         if len(recent_messages) >= 3:
             last_three = [m['message'] for m in recent_messages[-3:]]
             if len(set(last_three)) == 1:
                 return True, "Repetitive messages"
-        
+
         # Check for very long messages (potential token exhaustion)
         if recent_messages and recent_messages[-1]['length'] > 10000:
             return True, "Excessive message length"
-        
+
         return False, ""
 ```
 
@@ -339,7 +339,7 @@ class AbuseMonitor:
 # Add to agent response pipeline
 def validate_agent_response(response: str, context: dict) -> str:
     """Validate and sanitize agent responses."""
-    
+
     # Check for PII leakage patterns
     pii_patterns = {
         'email': r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
@@ -347,17 +347,17 @@ def validate_agent_response(response: str, context: dict) -> str:
         'ssn': r'\b\d{3}-\d{2}-\d{4}\b',
         'credit_card': r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b'
     }
-    
+
     for pii_type, pattern in pii_patterns.items():
         if re.search(pattern, response):
             logger.warning(f"PII pattern detected in response: {pii_type}")
             # Optionally redact or flag for review
-    
+
     # Ensure response stays in scope
     if "```python" in response or "```bash" in response:
         # Log executable code generation for review
         logger.info("Agent generated executable code - flagged for review")
-    
+
     return response
 ```
 
@@ -373,7 +373,7 @@ def validate_agent_response(response: str, context: dict) -> str:
   - Managed identity authentication (no stored credentials)
   - Private endpoints for Azure services
   - No conversation data used for model training (Azure OpenAI guarantee)
-  
+
 - **Gaps:**
   - No PII redaction in conversation storage
   - Limited data retention policy documentation
@@ -394,7 +394,7 @@ from typing import Dict, List
 
 class PIIDetector:
     """Detect and optionally redact PII in text."""
-    
+
     PII_PATTERNS = {
         'email': (r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', 'EMAIL_REDACTED'),
         'phone_us': (r'\b\d{3}[-.]?\d{3}[-.]?\d{4}\b', 'PHONE_REDACTED'),
@@ -402,7 +402,7 @@ class PIIDetector:
         'credit_card': (r'\b\d{4}[\s-]?\d{4}[\s-]?\d{4}[\s-]?\d{4}\b', 'CC_REDACTED'),
         'ip_address': (r'\b(?:\d{1,3}\.){3}\d{1,3}\b', 'IP_REDACTED')
     }
-    
+
     def detect_pii(self, text: str) -> List[str]:
         """Detect PII types in text."""
         detected = []
@@ -410,18 +410,18 @@ class PIIDetector:
             if re.search(pattern, text):
                 detected.append(pii_type)
         return detected
-    
+
     def redact_pii(self, text: str, redact_types: List[str] = None) -> str:
         """Redact specified PII types from text."""
         if redact_types is None:
             redact_types = list(self.PII_PATTERNS.keys())
-        
+
         redacted_text = text
         for pii_type in redact_types:
             if pii_type in self.PII_PATTERNS:
                 pattern, replacement = self.PII_PATTERNS[pii_type]
                 redacted_text = re.sub(pattern, f'[{replacement}]', redacted_text)
-        
+
         return redacted_text
 ```
 
@@ -452,28 +452,28 @@ from datetime import datetime, timedelta
 
 class DataRetentionManager:
     """Manage data retention and deletion policies."""
-    
+
     RETENTION_DAYS = 90
-    
+
     async def cleanup_old_conversations(self):
         """Delete conversations older than retention period."""
         cutoff_date = datetime.utcnow() - timedelta(days=self.RETENTION_DAYS)
-        
+
         # Query and delete old conversations
         # Implementation depends on storage backend
         pass
-    
+
     async def export_user_data(self, user_id: str) -> dict:
         """Export all data for a user (GDPR right to access)."""
         conversations = await self.get_user_conversations(user_id)
-        
+
         return {
             'user_id': user_id,
             'export_date': datetime.utcnow().isoformat(),
             'conversations': conversations,
             'data_policy': 'https://your-domain/privacy-policy'
         }
-    
+
     async def delete_user_data(self, user_id: str) -> bool:
         """Delete all data for a user (GDPR right to deletion)."""
         # Hard delete all user conversations
@@ -488,7 +488,7 @@ class DataRetentionManager:
 
 class PIIFilter(logging.Filter):
     """Filter PII from log messages."""
-    
+
     def filter(self, record):
         # Redact sensitive patterns from log messages
         if hasattr(record, 'msg'):
@@ -506,26 +506,26 @@ logger.addFilter(PIIFilter())
 async def show_privacy_notice(user_id: str) -> bool:
     """
     Show privacy notice on first use and get consent.
-    
+
     Returns True if user consents, False otherwise.
     """
     consent_message = """
     ## 🔒 Privacy Notice
-    
+
     This AI workshop facilitator:
     - Stores your conversations securely in Azure Storage
     - Uses your messages to provide personalized guidance
     - Does NOT use your data for model training
     - Automatically deletes conversations after 90 days of inactivity
-    
+
     You can:
     - Export your conversation history anytime
     - Delete your data by contacting support
     - Review our [Privacy Policy](link)
-    
+
     By continuing, you consent to this data usage.
     """
-    
+
     # Show message and get user confirmation
     # Implementation with Chainlit UI
     pass
@@ -540,7 +540,7 @@ async def show_privacy_notice(user_id: str) -> bool:
   - Open source codebase (transparency in implementation)
   - Clear agent personas documented
   - Model versioning tracked in config
-  
+
 - **Gaps:**
   - No user-facing disclosure that they're interacting with AI
   - No explanation of AI limitations or error modes
@@ -581,7 +581,7 @@ Implementation:
 async def on_chat_start(conversation_manager: ConversationManager) -> None:
     """Initialize chat with AI disclosure."""
     # ... existing code ...
-    
+
     # Show AI disclosure on first interaction
     if not cl.user_session.get("disclosure_shown"):
         await cl.Message(
@@ -613,7 +613,7 @@ class AuditEventType(Enum):
 
 class AuditLogger:
     """Log security and accountability events."""
-    
+
     def log_event(
         self,
         event_type: AuditEventType,
@@ -623,7 +623,7 @@ class AuditLogger:
     ):
         """
         Log an audit event.
-        
+
         Args:
             event_type: Type of event
             user_id: User identifier (hashed for privacy)
@@ -637,10 +637,10 @@ class AuditLogger:
             'severity': severity,
             'details': details
         }
-        
+
         # Log to Application Insights or similar
         logger.info(f"AUDIT: {json.dumps(event)}")
-        
+
         # For critical events, also store in dedicated audit log
         if severity in ["ERROR", "CRITICAL"]:
             self._store_critical_event(event)
@@ -651,20 +651,20 @@ class AuditLogger:
 # Add to agent response generation
 def add_confidence_indicator(response: str, context: dict) -> str:
     """Add confidence indicator to responses when appropriate."""
-    
+
     # Detect uncertainty phrases
     uncertainty_markers = [
         "i think", "possibly", "might be", "not sure",
         "it seems", "perhaps", "could be"
     ]
-    
+
     response_lower = response.lower()
     has_uncertainty = any(marker in response_lower for marker in uncertainty_markers)
-    
+
     if has_uncertainty:
         footer = "\n\n---\n⚠️ **Note:** This response contains uncertain information. Please verify with additional sources."
         return response + footer
-    
+
     return response
 ```
 
@@ -676,13 +676,13 @@ For GraphAgent decisions:
 
 async def explain_routing_decision(self, decision: str, context: dict) -> str:
     """Explain why a particular agent was chosen."""
-    
+
     explanations = {
         "design_thinking_expert": "I've routed you to the Design Thinking expert because your question involves brainstorming or ideation methods.",
         "facilitator": "I've kept the main workshop facilitator active to help with the AI Discovery process.",
         "document_generator_expert": "I've switched to the Document Generator to help create workshop documentation."
     }
-    
+
     return explanations.get(decision, f"Routing to {decision}")
 
 # Log routing decision for audit
@@ -708,7 +708,7 @@ audit_logger.log_event(
   - No flagging system for concerning conversations
   - No review queue for filtered content
   - Admin role exists but limited oversight capabilities
-  
+
 #### Impact
 - **MEDIUM Risk:** No mechanism to escalate complex or sensitive situations
 - **LOW Risk:** Limited human-in-the-loop checkpoints
@@ -721,7 +721,7 @@ audit_logger.log_event(
 
 class EscalationManager:
     """Manage escalation of conversations to human reviewers."""
-    
+
     ESCALATION_TRIGGERS = {
         'high_uncertainty': "Agent has low confidence in response",
         'content_filtered': "Response was filtered for safety",
@@ -729,30 +729,30 @@ class EscalationManager:
         'complex_scenario': "Scenario exceeds agent capabilities",
         'ethical_concern': "Ethical or sensitive topic detected"
     }
-    
+
     async def check_escalation_needed(
         self,
         conversation_history: list,
         agent_response: str
     ) -> tuple[bool, str]:
         """Determine if human escalation is needed."""
-        
+
         # Check for frustration signals
         user_message = conversation_history[-1].get('content', '').lower()
         frustration_signals = [
             "this is not helpful", "i give up", "this doesn't work",
             "useless", "wrong again", "not what i asked"
         ]
-        
+
         if any(signal in user_message for signal in frustration_signals):
             return True, "user_frustrated"
-        
+
         # Check conversation length (might be stuck)
         if len(conversation_history) > 20:
             return True, "complex_scenario"
-        
+
         return False, ""
-    
+
     async def create_escalation_ticket(
         self,
         user_id: str,
@@ -768,10 +768,10 @@ class EscalationManager:
             'created_at': datetime.utcnow().isoformat(),
             'status': 'pending'
         }
-        
+
         # Store in review queue
         # Notify human reviewers via Teams/Slack webhook
-        
+
         logger.info(f"Escalation ticket created: {ticket['id']}")
         return ticket
 ```
@@ -792,39 +792,39 @@ Add to admin interface:
 ```python
 def get_fallback_response(error_type: str) -> str:
     """Provide helpful fallback responses when AI fails."""
-    
+
     fallbacks = {
         'rate_limit': """
             ⏸️ **Taking a brief pause**
-            
+
             We're experiencing high usage. Please wait a moment and try again.
             This helps ensure quality responses for everyone.
         """,
-        
+
         'content_safety': """
             🛡️ **Response filtered for safety**
-            
-            I couldn't generate a response to that query. Please rephrase 
+
+            I couldn't generate a response to that query. Please rephrase
             your question or contact a human facilitator for assistance.
         """,
-        
+
         'technical_error': """
             ⚠️ **Technical issue encountered**
-            
+
             I'm experiencing technical difficulties. Please try:
             1. Refreshing your browser
             2. Rephrasing your question
             3. Contacting support if the issue persists
         """,
-        
+
         'out_of_scope': """
             🎯 **Outside my expertise**
-            
+
             That question is outside my workshop facilitation capabilities.
             Please contact a human facilitator for help with this topic.
         """
     }
-    
+
     return fallbacks.get(error_type, fallbacks['technical_error'])
 ```
 
@@ -839,7 +839,7 @@ def get_fallback_response(error_type: str) -> str:
   - No AI-specific quality metrics
   - No safety metric tracking
   - No automated alerting on concerning patterns
-  
+
 - **Gaps:**
   - No pre-deployment evaluation framework
   - No ongoing quality monitoring
@@ -860,10 +860,10 @@ def get_fallback_response(error_type: str) -> str:
 
 class RAIEvaluator:
     """Responsible AI evaluation framework."""
-    
+
     def __init__(self):
         self.test_cases = self._load_test_cases()
-    
+
     def _load_test_cases(self) -> dict:
         """Load evaluation test cases."""
         return {
@@ -899,21 +899,21 @@ class RAIEvaluator:
                 }
             ]
         }
-    
+
     async def run_safety_eval(self, agent) -> dict:
         """Run safety evaluation tests."""
         results = {'passed': 0, 'failed': 0, 'failures': []}
-        
+
         for test in self.test_cases['safety']:
             response = await agent.invoke(test['input'])
-            
+
             # Check response against expectations
             passed = True
             for phrase in test.get('should_not_contain', []):
                 if phrase.lower() in response.lower():
                     passed = False
                     break
-            
+
             if passed:
                 results['passed'] += 1
             else:
@@ -922,7 +922,7 @@ class RAIEvaluator:
                     'test': test['input'],
                     'response': response
                 })
-        
+
         return results
 ```
 
@@ -965,12 +965,12 @@ from applicationinsights import TelemetryClient
 
 class RAIMonitor:
     """Monitor RAI metrics in production."""
-    
+
     def __init__(self):
         self.telemetry = TelemetryClient(
             os.getenv('APPINSIGHTS_INSTRUMENTATION_KEY')
         )
-    
+
     def track_response_quality(self, agent_key: str, metrics: dict):
         """Track response quality metrics."""
         self.telemetry.track_metric(
@@ -981,14 +981,14 @@ class RAIMonitor:
             f'agent.{agent_key}.token_count',
             metrics.get('token_count', 0)
         )
-    
+
     def track_safety_event(self, event_type: str, details: dict):
         """Track safety-related events."""
         self.telemetry.track_event(
             f'safety.{event_type}',
             properties=details
         )
-    
+
     def track_user_feedback(self, conversation_id: str, feedback: str):
         """Track user satisfaction feedback."""
         self.telemetry.track_metric(
@@ -1006,19 +1006,19 @@ alerts:
     condition: "> 5% over 1 hour"
     severity: "Warning"
     action: "Notify security team"
-  
+
   - name: "Prompt Injection Spike"
     metric: "safety.prompt_injection_attempts"
     condition: "> 10 in 15 minutes"
     severity: "Critical"
     action: "Notify security team + Escalate"
-  
+
   - name: "API Error Rate High"
     metric: "errors.api_error_rate"
     condition: "> 10% over 5 minutes"
     severity: "Error"
     action: "Notify ops team"
-  
+
   - name: "User Escalation Spike"
     metric: "errors.escalation_rate"
     condition: "> 20% over 1 hour"
@@ -1031,10 +1031,10 @@ alerts:
 # For testing prompt improvements
 class ABTestManager:
     """Manage A/B tests for prompt optimization."""
-    
+
     def __init__(self):
         self.experiments = {}
-    
+
     def create_experiment(
         self,
         name: str,
@@ -1050,13 +1050,13 @@ class ABTestManager:
             'results_a': [],
             'results_b': []
         }
-    
+
     def get_variant(self, experiment_name: str, user_id: str) -> str:
         """Determine which variant to show a user."""
         # Stable assignment based on user_id hash
         user_hash = hashlib.md5(user_id.encode()).hexdigest()
         user_val = int(user_hash[:8], 16) / 0xFFFFFFFF
-        
+
         exp = self.experiments[experiment_name]
         if user_val < exp['split_ratio']:
             return exp['variant_a']
@@ -1069,34 +1069,34 @@ class ABTestManager:
 # Monitor for distribution shifts in usage patterns
 class DriftDetector:
     """Detect drift in user behavior or model responses."""
-    
+
     def __init__(self):
         self.baseline_stats = self._load_baseline()
-    
+
     def check_response_drift(
         self,
         current_responses: list,
         baseline_window: int = 7  # days
     ) -> dict:
         """Check if response patterns have drifted."""
-        
+
         # Compare current response stats to baseline
         current_stats = {
             'avg_length': np.mean([len(r) for r in current_responses]),
             'avg_tokens': np.mean([count_tokens(r) for r in current_responses]),
             'sentiment_dist': self._analyze_sentiment(current_responses)
         }
-        
+
         # Calculate drift metrics
         drift_score = self._calculate_drift(current_stats, self.baseline_stats)
-        
+
         if drift_score > 0.3:  # Threshold
             return {
                 'drift_detected': True,
                 'drift_score': drift_score,
                 'recommendation': 'Review recent model changes or prompt updates'
             }
-        
+
         return {'drift_detected': False}
 ```
 
@@ -1110,7 +1110,7 @@ class DriftDetector:
   - STRIDE threat model completed
   - Checkov infrastructure scanning
   - Bandit SAST scanning
-  
+
 - **Gaps:**
   - No formal RAI review process documented
   - No sign-off checklist for AI features
@@ -1157,7 +1157,7 @@ class DriftDetector:
 # Risk classification for AI features
 class AIFeatureRiskClassifier:
     """Classify risk level of AI features."""
-    
+
     RISK_FACTORS = {
         'data_sensitivity': {
             'pii_handling': 3,
@@ -1182,18 +1182,18 @@ class AIFeatureRiskClassifier:
             'direct_safety_impact': 5
         }
     }
-    
+
     def classify_feature(self, feature_attributes: dict) -> str:
         """
         Classify feature risk.
-        
+
         Returns: "LOW", "MEDIUM", "HIGH", "CRITICAL"
         """
         total_score = sum(
             self.RISK_FACTORS[category].get(value, 1)
             for category, value in feature_attributes.items()
         )
-        
+
         if total_score <= 4:
             return "LOW"
         elif total_score <= 8:
@@ -1258,7 +1258,7 @@ current_system_risk = classifier.classify_feature({
   - No ARIA enhancements
   - No keyboard navigation testing
   - No screen reader optimization
-  
+
 #### Impact
 - **LOW Risk:** Limited accessibility for users with disabilities
 - **MEDIUM Risk:** Exclusion of non-English speaking users
@@ -1317,7 +1317,7 @@ def load_localized_prompt(prompt_name: str, locale: str = 'en') -> str:
     if not os.path.exists(prompt_path):
         # Fallback to English
         prompt_path = f"prompts/en/{prompt_name}"
-    
+
     return load_prompt_file(prompt_path)
 ```
 
@@ -1333,28 +1333,28 @@ def load_localized_prompt(prompt_name: str, locale: str = 'en') -> str:
 
 class RAITestSuite:
     """Comprehensive RAI test suite."""
-    
+
     def test_safety(self):
         """Test safety guardrails."""
         # Prompt injection tests
         # Jailbreak attempts
         # Harmful content requests
         pass
-    
+
     def test_fairness(self):
         """Test fairness across slices."""
         # Industry slice comparison
         # Experience level comparison
         # Response quality parity
         pass
-    
+
     def test_privacy(self):
         """Test privacy protections."""
         # PII detection
         # Cross-user isolation
         # Data retention compliance
         pass
-    
+
     def test_transparency(self):
         """Test transparency features."""
         # AI disclosure present
@@ -1483,7 +1483,7 @@ Release Date: ____________________
 ```markdown
 🤖 **AI Assistant Notice**
 
-You're chatting with an AI-powered workshop facilitator. Responses are generated 
+You're chatting with an AI-powered workshop facilitator. Responses are generated
 by AI and may occasionally be inaccurate. Always verify critical information.
 
 [Learn more about our AI](link) | [Report an issue](link)
@@ -1495,7 +1495,7 @@ by AI and may occasionally be inaccurate. Always verify critical information.
 # Understanding Your AI Workshop Facilitator
 
 ## What is it?
-This AI assistant helps facilitate AI Discovery Workshops using large language 
+This AI assistant helps facilitate AI Discovery Workshops using large language
 models (LLMs) trained on workshop methodologies and best practices.
 
 ## What it CAN do:

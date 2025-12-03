@@ -1,8 +1,8 @@
 # Responsible AI Principles for AI Discovery Workshop Facilitator
 
-**Document Version:** 1.0  
-**Effective Date:** November 19, 2024  
-**Applies To:** All AI Discovery Workshop Facilitator (Aida) development and deployment  
+**Document Version:** 1.0
+**Effective Date:** November 19, 2024
+**Applies To:** All AI Discovery Workshop Facilitator (Aida) development and deployment
 **Review Cycle:** Quarterly
 
 ---
@@ -11,10 +11,10 @@
 
 This document outlines the Responsible AI (RAI) principles that guide the development, deployment, and operation of the AI Discovery Workshop Facilitator system ("Aida"). These principles align with [Microsoft's Responsible AI Standard](https://www.microsoft.com/ai/responsible-ai) and industry best practices.
 
-**Purpose:**  
+**Purpose:**
 Ensure that Aida is developed and deployed in a manner that is fair, reliable, safe, private, secure, inclusive, transparent, and accountable.
 
-**Scope:**  
+**Scope:**
 Applies to all team members involved in:
 - Feature development and engineering
 - Product design and planning
@@ -30,22 +30,22 @@ Applies to all team members involved in:
 
 ### 1. Fairness
 
-**Principle:**  
+**Principle:**
 AI systems should treat all people fairly and avoid affecting similarly situated groups of people in different ways.
 
 **Our Commitment:**
 
-✅ **No Discrimination**  
+✅ **No Discrimination**
 - Aida does not make decisions about individuals
 - Workshop guidance is available equally to all authenticated users
 - No user profiling or differential treatment based on protected characteristics
 
-✅ **Inclusive Design**  
+✅ **Inclusive Design**
 - Multiple industry personas to represent diverse sectors
 - Guidance adaptable to organizations of all sizes
 - Support for users with varying levels of AI expertise
 
-✅ **Regular Evaluation**  
+✅ **Regular Evaluation**
 - Quarterly fairness audits across industry slices
 - Monitor response quality parity across user types
 - Test with diverse user personas and scenarios
@@ -72,25 +72,25 @@ AI systems should treat all people fairly and avoid affecting similarly situated
 
 ### 2. Reliability & Safety
 
-**Principle:**  
+**Principle:**
 AI systems should perform reliably and safely, with appropriate safeguards to prevent harmful outputs and behaviors.
 
 **Our Commitment:**
 
-✅ **Reliable Performance**  
+✅ **Reliable Performance**
 - 99%+ system availability target
 - Graceful degradation when services unavailable
 - Consistent persona adherence and response quality
 - Regular testing and quality assurance
 
-✅ **Safety Guardrails**  
+✅ **Safety Guardrails**
 - Prompt injection protection in all system prompts
 - Input validation to detect malicious patterns
 - Content safety filtering (Azure OpenAI capabilities)
 - Scope limitation (decline out-of-scope requests)
 - Abuse detection and rate limiting
 
-✅ **Error Handling**  
+✅ **Error Handling**
 - Informative error messages (no sensitive data exposed)
 - Fallback responses when AI fails
 - Escalation mechanism to human reviewers
@@ -119,24 +119,24 @@ AI systems should perform reliably and safely, with appropriate safeguards to pr
 
 ### 3. Privacy & Security
 
-**Principle:**  
+**Principle:**
 AI systems should be secure and respect privacy, protecting user data and preventing unauthorized access or misuse.
 
 **Our Commitment:**
 
-✅ **Data Protection**  
+✅ **Data Protection**
 - Encryption in transit (TLS 1.2+) and at rest (Azure Storage)
 - Per-user conversation isolation (no cross-user access)
 - No use of conversation data for model training (Azure OpenAI guarantee)
 - 90-day automatic data deletion policy
 
-✅ **Privacy by Design**  
+✅ **Privacy by Design**
 - Minimal data collection (conversation history only)
 - PII detection and alerting (planned enhancement)
 - No sharing of user data with third parties
 - User rights supported (export, deletion)
 
-✅ **Security Controls**  
+✅ **Security Controls**
 - Authentication required (password or OAuth)
 - Managed identity for Azure service access (no stored credentials)
 - Private endpoints for Azure OpenAI and Storage
@@ -167,25 +167,25 @@ AI systems should be secure and respect privacy, protecting user data and preven
 
 ### 4. Inclusiveness
 
-**Principle:**  
+**Principle:**
 AI systems should empower everyone and engage people in ways that are inclusive and accessible.
 
 **Our Commitment:**
 
-✅ **Accessible Design**  
+✅ **Accessible Design**
 - Chainlit framework provides baseline web accessibility
 - Keyboard navigation support
 - Screen reader compatibility (tested quarterly)
 - Readable content with appropriate contrast
 - Support for assistive technologies
 
-✅ **Broad Accessibility**  
+✅ **Broad Accessibility**
 - Web-based interface (no special software required)
 - Works across modern browsers
 - Responsive design for different screen sizes
 - Clear, jargon-free language in user-facing text
 
-✅ **Future Enhancements**  
+✅ **Future Enhancements**
 - Multi-language support (planned)
 - Enhanced ARIA labels and semantic HTML
 - Comprehensive accessibility testing
@@ -215,24 +215,24 @@ AI systems should empower everyone and engage people in ways that are inclusive 
 
 ### 5. Transparency
 
-**Principle:**  
+**Principle:**
 AI systems should be understandable. People should know when they are interacting with AI and understand how AI systems inform decisions that affect them.
 
 **Our Commitment:**
 
-✅ **Clear AI Disclosure**  
+✅ **Clear AI Disclosure**
 - Prominent "AI Assistant" labeling in interface
 - Privacy notice on first use explaining AI capabilities
 - Help documentation explaining AI limitations
 - Links to model card and RAI documentation
 
-✅ **Explainability**  
+✅ **Explainability**
 - Audit logging of agent routing decisions
 - Conversation history available to users
 - Documentation of how agents are selected
 - Confidence indicators (planned enhancement)
 
-✅ **Open Communication**  
+✅ **Open Communication**
 - Clear guidance on when to seek human help
 - Escalation path for complex issues
 - Feedback mechanism (thumbs up/down)
@@ -261,30 +261,30 @@ AI systems should be understandable. People should know when they are interactin
 
 ### 6. Accountability
 
-**Principle:**  
+**Principle:**
 People who design and deploy AI systems must be accountable for how their systems operate, with clear processes for governance and oversight.
 
 **Our Commitment:**
 
-✅ **Governance Process**  
+✅ **Governance Process**
 - RAI review required for all AI feature changes
 - Change control process with approval gates
 - Risk classification for features
 - Regular RAI audits (quarterly)
 
-✅ **Human Oversight**  
+✅ **Human Oversight**
 - Human facilitators required for all workshops
 - Admin review capabilities for concerning conversations
 - Escalation mechanism to human reviewers
 - Override capabilities for AI decisions
 
-✅ **Monitoring & Logging**  
+✅ **Monitoring & Logging**
 - Comprehensive audit logging
 - Safety metrics dashboard
 - User feedback tracking
 - Incident response playbook
 
-✅ **Continuous Improvement**  
+✅ **Continuous Improvement**
 - Regular RAI training for team members
 - Post-incident reviews and lessons learned
 - Quarterly RAI review meetings
@@ -347,16 +347,16 @@ graph TD
     B -->|Medium| D[RAI Assessment]
     B -->|High| E[Full RAI Review]
     B -->|Critical| F[Comprehensive RAI Assessment]
-    
+
     C --> G[Engineering Lead Approval]
     D --> H[Security Review]
     E --> I[Multi-Team Review]
     F --> J[RAI Board Review]
-    
+
     H --> K[Product Owner Approval]
     I --> K
     J --> L[Legal/Compliance Review if needed]
-    
+
     G --> M[Deploy]
     K --> M
     L --> M
@@ -682,13 +682,13 @@ By contributing to the AI Discovery Workshop Facilitator project, all team membe
 |---------|------|---------|-------------|
 | 1.0 | 2024-11-19 | Initial version | RAI Review Board |
 
-**Next Review:** February 19, 2025 (Quarterly)  
-**Owner:** RAI Review Board  
+**Next Review:** February 19, 2025 (Quarterly)
+**Owner:** RAI Review Board
 **Distribution:** All team members, stakeholders
 
 ---
 
 *These principles are based on [Microsoft's Responsible AI Standard](https://www.microsoft.com/ai/responsible-ai) and align with industry best practices including the [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) and [ISO/IEC 23894](https://www.iso.org/standard/77304.html).*
 
-**Acknowledgments:**  
+**Acknowledgments:**
 This document was developed with input from Engineering, Product, Security, and Legal teams, and incorporates guidance from Microsoft's Responsible AI team and industry-leading practices.

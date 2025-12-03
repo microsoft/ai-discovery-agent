@@ -1,9 +1,9 @@
 # Model Card: AI Discovery Workshop Facilitator
 
-**Model Name:** AI Discovery Workshop Facilitator (Aida)  
-**Model Version:** 1.0  
-**Last Updated:** November 19, 2024  
-**Model Type:** Multi-Agent Conversational AI System  
+**Model Name:** AI Discovery Workshop Facilitator (Aida)
+**Model Version:** 1.0
+**Last Updated:** November 19, 2024
+**Model Type:** Multi-Agent Conversational AI System
 **Status:** Production
 
 ---
@@ -57,13 +57,13 @@ The AI Discovery Workshop Facilitator (Aida) is a multi-agent conversational AI 
 
 **The system should NOT be used for:**
 
-❌ **Autonomous Decision-Making:** System cannot make business decisions without human oversight  
-❌ **Legal/Compliance Advice:** Not qualified to provide legal or regulatory guidance  
-❌ **Medical/Health Advice:** No medical or health-related recommendations  
-❌ **Financial Advice:** Cannot provide investment or financial planning guidance  
-❌ **Security-Critical Operations:** Not suitable for security-sensitive decision-making  
-❌ **Production Code Generation:** Generated code is for educational purposes only  
-❌ **Unattended Operation:** Requires human facilitator oversight  
+❌ **Autonomous Decision-Making:** System cannot make business decisions without human oversight
+❌ **Legal/Compliance Advice:** Not qualified to provide legal or regulatory guidance
+❌ **Medical/Health Advice:** No medical or health-related recommendations
+❌ **Financial Advice:** Cannot provide investment or financial planning guidance
+❌ **Security-Critical Operations:** Not suitable for security-sensitive decision-making
+❌ **Production Code Generation:** Generated code is for educational purposes only
+❌ **Unattended Operation:** Requires human facilitator oversight
 ❌ **Children/Minors:** Not designed or evaluated for use by minors
 
 ---
@@ -150,7 +150,7 @@ The system enhances base models with workshop-specific grounding documents:
 - **Example:** Inventing specific company policies or statistics
 
 **Context Limitations:**
-- **Severity:** Medium  
+- **Severity:** Medium
 - **Description:** Cannot access company-specific information or systems
 - **Mitigation:** Clear disclosure, remind users to provide context
 - **Example:** Cannot reference internal company processes not described in conversation
@@ -499,9 +499,9 @@ The system enhances base models with workshop-specific grounding documents:
 
 ---
 
-**Model Card Version:** 1.0  
-**Last Updated:** November 19, 2024  
-**Next Review:** February 19, 2025  
+**Model Card Version:** 1.0
+**Last Updated:** November 19, 2024
+**Next Review:** February 19, 2025
 **Owner:** Engineering Team + RAI Review Board
 
 ---
