@@ -96,7 +96,7 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           AZURE_PRINCIPAL_TYPE: "ServicePrincipal"
           GH_TOKEN: ${{ github.token }}
-          AI_CAPACITY: "${{ vars.AZURE_ENV_NAME == 'prod' && '100' || '5' }}"
+          AI_CAPACITY: "${{ vars.AZURE_ENV_NAME == 'prod' && '100' || '20' }}"
   deploy:
     runs-on: ubuntu-latest
     environment:
