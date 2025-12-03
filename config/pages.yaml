@@ -145,7 +145,7 @@ sections:
       header: 👩‍💼 HR Manager Talent Acquisition Use Case
       subtitle: I'm Alex, an HR manager focused on talent acquisition. I want to leverage AI to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
     - type: agent
-      agent: auto_claims_customer
+      agent: auto_claims_call_center
       title: Auto Claims Call Center
       icon: 🚗
       url_path: AutoClaimsCustomer
