@@ -96,11 +96,11 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
           AZURE_PRINCIPAL_TYPE: "ServicePrincipal"
           GH_TOKEN: ${{ github.token }}
+          AI_CAPACITY: "${{ vars.AZURE_ENV_NAME == 'prod' && '100' || '5' }}"
   deploy:
     runs-on: ubuntu-latest
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
-      url: ${{ steps.webapp-deploy.outputs.webapp-url }}
     env:
       AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
@@ -379,7 +379,6 @@ jobs:
     needs: [provision, deploy]
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
-      url: ${{ needs.deploy.outputs.STAGING_URL }}
     env:
       AZURE_GH_FED_CLIENT_ID: ${{ vars.AZURE_GH_FED_CLIENT_ID }}
       AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}

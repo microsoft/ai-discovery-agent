@@ -11,6 +11,7 @@ param repository string
 param clientIpAddress string
 param environment string = 'prod'
 param containerImageName string
+param aiCapacity int
 
 var publicNetworkAccess = environment == 'prod' ? 'Disabled' : 'Enabled'
 
@@ -88,7 +89,7 @@ resource azureOpenAIModel 'Microsoft.CognitiveServices/accounts/deployments@2024
     parent: azureOpenAI
     sku: {
       name: deployment.skuName
-      capacity: 100
+      capacity: aiCapacity
     }
     properties: {
       model: {

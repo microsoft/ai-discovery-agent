@@ -22,6 +22,9 @@
     },
     "environment": {
       "value": "${DEPLOYMENT_ENVIRONMENT}"
+    },
+    "aiCapacity": {
+      "value": "${AI_CAPACITY:-100}"
     }
   }
 }

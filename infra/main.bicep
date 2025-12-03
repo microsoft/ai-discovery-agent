@@ -18,6 +18,7 @@ param clientIpAddress string = ''
 param environment string
 @description('Container image name to use for the App Service Web App, in the format <image_name>:<tag>')
 param containerImageName string = 'aida:latest'
+param aiCapacity int = 100
 
 var resourceToken = toLower(uniqueString(subscription().id, name, location))
 var tags = { 'azd-env-name': name }
@@ -42,6 +43,7 @@ module resources 'resources.bicep' = {
     clientIpAddress: clientIpAddress
     environment: environment
     containerImageName: containerImageName
+    aiCapacity: aiCapacity
   }
 }
 
