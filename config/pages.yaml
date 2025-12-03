@@ -50,7 +50,7 @@ agents:
     document: prompts/hr_manager_talent_acquisition_use_case.md
     temperature: 0.5
     model: gpt-4o
-  auto_claims_customer:
+  auto_claims_call_center:
     persona: prompts/auto_claims_customer_persona.md
     document: prompts/auto_claims_damage_report_use_case.md
     temperature: 0.5
