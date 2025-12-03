@@ -18,7 +18,8 @@ import chainlit as cl
 import yaml
 from yaml.loader import SafeLoader
 
-from aida.utils.logging_setup import get_logger
+from aida.exceptions import AuthenticationError, ConfigurationError
+from aida.utils.logging_setup import get_logger, get_structured_logger
 
 AUTH_CONFIG_FILE = Path.cwd() / "config/auth-config.yaml"
 
@@ -77,9 +78,15 @@ def _verify_password(password: str, hashed_password: str) -> bool:
             # New PBKDF2 format: pbkdf2_sha256$salt+hash_b64
             parts = hashed_password.split("$")
             if len(parts) != 2:
+                logger.warning("Invalid PBKDF2 hash format: incorrect number of parts")
                 return False
 
-            salt_and_pass = base64.b64decode(parts[1])
+            try:
+                salt_and_pass = base64.b64decode(parts[1])
+            except (ValueError, TypeError) as e:
+                logger.error(f"Failed to decode PBKDF2 hash: {e}")
+                return False
+
             salt = salt_and_pass[:SALT_SIZE]
             expected_hash = salt_and_pass[SALT_SIZE:]
 
@@ -100,10 +107,16 @@ def _verify_password(password: str, hashed_password: str) -> bool:
             return False
         else:
             # Plain text password (legacy, insecure)
+            logger.warning("Plain text password comparison detected - insecure!")
             return secrets.compare_digest(password, hashed_password)
 
+    except (ValueError, TypeError) as e:
+        logger.error(f"Password verification error: {e}", exc_info=True)
+        return False
     except Exception as e:
-        logger.error(f"Password verification error: {e}")
+        logger.error(
+            f"Unexpected error during password verification: {e}", exc_info=True
+        )
         return False
 
 
@@ -123,56 +136,96 @@ async def password_auth_callback(username: str, password: str) -> cl.User | None
     Optional[cl.User]
         Authenticated user object if successful, None otherwise
     """
+    # Create structured logger with username context
+    auth_logger = get_structured_logger(__name__, user_id=username)
+
     try:
-        with open(AUTH_CONFIG_FILE, encoding="utf-8") as file:
-            config = yaml.load(file, Loader=SafeLoader)
+        if not AUTH_CONFIG_FILE.exists():
+            logger.error(
+                f"Authentication configuration file not found: {AUTH_CONFIG_FILE}"
+            )
+            raise ConfigurationError(
+                "Authentication configuration missing", str(AUTH_CONFIG_FILE)
+            )
+
+        try:
+            with open(AUTH_CONFIG_FILE, encoding="utf-8") as file:
+                config = yaml.load(file, Loader=SafeLoader)
+        except yaml.YAMLError as e:
+            logger.error(
+                f"Invalid YAML in authentication config file: {e}", exc_info=True
+            )
+            raise ConfigurationError(
+                f"Invalid authentication configuration: {e}", str(AUTH_CONFIG_FILE)
+            ) from e
+        except OSError as e:
+            logger.error(
+                f"Failed to read authentication config file: {e}", exc_info=True
+            )
+            raise ConfigurationError(
+                f"Cannot read authentication configuration: {e}", str(AUTH_CONFIG_FILE)
+            ) from e
 
         credentials = config.get("credentials", {}).get("usernames", {})
 
-        if username in credentials:
-            user_data = credentials[username]
-            stored_password = user_data.get("password", "")
+        if username not in credentials:
+            auth_logger.warning("Authentication failed: user not found")
+            raise AuthenticationError(
+                "Invalid username or password", username
+            ) from None
 
-            # Use the new password verification function
-            if _verify_password(password, stored_password):
-                # If this was a plain text password, upgrade it to hashed
-                if not stored_password.startswith(("pbkdf2_sha256$", "$2b$")):
-                    logger.warning(
-                        f"Upgrading plain text password for user '{username}' to PBKDF2 hash."
-                    )
-                    try:
-                        hashed_password = _hash_password(password)
-                        user_data["password"] = hashed_password
-                        config["credentials"]["usernames"][username] = user_data
+        user_data = credentials[username]
+        stored_password = user_data.get("password", "")
 
-                        with open(AUTH_CONFIG_FILE, "w", encoding="utf-8") as file:
-                            yaml.dump(config, file)
-                        logger.info(
-                            f"Password for user '{username}' successfully upgraded to PBKDF2 hash."
-                        )
-                    except Exception as e:
-                        logger.error(
-                            f"Failed to upgrade password for user '{username}': {e}"
-                        )
+        # Use the new password verification function
+        if not _verify_password(password, stored_password):
+            auth_logger.warning("Authentication failed: incorrect password")
+            raise AuthenticationError(
+                "Invalid username or password", username
+            ) from None
 
-                return cl.User(
-                    identifier=username,
-                    metadata={
-                        "first_name": user_data.get("first_name", ""),
-                        "last_name": user_data.get("last_name", ""),
-                        "email": user_data.get("email", ""),
-                        "roles": user_data.get("roles", ["user"]),
-                    },
+        # If this was a plain text password, upgrade it to hashed
+        if not stored_password.startswith(("pbkdf2_sha256$", "$2b$")):
+            auth_logger.warning(
+                "Upgrading plain text password to PBKDF2 hash for security"
+            )
+            try:
+                hashed_password = _hash_password(password)
+                user_data["password"] = hashed_password
+                config["credentials"]["usernames"][username] = user_data
+
+                with open(AUTH_CONFIG_FILE, "w", encoding="utf-8") as file:
+                    yaml.dump(config, file)
+                auth_logger.info("Password successfully upgraded to PBKDF2 hash")
+            except OSError as e:
+                auth_logger.error(f"Failed to upgrade password to hash: {e}")
+                # Continue with authentication despite upgrade failure
+            except Exception as e:
+                auth_logger.error(
+                    f"Unexpected error during password upgrade: {e}", exc_info=True
                 )
-            else:
-                logger.warning(
-                    f"Authentication failed for user '{username}': Incorrect password."
-                )
-                return None
+                # Continue with authentication despite upgrade failure
+
+        auth_logger.info("Authentication successful")
+        return cl.User(
+            identifier=username,
+            metadata={
+                "first_name": user_data.get("first_name", ""),
+                "last_name": user_data.get("last_name", ""),
+                "email": user_data.get("email", ""),
+                "roles": user_data.get("roles", ["user"]),
+            },
+        )
+
+    except (AuthenticationError, ConfigurationError):
+        # Re-raise our custom exceptions
+        raise
     except Exception as e:
-        logger.error(f"Authentication error: {e}", exc_info=e, stack_info=True)
-
-    return None
+        logger.error(
+            f"Unexpected authentication error for user '{username}': {e}",
+            exc_info=True,
+        )
+        raise AuthenticationError(f"Authentication system error: {e}", username) from e
 
 
 async def oauth_callback(
@@ -205,12 +258,24 @@ async def oauth_callback(
         - Role mapping from OAuth provider claims
         - Additional user data enrichment
     """
-    # You can add custom logic here based on provider_id
-    # For example, domain restrictions or role mapping
-    logger.info(
-        f"OAuth login successful for user {default_user.identifier} via {provider_id}"
-    )
-    return default_user
+    # Create structured logger with OAuth context
+    oauth_logger = get_structured_logger(__name__, user_id=default_user.identifier)
+
+    try:
+        oauth_logger.info(
+            f"OAuth authentication successful via provider: {provider_id}"
+        )
+        # You can add custom logic here based on provider_id
+        # For example, domain restrictions or role mapping
+        return default_user
+    except Exception as e:
+        logger.error(
+            f"Error in OAuth callback for user {default_user.identifier} via {provider_id}: {e}",
+            exc_info=True,
+        )
+        raise AuthenticationError(
+            f"OAuth authentication failed: {e}", default_user.identifier
+        ) from e
 
 
 def is_oauth_enabled() -> bool:

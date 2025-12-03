@@ -1,7 +1,8 @@
+ARG IMAGE_VERSION=3.12-slim@sha256:2e683fc3e18a248aa23b8022f2a3474b072b04fb851efe9b49f6b516a8944939
 #--------------------------------------------------------------------------------
 # Build the package
 #--------------------------------------------------------------------------------
-FROM python:3.12-slim AS builder
+FROM python:${IMAGE_VERSION} AS builder
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV VIRTUAL_ENV="/app/.venv"
@@ -20,7 +21,7 @@ RUN uv build
 #--------------------------------------------------------------------------------
 # Install the package in a clean runtime environment
 #--------------------------------------------------------------------------------
-FROM python:3.12-slim AS runtime-builder
+FROM python:${IMAGE_VERSION} AS runtime-builder
 # Install uv
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 ENV VIRTUAL_ENV="/app/.venv"
@@ -39,7 +40,7 @@ RUN uv venv && \
 #--------------------------------------------------------------------------------
 # Final stage
 #--------------------------------------------------------------------------------
-FROM python:3.12-slim
+FROM python:${IMAGE_VERSION}
 ENV VIRTUAL_ENV="/app/.venv"
 ENV PATH="$VIRTUAL_ENV/bin:$PATH" \
     PYTHONUNBUFFERED=1 \
@@ -63,8 +64,9 @@ COPY src/. .
 # set permissions and prepare runtime environment
 RUN adduser --system --no-create-home --group nonroot && \
     mkdir -p /app/.files && \
+    mkdir -p /app/.chainlit && \
     chmod +x /app/startup.sh && \
-    chown -R nonroot:nonroot /app/config /app/.files && \
+    chown -R nonroot:nonroot /app/config /app/.files /app/.chainlit && \
     chmod 700 /app/.files && \
     touch /app/.env && \
     chown nonroot:nonroot /app/.env

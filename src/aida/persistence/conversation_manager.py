@@ -104,9 +104,13 @@ Generate a title that captures the main topic or intent. Be specific and informa
             return title
 
         except Exception as e:
+            # Get model deployment name safely
+            model_name = getattr(self.openai_client, "model_name", None) or getattr(
+                self.openai_client, "deployment_name", "unknown"
+            )
             logger.error(
                 f"Error generating conversation title via Azure OpenAI deployment "
-                f"'{self.openai_client.model_name}': {e}"
+                f"'{model_name}': {e}"
             )
             return f"Conversation {datetime.now(UTC).strftime('%Y-%m-%d %H:%M')}"
 

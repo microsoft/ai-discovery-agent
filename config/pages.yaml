@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./pages.v0.2.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/microsoft/ai-discovery-agent/refs/heads/dev/src/aida/static/schema/pages.v0.2.schema.json
 # Pages configuration for AI Discovery Workshop Agent
 # This file defines all available pages in the application
 #
@@ -143,8 +143,7 @@ sections:
       icon: 👩‍💼
       url_path: HRManagerTalentAcquisition
       header: 👩‍💼 HR Manager Talent Acquisition Use Case
-      subtitle: I'm Alex, an HR manager focused on talent acquisition. I want to leverage AI
-        to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
+      subtitle: I'm Alex, an HR manager focused on talent acquisition. I want to leverage AI to streamline recruitment processes, enhance candidate engagement, and improve hiring decisions.
     - type: agent
       agent: auto_claims_customer
       title: Auto Claims Call Center

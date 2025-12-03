@@ -8,16 +8,24 @@ Contains all Chainlit event handlers and message processing logic.
 """
 
 import asyncio
+import os
 
 import chainlit as cl
 from chainlit.types import ThreadDict
 from langchain_core.runnables import RunnableConfig
+from openai import PermissionDeniedError
 
 from aida.agents import RESPONSE_TAG, agent_manager, agent_registry
 from aida.agents.graph_agent import GraphAgent
+from aida.exceptions import (
+    AgentNotFoundError,
+    MessageProcessingError,
+    StorageAccessError,
+    StorageError,
+)
 from aida.persistence import ConversationManager
 from aida.utils.config import load_program_info
-from aida.utils.logging_setup import get_logger
+from aida.utils.logging_setup import get_logger, get_structured_logger
 from aida.utils.mermaid import extract_mermaid
 
 logger = get_logger(__name__)
@@ -153,13 +161,42 @@ async def on_chat_resume(
                 # Get the loaded conversation history and display it in UI
                 conversation_history = cl.user_session.get("conversation_history", [])
                 if conversation_history:
-                    logger.info(
+                    resume_logger = get_structured_logger(
+                        __name__,
+                        user_id=user.identifier,
+                        agent_key=current_agent_key,
+                        session_id=cl.context.session.id,
+                    )
+                    resume_logger.info(
                         f"Restored {len(conversation_history)} messages to UI on resume"
                     )
                     await rebuild_messages(conversation_history)
 
+            except (StorageError, StorageAccessError) as e:
+                resume_logger = get_structured_logger(
+                    __name__,
+                    user_id=user.identifier,
+                    agent_key=current_agent_key,
+                    session_id=cl.context.session.id,
+                )
+                resume_logger.error(
+                    f"Storage error restoring conversation on resume: {e}",
+                    exc_info=True,
+                )
+                # Initialize empty conversation as fallback
+                cl.user_session.set("conversation_history", [])
+                cl.user_session.set("current_conversation_id", None)
             except Exception as e:
-                logger.error(f"Error restoring conversation on resume: {e}")
+                resume_logger = get_structured_logger(
+                    __name__,
+                    user_id=user.identifier,
+                    agent_key=current_agent_key,
+                    session_id=cl.context.session.id,
+                )
+                resume_logger.error(
+                    f"Unexpected error restoring conversation on resume: {e}",
+                    exc_info=True,
+                )
                 # Initialize empty conversation as fallback
                 cl.user_session.set("conversation_history", [])
                 cl.user_session.set("current_conversation_id", None)
@@ -438,16 +475,21 @@ async def handle_list_conversations(
 ) -> None:
     """Handle the /conversations command."""
 
+    list_logger = get_structured_logger(__name__, user_id=user_id, agent_key=agent_key)
+
     if not conversation_manager:
+        list_logger.warning("Conversation persistence is not available")
         await cl.Message(content="❌ Conversation persistence is not available.").send()
         return
 
     try:
+        list_logger.info("Listing conversations for user")
         conversations = await conversation_manager.list_conversations(
             user_id, agent_key
         )
 
         if not conversations:
+            list_logger.debug("No conversations found")
             await cl.Message(content="📝 No conversations found for this agent.").send()
             return
 
@@ -468,9 +510,15 @@ async def handle_list_conversations(
         )
 
         await cl.Message(content=content).send()
+        list_logger.info(f"Successfully listed {len(conversations)} conversations")
 
+    except (StorageError, StorageAccessError) as e:
+        list_logger.error(f"Storage error listing conversations: {e}", exc_info=True)
+        await cl.Message(
+            content="❌ Error retrieving conversations from storage."
+        ).send()
     except Exception as e:
-        logger.error(f"Error listing conversations: {e}")
+        list_logger.error(f"Unexpected error listing conversations: {e}", exc_info=True)
         await cl.Message(content="❌ Error retrieving conversations.").send()
 
 
@@ -658,10 +706,26 @@ async def process_with_agent(
     user : cl.User
         The current user
     """
+    # Create structured logger with full context
+    # Get session_id safely, handling cases where Chainlit context isn't available (e.g., in tests)
+    try:
+        session_id = cl.context.session.id
+    except Exception:
+        session_id = None
+
+    process_logger = get_structured_logger(
+        __name__,
+        user_id=user.identifier,
+        agent_key=agent_key,
+        session_id=session_id,
+    )
+
     try:
         # Get the agent from registry
-        agent = agent_registry.get_agent(agent_key)
-        if not agent:
+        try:
+            agent = agent_registry.get_agent(agent_key)
+        except AgentNotFoundError as e:
+            process_logger.error(f"Agent not found in registry: {e}")
             await cl.Message(
                 content=f"❌ Agent '{agent_key}' not found in registry."
             ).send()
@@ -674,6 +738,7 @@ async def process_with_agent(
 
         # Add user message to history
         history.append({"role": "user", "content": content})
+        process_logger.info("Processing user message")
 
         msg = cl.Message(content="")
         from langchain_core.callbacks import get_usage_metadata_callback
@@ -700,7 +765,7 @@ async def process_with_agent(
                         configurable=configurable,
                     ),
                 ):
-                    response = ""
+                    chunk_content = ""
                     if isinstance(chunk, tuple):
                         message, metadata = chunk
                         if (
@@ -709,53 +774,54 @@ async def process_with_agent(
                             and RESPONSE_TAG in metadata["tags"]
                         ):
                             # Handle agent response chunk
-                            response = message.content
+                            chunk_content = message.content
                         else:
                             if metadata and "langgraph_node" in metadata:
-                                logger.debug(
+                                process_logger.debug(
                                     f"Agent response Node: {metadata['langgraph_node']}"
                                 )
                             else:
-                                logger.debug(f"Agent response: {metadata}")
+                                process_logger.debug(f"Agent response: {metadata}")
 
                         if metadata and "langgraph_node" in metadata:
                             step.name = metadata["langgraph_node"]
                             step.output = f"Processing with agent node: {metadata['langgraph_node']}"
-                            logger.debug(
+                            process_logger.debug(
                                 f"Agent response Node: {metadata['langgraph_node']}"
                             )
                     else:
-                        response = chunk.content
+                        chunk_content = chunk.content
                     if cb.usage_metadata:
                         step.output = cb.usage_metadata
-                    if response:
+                    if chunk_content:
                         step.output = "Generating response..."
-                        await msg.stream_token(response)
+                        await msg.stream_token(chunk_content)
                 step.output = cb.usage_metadata
                 await step.send()
 
-        response = msg.content.strip() if msg.content else None
+        final_response: str | None = msg.content.strip() if msg.content else None
         # check if any mermaid tags are present in the response and extract the code
         # there may be multiple mermaid code blocks, so create a list of them
-        if response:
-            mermaid_codes = extract_mermaid(response)
+        if final_response:
+            mermaid_codes = extract_mermaid(final_response)
             # If mermaid codes are found, send them as separate messages
             if mermaid_codes:
                 logger.debug("Found %i mermaid code blocks.", len(mermaid_codes))
-                msg.elements = list(  # pyright: ignore[reportAttributeAccessIssue]
-                    map(
-                        lambda code, id: cl.CustomElement(
-                            name="MermaidViewer", props={"code": code, "id": id}
-                        ),
-                        mermaid_codes,
-                        range(1, len(mermaid_codes) + 1),
+                # Create list of CustomElement objects for mermaid diagrams
+                elements: list[cl.CustomElement] = [
+                    cl.CustomElement(
+                        name="MermaidViewer",
+                        props={"code": code, "id": idx},
                     )
-                )
+                    for idx, code in enumerate(mermaid_codes, start=1)
+                ]
+                msg.elements = elements  # type: ignore[assignment]
 
             await msg.send()
             # Add assistant response to history
-            history.append({"role": "assistant", "content": response})
+            history.append({"role": "assistant", "content": final_response})
             cl.user_session.set("conversation_history", history)
+            process_logger.info("Successfully generated and sent response")
 
             # Save conversation to persistence layer
             current_conv_id = cl.user_session.get("current_conversation_id")
@@ -764,14 +830,50 @@ async def process_with_agent(
                     await conversation_manager.save_conversation(
                         user.identifier, agent_key, current_conv_id, history
                     )
+                    process_logger.debug(
+                        "Successfully saved conversation to storage",
+                        extra={"conversation_id": current_conv_id},
+                    )
+                except (StorageError, StorageAccessError) as e:
+                    process_logger.error(
+                        f"Storage error saving conversation: {e}", exc_info=True
+                    )
+                    # Don't fail the user interaction, just log the error
                 except Exception as e:
-                    logger.error(f"Error saving conversation: {e}")
+                    process_logger.error(
+                        f"Unexpected error saving conversation: {e}", exc_info=True
+                    )
+                    # Don't fail the user interaction, just log the error
+    except AgentNotFoundError:
+        # Already handled above
+        pass
+    except PermissionDeniedError as e:
+        if e.response.status_code == 403 and (
+            "Public access" in str(e) or "Access denied" in str(e)
+        ):
+            process_logger.error("Public access error", exc_info=True)
+            error_message = "❌ I don't have access to this resource."
 
+            # In development mode, provide more detailed error information
+            if os.getenv("LOCAL_DEVELOPMENT", "false") == "true":
+                error_message += (
+                    "\n\n_It seems like the agent is trying to access a resource that requires "
+                    "specific network permissions. Please ensure that your development environment "
+                    "has the necessary access rights configured or run the `scripts/enable-network.sh` script._"
+                )
+
+            await cl.Message(content=error_message).send()
+            process_logger.error("Public access error", exc_info=True)
+        else:
+            raise MessageProcessingError(
+                f"HTTP request error: {e}", user.identifier, agent_key
+            ) from e
     except Exception as e:
-        logger.error(
-            f"Error processing with agent {agent_key}: {e}", exc_info=e, stack_info=True
-        )
+        process_logger.error(f"Error processing message with agent: {e}", exc_info=True)
         await cl.Message(content=f"❌ Error processing your message: {str(e)}").send()
+        raise MessageProcessingError(
+            f"Failed to process message: {e}", user.identifier, agent_key
+        ) from e
 
 
 async def rebuild_messages(conversation_history: list[dict[str, str]]) -> None:
@@ -805,16 +907,14 @@ async def rebuild_messages(conversation_history: list[dict[str, str]]) -> None:
                             "Found %i mermaid code blocks in restored message.",
                             len(mermaid_codes),
                         )
-                        elements = list(
-                            map(
-                                lambda code, id: cl.CustomElement(
-                                    name="MermaidViewer",
-                                    props={"code": code, "id": id},
-                                ),
-                                mermaid_codes,
-                                range(1, len(mermaid_codes) + 1),
+                        # Create list of CustomElement objects for mermaid diagrams
+                        elements = [
+                            cl.CustomElement(
+                                name="MermaidViewer",
+                                props={"code": code, "id": idx},
                             )
-                        )
+                            for idx, code in enumerate(mermaid_codes, start=1)
+                        ]
 
                 msg = cl.Message(content=content, author="Assistant", elements=elements)
 
