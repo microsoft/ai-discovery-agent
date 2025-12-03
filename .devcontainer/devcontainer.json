@@ -32,10 +32,8 @@
       }
     }
   },
-  "postCreateCommand": "curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64 && chmod +x ./bicep && sudo mv ./bicep /usr/local/bin/bicep && bicep --help && cd src && uv sync && azd version && uv --version",
-  "forwardPorts": [
-    8000
-  ],
+  "postCreateCommand": "apt update && apt install -y jq && curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64 && chmod +x ./bicep && sudo mv ./bicep /usr/local/bin/bicep && bicep --help && cd src && uv sync && azd version && uv --version",
+  "forwardPorts": [8000],
   "remoteUser": "vscode",
   "hostRequirements": {
     "memory": "8gb"

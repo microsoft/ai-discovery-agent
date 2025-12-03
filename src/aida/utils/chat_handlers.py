@@ -8,10 +8,12 @@ Contains all Chainlit event handlers and message processing logic.
 """
 
 import asyncio
+import os
 
 import chainlit as cl
 from chainlit.types import ThreadDict
 from langchain_core.runnables import RunnableConfig
+from openai import PermissionDeniedError
 
 from aida.agents import RESPONSE_TAG, agent_manager, agent_registry
 from aida.agents.graph_agent import GraphAgent
@@ -842,10 +844,30 @@ async def process_with_agent(
                         f"Unexpected error saving conversation: {e}", exc_info=True
                     )
                     # Don't fail the user interaction, just log the error
-
     except AgentNotFoundError:
         # Already handled above
         pass
+    except PermissionDeniedError as e:
+        if e.response.status_code == 403 and (
+            "Public access" in str(e) or "Access denied" in str(e)
+        ):
+            process_logger.error("Public access error", exc_info=True)
+            error_message = "❌ I don't have access to this resource."
+
+            # In development mode, provide more detailed error information
+            if os.getenv("LOCAL_DEVELOPMENT", "false") == "true":
+                error_message += (
+                    "\n\n_It seems like the agent is trying to access a resource that requires "
+                    "specific network permissions. Please ensure that your development environment "
+                    "has the necessary access rights configured or run the `scripts/enable-network.sh` script._"
+                )
+
+            await cl.Message(content=error_message).send()
+            process_logger.error("Public access error", exc_info=True)
+        else:
+            raise MessageProcessingError(
+                f"HTTP request error: {e}", user.identifier, agent_key
+            ) from e
     except Exception as e:
         process_logger.error(f"Error processing message with agent: {e}", exc_info=True)
         await cl.Message(content=f"❌ Error processing your message: {str(e)}").send()
