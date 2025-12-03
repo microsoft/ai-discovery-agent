@@ -74,7 +74,7 @@ The AI Discovery Workshop Facilitator (Aida) is a multi-agent conversational AI 
 The system uses pre-trained Azure OpenAI models:
 - **GPT-4o:** Trained on diverse internet text (cutoff varies by model version)
 - **GPT-4.1-nano:** Optimized lightweight model for routing decisions
-- **O4-mini:** Reasoning-optimized model for complex tasks
+- **o4-mini:** Reasoning-optimized model for complex tasks
 
 **Training Data Characteristics:**
 - Primarily English language
