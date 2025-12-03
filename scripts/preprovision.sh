@@ -1,8 +1,8 @@
 #!/bin/sh
-# Check if GITHUB_SECRET is not set before setting GitHub variables
+# Check if GH_TOKEN is not set before setting GitHub variables
 # This prevents running this script when running in GitHub Actions
 # The script is intended for local development environment setup.
-if [ -z "$GITHUB_SECRET" ]; then
+if [ -z "$GH_TOKEN" ]; then
     echo "Finding current CLIENT_IP_ADDRESS (for development network permissions)..."
     CLIENT_IP=$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)
     if [ -z "$CLIENT_IP" ]; then

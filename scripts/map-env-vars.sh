@@ -13,9 +13,9 @@ azd env get-values > .azure.env
 echo "azd .env file loaded successfully."
 . .azure.env
 
-# Check if GITHUB_SECRET is not set before setting GitHub variables
+# Check if GH_TOKEN is not set before setting GitHub variables
 # This prevents overwriting secrets when running in GitHub Actions
-if [ -z "$GITHUB_SECRET" ]; then
+if [ -z "$GH_TOKEN" ]; then
     echo "Setting GitHub repository variables from environment..."
     GITHUB_REPOSITORY=$(gh repo view --json nameWithOwner -t "{{.nameWithOwner}}")
 
@@ -35,5 +35,5 @@ if [ -z "$GITHUB_SECRET" ]; then
     gh variable set AZURE_ENV_NAME --body "$AZURE_ENV_NAME" --env "$DEPLOYMENT_ENVIRONMENT"
     gh variable set AZURE_LOCATION --body "$AZURE_LOCATION" --env "$DEPLOYMENT_ENVIRONMENT"
 else
-    echo "GITHUB_SECRET is set, skipping GitHub variable configuration."
+    echo "GH_TOKEN is set, skipping GitHub variable configuration."
 fi
