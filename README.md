@@ -10,17 +10,17 @@ Aida is a set of AI agents designed to support the AI Discovery Workshop—a col
 ## Prerequisites
 
 - WSL or Linux machine
-- VSCode
-- Python 3.12
-- Azure account
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [Python 3.12](https://www.python.org/downloads/release/python-31210/)
+- [Azure account](https://azure.microsoft.com)
 - Additional tools:
-  - (az cli)[https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt]
-  - (azd cli)[https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-linux]
-  - curl
-  - uv
-  - git
-  - jq
-  - dig (from bind9-dnsutils)
+  - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt)
+  - [azd cli](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-linux)
+  - [curl](https://curl.se/docs/manpage.html)
+  - [uv](https://docs.astral.sh/uv/)
+  - [git](https://git-scm.com/)
+  - [jq](https://jqlang.org/)
+  - [dig (from bind9-dnsutils)](https://man.freebsd.org/cgi/man.cgi?query=dig&apropos=0&sektion=0&manpath=4.4BSD+Lite2&arch=default&format=html)
 
 ## Installation
 
