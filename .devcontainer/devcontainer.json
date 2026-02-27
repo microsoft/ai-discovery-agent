@@ -1,5 +1,5 @@
 {
-  "name": "Azure Developer CLI",
+  "name": "Azure Developer CLI", 
   "image": "mcr.microsoft.com/devcontainers/python:3.12-bookworm",
   "features": {
     "ghcr.io/devcontainers/features/node:1": {
