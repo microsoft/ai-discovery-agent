@@ -383,16 +383,6 @@ The GitHub Actions workflow (`.github/workflows/02-ci-cd.yml`) runs automaticall
 
 **Important**: The workflow deploys to the staging slot (`staging`) to provide a safe deployment process. You can test your changes at `https://your-app-name-staging.azurewebsites.net` and manually swap slots when ready for production.
 
-### Code Formatting Action
-
-The repository includes a `format-pr.yml` GitHub Action that automatically formats code in pull requests using Black and Ruff. To trigger this action:
-
-1. Comment `/format` on any pull request
-2. The action will run pre-commit hooks to format the code
-3. Formatted changes will be automatically committed and pushed back to the PR branch
-
-**Required Configuration**: This action requires a `PUSH_PAT` secret to be configured in your repository settings. The PAT (Personal Access Token) must have **Contents write** permissions to allow the action to push the formatted changes back to the pull request branch.
-
 ### Managed Identity Federation Setup
 
 This workflow uses GitHub's OpenID Connect (OIDC) integration to authenticate to Azure without storing long-lived credentials. Ensure you have:

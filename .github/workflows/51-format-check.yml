@@ -57,10 +57,9 @@ jobs:
               repo: context.repo.repo,
               body: `🔧 **Formatting Issues Detected**
 
-              This PR has formatting issues that need to be fixed. You can:
+              This PR has formatting issues that need to be fixed.
 
-              1. **Auto-format**: Comment \`/format\` on this PR to automatically apply formatting fixes
-              2. **Manual fix**: Run \`uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml\` locally and commit the changes
+              **Manual fix**: Run \`uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml\` locally and commit the changes
 
               The CI will update once formatting is applied.`
             });
