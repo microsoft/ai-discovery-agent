@@ -41,10 +41,10 @@ jobs:
 
       - name: Run Checkov Action
         id: checkov
-        uses: bridgecrewio/checkov-action@2b3c20ea200d530ec8d3d6a21cad1d01c1f5413a # v12.1347.0
+        uses: bridgecrewio/checkov-action@f99709f8ccc3496220c987b7d8729653237c23dc # v12.0.0
         with:
           directory: .
-          output_format: sarif, junitxml, cli
+          output_format: sarif,junitxml,cli
           config_file: .tools/.checkov.yml # Use project-specific configuration
 
       # Check if code scanning is enabled in the repository
