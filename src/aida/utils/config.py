@@ -35,13 +35,14 @@ def setup_auth_secret() -> None:
         try:
             dotenv.set_key(".env", "CHAINLIT_AUTH_SECRET", secret)
             logger.info("Generated and saved CHAINLIT_AUTH_SECRET to .env file")
-        except OSError:
+        except OSError as e:
             logger.warning(
                 "Could not persist CHAINLIT_AUTH_SECRET to .env file "
                 "(read-only filesystem or insufficient permissions). "
                 "The secret is set in memory and will be regenerated on restart. "
-                "Set CHAINLIT_AUTH_SECRET as an environment variable for persistence."
-            )
+                "Set CHAINLIT_AUTH_SECRET as an environment variable for persistence. "
+                f"Underlying error: {e}"
+            , exc_info=True)
 
 
 def load_program_info() -> str:
