@@ -25,6 +25,12 @@ skip-check:
   #         For production with higher SLA requirements, consider upgrading.
   - CKV_AZURE_225
 
+  # CKV_AZURE_166: Ensure container image quarantine, scan, and mark images verified
+  # Reason: Quarantine is a preview feature requiring external scanning/webhook infrastructure.
+  #         Security is addressed via private endpoints, disabled anonymous pull, managed identity,
+  #         and trust policy (Notary) enabled.
+  - CKV_AZURE_166
+
 # Soft fail mode (for initial implementation)
 # Set to false to fail builds on security issues
 soft-fail: false

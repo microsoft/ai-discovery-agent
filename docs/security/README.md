@@ -162,12 +162,11 @@ This directory contains comprehensive security documentation for the AI Discover
 ### Infrastructure Security (Bicep)
 ```bash
 # Run Checkov on Bicep templates
-cd infra
-checkov -d . --framework bicep --config-file .checkov.yaml
+checkov -d . --config-file .tools/.checkov.yml
 ```
 
-**Configuration:** `infra/.checkov.yaml`
-**CI/CD:** `.github/workflows/03-bicep-security.yml`
+**Configuration:** `.tools/.checkov.yml`
+**CI/CD:** `.github/workflows/03-checkov-security.yml`
 
 ### Application Security (Python SAST)
 ```bash
