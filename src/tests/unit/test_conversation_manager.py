@@ -551,7 +551,7 @@ class TestConversationManagerEdgeCases:
 
     async def test_openai_client_model_name_attribute_error(self):
         """Test error handling when OpenAI client doesn't have model_name attribute."""
-        self.mock_openai_client.agenerate.side_effect = Exception("API Error")
+        self.mock_openai_client.ainvoke.side_effect = Exception("API Error")
 
         messages = [{"role": "user", "content": "Test message"}]
 
