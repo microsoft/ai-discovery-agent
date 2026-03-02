@@ -6,7 +6,7 @@ from urllib.parse import urlparse
 
 import chainlit as cl
 from azure.identity import get_bearer_token_provider
-from langchain.chat_models.base import BaseChatModel
+from langchain_core.language_models import BaseChatModel
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from pydantic import SecretStr
 

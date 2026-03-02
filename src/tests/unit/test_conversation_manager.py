@@ -71,31 +71,25 @@ class TestAzureStorageConversationManager:
             {"role": "assistant", "content": "I'd be happy to help!"},
         ]
 
-        # Mock OpenAI response
-        mock_generation = MagicMock()
-        mock_generation.text = "Python Data Structures Help"
-
+        # Mock OpenAI response (ainvoke returns an AIMessage)
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = "Python Data Structures Help"
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
         assert title == "Python Data Structures Help"
-        self.mock_openai_client.agenerate.assert_called_once()
+        self.mock_openai_client.ainvoke.assert_called_once()
 
     async def test_generate_conversation_title_with_quotes(self):
         """Test title generation removes quotes from title."""
         messages = [{"role": "user", "content": "Help with 'Python' programming"}]
 
-        mock_generation = MagicMock()
-        mock_generation.text = '"Python Programming Help"'
-
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = '"Python Programming Help"'
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -105,15 +99,12 @@ class TestAzureStorageConversationManager:
         """Test title generation truncates titles longer than 50 characters."""
         messages = [{"role": "user", "content": "Help with complex topic"}]
 
-        mock_generation = MagicMock()
-        mock_generation.text = (
+        mock_response = MagicMock()
+        mock_response.content = (
             "This is a very long conversation title that exceeds fifty characters"
         )
 
-        mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
-
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -124,7 +115,7 @@ class TestAzureStorageConversationManager:
         """Test title generation handles OpenAI errors gracefully."""
         messages = [{"role": "user", "content": "Test message"}]
 
-        self.mock_openai_client.agenerate.side_effect = Exception("OpenAI API error")
+        self.mock_openai_client.ainvoke.side_effect = Exception("OpenAI API error")
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -135,11 +126,11 @@ class TestAzureStorageConversationManager:
         """Test title generation handles invalid OpenAI response."""
         messages = [{"role": "user", "content": "Test message"}]
 
-        # Mock invalid response
+        # Mock invalid response (no content)
         mock_response = MagicMock()
-        mock_response.generations = []
+        mock_response.content = ""
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -502,19 +493,16 @@ class TestConversationManagerEdgeCases:
         long_content = "This is a very long message " * 50  # > 200 chars
         messages = [{"role": "user", "content": long_content}]
 
-        mock_generation = MagicMock()
-        mock_generation.text = "Long Message Title"
-
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = "Long Message Title"
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
         assert title == "Long Message Title"
-        # Verify that the agenerate method was called
-        self.mock_openai_client.agenerate.assert_called_once()
+        # Verify that the ainvoke method was called
+        self.mock_openai_client.ainvoke.assert_called_once()
         # Verify that content was truncated to 200 chars
         assert len(long_content[:200]) == 200
 
@@ -530,19 +518,16 @@ class TestConversationManagerEdgeCases:
             {"role": "user", "content": "Sixth message"},  # Should be ignored (> 5)
         ]
 
-        mock_generation = MagicMock()
-        mock_generation.text = "Multi-Message Conversation"
-
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = "Multi-Message Conversation"
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
         assert title == "Multi-Message Conversation"
         # Verify the method was called with appropriate messages
-        self.mock_openai_client.agenerate.assert_called_once()
+        self.mock_openai_client.ainvoke.assert_called_once()
 
     async def test_save_conversation_storage_error(self):
         """Test save conversation when storage operations fail."""
@@ -566,7 +551,7 @@ class TestConversationManagerEdgeCases:
 
     async def test_openai_client_model_name_attribute_error(self):
         """Test error handling when OpenAI client doesn't have model_name attribute."""
-        self.mock_openai_client.agenerate.side_effect = Exception("API Error")
+        self.mock_openai_client.ainvoke.side_effect = Exception("API Error")
 
         messages = [{"role": "user", "content": "Test message"}]
 
