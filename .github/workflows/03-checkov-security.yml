@@ -13,25 +13,31 @@ on:
   workflow_dispatch:
 permissions: {}
 
+concurrency:
+  group: checkov-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   checkov-scan:
     runs-on: ubuntu-latest
     name: Checkov Analysis
     permissions:
-      contents: read # Allows actions/checkout to fetch the code
-      security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
-      checks: write
+      contents: read # to checkout code
+      security-events: write # to upload SARIF results to security tab
+      checks: write # to publish test results
       # only needed unless run with comment_mode: off
-      pull-requests: write
+      pull-requests: write # to comment on PRs with test results
       # only needed for private repository
-      issues: read
+      issues: read # to read issue information
       # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
-      actions: read
+      actions: read # to read workflow run status
     outputs:
       code-scanning-enabled: ${{ steps.check-code-scanning.outputs.enabled }}
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
 
       - name: Run Checkov Action
         id: checkov
@@ -93,16 +99,16 @@ jobs:
     needs: checkov-scan
     runs-on: ubuntu-latest
     permissions:
-      checks: write
+      checks: write # to publish test results
 
       # only needed unless run with comment_mode: off
-      pull-requests: write
+      pull-requests: write # to comment on PRs with test results
 
       # Required for actions/checkout to fetch code in any repository type (public or private)
-      contents: read
+      contents: read # to read repository contents
 
       # needed when the workflow needs to read issue information, regardless of repository visibility
-      issues: read
+      issues: read # to read issue information
     if: (!cancelled() && needs.checkov-scan.outputs.code-scanning-enabled != 'true')
 
     steps:

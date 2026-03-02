@@ -12,16 +12,23 @@ on:
     - cron: "41 3 * * 1"
 permissions: {}
 
+concurrency:
+  group: bandit-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
+    name: Bandit Security Analysis
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      actions: read
-      security-events: write
+      contents: read # to checkout code
+      actions: read # to read workflow run status
+      security-events: write # to upload SARIF results to security tab
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
 
       - name: Install Python
         uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6
@@ -30,6 +37,8 @@ jobs:
 
       - name: Install uv
         uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+        with:
+          enable-cache: false
 
       - name: bandit security scan (SARIF)
         if: always()

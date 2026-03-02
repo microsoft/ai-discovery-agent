@@ -13,8 +13,7 @@ on:
       - "docs/**"
   pull_request:
     branches: ["main", "dev"]
-    # These types are required for DAST/OWASP ZAP to scan pull requests correctly and securely.
-    types: [opened, synchronize, reopened, labeled, edited]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - "**/*.md"
       - "**/*.txt"
@@ -31,6 +30,10 @@ env:
 
 permissions: {}
 
+concurrency:
+  group: dast-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   dast-scan:
     name: DAST Security Scan
@@ -43,6 +46,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3.11.1
@@ -51,30 +56,43 @@ jobs:
         run: docker build -t ai-discovery-agent:test .
 
       - name: Run container
+        env:
+          PORT: ${{ env.CONTAINER_PORT }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }}
+          AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }}
         run: |
-          echo "Starting container on port ${{ env.CONTAINER_PORT }}..."
+          # Generate a random auth secret for the test container
+          CHAINLIT_AUTH_SECRET=$(openssl rand -base64 32)
+          export CHAINLIT_AUTH_SECRET
+          echo "Starting container on port $PORT..."
           docker run -d \
             --name ai-discovery-agent-test \
-            -p ${{ env.CONTAINER_PORT }}:${{ env.CONTAINER_PORT }} \
-            -e PORT=${{ env.CONTAINER_PORT }}\
-            -e AZURE_OPENAI_ENDPOINT=${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }}\
-            -e AZURE_OPENAI_API_KEY=${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }}\
-            -e AZURE_OPENAI_API_VERSION=${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }} \
+            -p "$PORT:$PORT" \
+            -e PORT \
+            -e AZURE_OPENAI_ENDPOINT \
+            -e AZURE_OPENAI_API_KEY \
+            -e AZURE_OPENAI_API_VERSION \
+            -e CHAINLIT_AUTH_SECRET \
             ai-discovery-agent:test
 
       - name: Wait for container to be healthy
+        env:
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          echo "Waiting for container to start on port ${{ env.CONTAINER_PORT }}..."
-          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:${{ env.CONTAINER_PORT }}/health)" != "200" ]]; do echo "Waiting for /health endpoint..."; sleep 5; done' || {
+          echo "Waiting for container to start on port $CONTAINER_PORT..."
+          timeout 300 bash -c 'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' localhost:'"$CONTAINER_PORT"'/health)" != "200" ]]; do echo "Waiting for /health endpoint..."; sleep 5; done' || {
               echo "Container failed to start. Showing logs:"
               docker logs ai-discovery-agent-test
               exit 1
             }
 
       - name: Test container endpoints
+        env:
+          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
         run: |
-          echo "Testing /health endpoint on port ${{ env.CONTAINER_PORT }}..."
-          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" localhost:${{ env.CONTAINER_PORT }}/health)
+          echo "Testing /health endpoint on port $CONTAINER_PORT..."
+          HEALTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" localhost:"$CONTAINER_PORT"/health)
           if [ "$HEALTH_STATUS" != "200" ]; then
             echo "Health check failed with status: $HEALTH_STATUS"
             exit 1
@@ -82,7 +100,7 @@ jobs:
           echo "✓ Health endpoint returned 200"
 
           echo "Testing root / endpoint..."
-          ROOT_RESPONSE=$(curl -s localhost:${{ env.CONTAINER_PORT }}/)
+          ROOT_RESPONSE=$(curl -s localhost:"$CONTAINER_PORT"/)
           if [[ ! "$ROOT_RESPONSE" == *"<html"* ]] && [[ ! "$ROOT_RESPONSE" == *"<!DOCTYPE"* ]]; then
             echo "Root endpoint did not return HTML content"
             echo "Response: $ROOT_RESPONSE"
