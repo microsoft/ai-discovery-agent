@@ -12,7 +12,6 @@ concurrency:
 
 jobs:
   check-format:
-    name: Check Code Formatting
     runs-on: ubuntu-latest
 
     permissions:
