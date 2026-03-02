@@ -7,6 +7,7 @@ Unit tests for the config module.
 Tests configuration loading functionality including program metadata extraction.
 """
 
+import os
 from importlib.metadata import PackageNotFoundError
 from unittest.mock import MagicMock, patch
 
@@ -152,6 +153,7 @@ class TestLoadProgramInfo:
 class TestSetupAuthSecret:
     """Test setup_auth_secret functionality."""
 
+    @patch.dict(os.environ, {})
     @patch("aida.utils.config.dotenv.set_key")
     @patch("aida.utils.config.os.getenv")
     @patch("aida.utils.config.random_secret")
@@ -172,6 +174,7 @@ class TestSetupAuthSecret:
             ".env", "CHAINLIT_AUTH_SECRET", "random-secret-123"
         )
 
+    @patch.dict(os.environ, {})
     @patch("aida.utils.config.dotenv.set_key")
     @patch("aida.utils.config.os.getenv")
     def test_setup_auth_secret_already_set(self, mock_getenv, mock_set_key):
@@ -185,6 +188,7 @@ class TestSetupAuthSecret:
         # Assert
         mock_set_key.assert_not_called()
 
+    @patch.dict(os.environ, {})
     @patch("aida.utils.config.dotenv.set_key")
     @patch("aida.utils.config.os.getenv")
     @patch("aida.utils.config.random_secret")
