@@ -424,8 +424,14 @@ jobs:
           RESOURCE_GROUP_NAME_VAL: ${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}
         run: |
           echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in staging slot"
-          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --slot staging --settings OAUTH_GITHUB_CLIENT_ID="$STAGING_OAUTH_GITHUB_CLIENT_ID"
-          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --slot staging --settings OAUTH_GITHUB_CLIENT_SECRET="$STAGING_OAUTH_GITHUB_CLIENT_SECRET"
+          # Use file-based approach to avoid exposing secrets in /proc/cmdline
+          # Azure CLI @file convention reads file content inside the az process
+          id_file=$(mktemp) && secret_file=$(mktemp)
+          chmod 600 "$id_file" "$secret_file"
+          trap 'shred -u "$id_file" "$secret_file" 2>/dev/null' EXIT
+          printf 'OAUTH_GITHUB_CLIENT_ID=%s' "$STAGING_OAUTH_GITHUB_CLIENT_ID" > "$id_file"
+          printf 'OAUTH_GITHUB_CLIENT_SECRET=%s' "$STAGING_OAUTH_GITHUB_CLIENT_SECRET" > "$secret_file"
+          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --slot staging --settings @"$id_file" @"$secret_file"
 
       - name: Set environment variables in prod slot
         if: ${{ env.PROD_OAUTH_GITHUB_CLIENT_ID != '' && env.PROD_OAUTH_GITHUB_CLIENT_SECRET != '' }}
@@ -434,5 +440,11 @@ jobs:
           RESOURCE_GROUP_NAME_VAL: ${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}
         run: |
           echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in prod slot"
-          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --settings OAUTH_GITHUB_CLIENT_ID="$PROD_OAUTH_GITHUB_CLIENT_ID"
-          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --settings OAUTH_GITHUB_CLIENT_SECRET="$PROD_OAUTH_GITHUB_CLIENT_SECRET"
+          # Use file-based approach to avoid exposing secrets in /proc/cmdline
+          # Azure CLI @file convention reads file content inside the az process
+          id_file=$(mktemp) && secret_file=$(mktemp)
+          chmod 600 "$id_file" "$secret_file"
+          trap 'shred -u "$id_file" "$secret_file" 2>/dev/null' EXIT
+          printf 'OAUTH_GITHUB_CLIENT_ID=%s' "$PROD_OAUTH_GITHUB_CLIENT_ID" > "$id_file"
+          printf 'OAUTH_GITHUB_CLIENT_SECRET=%s' "$PROD_OAUTH_GITHUB_CLIENT_SECRET" > "$secret_file"
+          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --settings @"$id_file" @"$secret_file"

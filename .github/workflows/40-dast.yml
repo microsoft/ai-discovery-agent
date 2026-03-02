@@ -13,8 +13,7 @@ on:
       - "docs/**"
   pull_request:
     branches: ["main", "dev"]
-    # These types are required for DAST/OWASP ZAP to scan pull requests correctly and securely.
-    types: [opened, synchronize, reopened, labeled, edited]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - "**/*.md"
       - "**/*.txt"
