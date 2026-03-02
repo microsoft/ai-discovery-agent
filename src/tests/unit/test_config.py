@@ -7,6 +7,7 @@ Unit tests for the config module.
 Tests configuration loading functionality including program metadata extraction.
 """
 
+import os
 from importlib.metadata import PackageNotFoundError
 from unittest.mock import MagicMock, patch
 
@@ -185,6 +186,7 @@ class TestSetupAuthSecret:
         # Assert
         mock_set_key.assert_not_called()
 
+    @patch.dict("os.environ", {}, clear=False)
     @patch("aida.utils.config.dotenv.set_key")
     @patch("aida.utils.config.os.getenv")
     @patch("aida.utils.config.random_secret")
@@ -192,7 +194,8 @@ class TestSetupAuthSecret:
         self, mock_random_secret, mock_getenv, mock_set_key
     ):
         """Test setup_auth_secret continues when .env file is not writable."""
-        # Arrange
+        # Arrange - ensure the key is absent so we can verify it is written
+        os.environ.pop("CHAINLIT_AUTH_SECRET", None)
         mock_getenv.return_value = None
         mock_random_secret.return_value = "random-secret-456"
         mock_set_key.side_effect = PermissionError(
@@ -202,8 +205,9 @@ class TestSetupAuthSecret:
         # Act - should not raise
         setup_auth_secret()
 
-        # Assert - secret should still be set in os.environ
+        # Assert - secret should still be set in os.environ even when .env write fails
         mock_random_secret.assert_called_once()
         mock_set_key.assert_called_once_with(
             ".env", "CHAINLIT_AUTH_SECRET", "random-secret-456"
         )
+        assert os.environ["CHAINLIT_AUTH_SECRET"] == "random-secret-456"
