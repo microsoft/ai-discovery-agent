@@ -39,7 +39,7 @@ Creating a custom agent by subclassing Agent:
     >>> # Instantiate the agent
     >>> agent = MyCustomAgent(
     ...     agent_key="my_agent",
-    ...     model="gpt-4o",
+    ...     model="gpt-5.1-chat",
     ...     temperature=0.7
     ... )
     >>>
@@ -91,7 +91,7 @@ class Agent(abc.ABC):
     Attributes
         Unique identifier for the agent instance.
         The Azure OpenAI model deployment name to use for this agent.
-        Defaults to "gpt-4o" if not specified.
+        Defaults to "gpt-5.1-chat" if not specified.
         The temperature parameter for controlling response randomness.
         Higher values (e.g., 1.0) make output more random, lower values (e.g., 0.0)
         make it more deterministic. Defaults to 1.0 if not specified.
@@ -120,7 +120,7 @@ class Agent(abc.ABC):
     ...     def get_system_prompts(self):
     ...         return [{"role": "system", "content": "You are a helpful assistant."}]
     >>>
-    >>> agent = MyAgent("my-agent", "gpt-4o", 0.7)
+    >>> agent = MyAgent("my-agent", "gpt-5.1-chat", 0.7)
     >>> async for chunk in agent.astream(messages, config):
     ...     print(chunk)
 
@@ -141,7 +141,7 @@ class Agent(abc.ABC):
         agent_key : str
             Unique identifier for the agent.
         model : str, optional
-            The model to use for this agent. Defaults to "gpt-4o".
+            The model to use for this agent. Defaults to "gpt-5.1-chat".
         temperature : float, optional
             The temperature setting for response generation. Defaults to 1.
         """

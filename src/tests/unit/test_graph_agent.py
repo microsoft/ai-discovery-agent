@@ -27,14 +27,14 @@ class TestGraphAgent:
             agent_key="router_agent",
             condition="Analyze input and route to appropriate specialist",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
             temperature=0.5,
         )
 
         assert agent.agent_key == "router_agent"
         assert agent.condition == "Analyze input and route to appropriate specialist"
         assert agent.agents == sample_agents_config
-        assert agent.model == "gpt-4o"
+        assert agent.model == "gpt-5.1-chat"
         assert agent.temperature == 0.5
 
     def test_init_with_minimal_config(self):
@@ -61,7 +61,7 @@ class TestGraphAgent:
             agent_key="temp_test",
             condition="Test condition",
             agents=agents,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         assert agent.temperature == 0.7
@@ -72,7 +72,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         system_prompts = agent.get_system_prompts()
@@ -84,7 +84,7 @@ class TestGraphAgent:
             agent_key="inheritance_test",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
             temperature=0.3,
         )
 
@@ -114,7 +114,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         # First call should create the chain
@@ -155,7 +155,7 @@ class TestGraphAgent:
             agent_key="error_test",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         with patch("aida.agents.graph_agent.logger") as mock_logger:
@@ -173,7 +173,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Analyze the input: {input}",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         # Mock the chain invoke method
@@ -215,7 +215,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Analyze the conversation: {input}",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         # Mock the chain invoke method
@@ -255,7 +255,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         test_cases = [
@@ -306,7 +306,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         # Mock the agent registry and agent
@@ -340,7 +340,7 @@ class TestGraphAgent:
             agent_key="test_router",
             condition="Test condition",
             agents=sample_agents_config,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         # Mock registry to return None (agent not found)
@@ -376,7 +376,7 @@ class TestGraphAgent:
             agent_key="list_test",
             condition="Test condition",
             agents=test_agents,
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         assert agent.agents == test_agents
@@ -397,7 +397,7 @@ class TestGraphAgent:
                 agent_key="condition_test",
                 condition=condition,
                 agents=[{"agent": "test", "condition": "test"}],
-                model="gpt-4o",
+                model="gpt-5.1-chat",
             )
             assert agent.condition == condition
 
@@ -407,7 +407,7 @@ class TestGraphAgent:
             agent_key="empty_test",
             condition="Test condition",
             agents=[],
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         assert agent.agents == []

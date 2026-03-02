@@ -74,7 +74,7 @@ graph TD
 ## 5. Azure OpenAI Model Strategy
 | Deployment | Role | Notes |
 | ---------- | ---- | ----- |
-| `gpt-4o` | Primary reasoning & facilitation | Higher quality, higher cost |
+| `gpt-5.1-chat` | Primary reasoning & facilitation | Higher quality, higher cost |
 | `o4-mini` | Mid-tier reasoning / fallback | Balanced cost/perf |
 | `gpt-4.1-nano` | Lightweight tasks (titles) | Exposed via `CONVERSATION_TITLE_MODEL_DEPLOYMENT` |
 | `text-embedding-ada-002` | Embeddings / semantic similarity | Consider vector store later |

@@ -15,7 +15,7 @@ SAMPLE_AGENT_CONFIG = {
         "facilitator": {
             "persona": "prompts/facilitator_persona.md",
             "document": "prompts/workshop_guide.md",
-            "model": "gpt-4o",
+            "model": "gpt-5.1-chat",
             "temperature": 0.7,
         },
         "expert": {
@@ -24,7 +24,7 @@ SAMPLE_AGENT_CONFIG = {
                 "prompts/domain_knowledge.md",
                 "prompts/best_practices.md",
             ],
-            "model": "gpt-4o-mini",
+            "model": "gpt-4.1-mini",
             "temperature": 1.0,
         },
     },

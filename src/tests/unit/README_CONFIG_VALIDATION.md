@@ -78,7 +78,7 @@ agents:
     persona: prompts/auto_claims_customer_persona.md
     document: prompts/auto_claims_damage_report_use_case.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
 ```
 
 ### Issue 2: Missing Persona/Document Files
@@ -105,7 +105,7 @@ Agents with potentially invalid model names:
   - my_agent: gpt-5-turbo
 ```
 
-**Fix**: Use a valid Azure OpenAI model name (gpt-4o, gpt-4o-mini, etc.)
+**Fix**: Use a valid Azure OpenAI model name (gpt-5.1-chat, gpt-4.1-mini, etc.)
 
 ### Issue 4: Invalid Temperature Value
 

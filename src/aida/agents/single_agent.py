@@ -24,7 +24,7 @@ Creating and using a SingleAgent:
     >>> agent = SingleAgent(
     ...     agent_key="facilitator",
     ...     persona="prompts/facilitator_persona.md",
-    ...     model="gpt-4o",
+    ...     model="gpt-5.1-chat",
     ...     temperature=0.7
     ... )
     >>>
@@ -33,7 +33,7 @@ Creating and using a SingleAgent:
     ...     agent_key="customer_rep",
     ...     persona="prompts/bank_persona.md",
     ...     documents="prompts/bank_knowledge.md",
-    ...     model="gpt-4o-mini",
+    ...     model="gpt-4.1-mini",
     ...     temperature=0.5
     ... )
     >>>
@@ -45,7 +45,7 @@ Creating and using a SingleAgent:
     ...         "prompts/domain_knowledge.md",
     ...         "prompts/best_practices.md"
     ...     ]),
-    ...     model="gpt-4o"
+    ...     model="gpt-5.1-chat"
     ... )
     >>>
     >>> # Use the agent to process messages
@@ -114,7 +114,7 @@ class SingleAgent(Agent):
         persona : str
             Path to the persona prompt file.
         model : str, optional
-            The model to use for this agent. Defaults to "gpt-4o".
+            The model to use for this agent. Defaults to "gpt-5.1-chat".
         documents : Optional[Union[str, List[str]]], optional
             Path(s) to document context file(s). Defaults to None.
         temperature : float, optional

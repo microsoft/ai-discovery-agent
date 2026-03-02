@@ -63,9 +63,9 @@ module azureOpenAIPe './modules/privateendpoint.bicep' = {
 
 var deployments = [
   {
-    name: 'gpt-4o'
+    name: 'gpt-5.1-chat'
     skuName: 'GlobalStandard'
-    modelVersion: '2024-08-06'
+    modelVersion: '2025-11-13'
   }
   {
     name: 'text-embedding-ada-002'

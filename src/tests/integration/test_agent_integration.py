@@ -152,7 +152,7 @@ class TestAgentManagerErrorHandling:
         incomplete_config = {
             "agents": {
                 "incomplete_agent": {
-                    "model": "gpt-4o",
+                    "model": "gpt-5.1-chat",
                     # Missing persona, temperature, etc.
                 }
             },
@@ -185,7 +185,7 @@ class TestAgentManagerErrorHandling:
                     # But may have None/missing values for incomplete fields
                     agent_info = agent_manager.get_agent_info("incomplete_agent")
                     assert agent_info is not None
-                    assert agent_info["model"] == "gpt-4o"
+                    assert agent_info["model"] == "gpt-5.1-chat"
                     assert "persona" not in agent_info or agent_info["persona"] is None
             finally:
                 # Cleanup
@@ -217,7 +217,7 @@ class TestAgentConfigurationValidation:
                 "single_doc_agent": {
                     "persona": "prompts/persona.md",
                     "document": "prompts/single_doc.md",
-                    "model": "gpt-4o",
+                    "model": "gpt-5.1-chat",
                     "temperature": 0.5,
                 }
             },
@@ -248,7 +248,7 @@ class TestAgentConfigurationValidation:
                     agent_info = agent_manager.get_agent_info("single_doc_agent")
                     assert agent_info is not None
                     assert agent_info["document"] == "prompts/single_doc.md"
-                    assert agent_info["model"] == "gpt-4o"
+                    assert agent_info["model"] == "gpt-5.1-chat"
             finally:
                 # Cleanup
                 os.unlink(f.name)
@@ -263,7 +263,7 @@ class TestAgentConfigurationValidation:
                         "prompts/doc1.md",
                         "prompts/doc2.md",
                     ],
-                    "model": "gpt-4o-mini",
+                    "model": "gpt-4.1-mini",
                     "temperature": 1.0,
                 }
             },
@@ -297,7 +297,7 @@ class TestAgentConfigurationValidation:
                         "prompts/doc1.md",
                         "prompts/doc2.md",
                     ]
-                    assert agent_info["model"] == "gpt-4o-mini"
+                    assert agent_info["model"] == "gpt-4.1-mini"
                     assert agent_info["temperature"] == 1.0
             finally:
                 # Cleanup

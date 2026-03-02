@@ -164,7 +164,7 @@ class AgentRegistry:
             raise AgentNotFoundError(agent_key)
 
         try:
-            model = agent_config.get("model", "gpt-4o")
+            model = agent_config.get("model", "gpt-5.1-chat")
             temperature = agent_config.get("temperature")
 
             # Determine if it's a single or multi agent based on the config

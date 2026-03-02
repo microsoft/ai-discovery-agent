@@ -57,7 +57,7 @@ Loading and accessing agent configurations:
     >>> # Get specific agent configuration
     >>> facilitator_config = agent_manager.get_agent_info("facilitator")
     >>> print(facilitator_config)
-    {'persona': 'prompts/facilitator_persona.md', 'model': 'gpt-4o', 'temperature': 0.7}
+    {'persona': 'prompts/facilitator_persona.md', 'model': 'gpt-5.1-chat', 'temperature': 0.7}
 
 Configuration Structure:
 ------------------------
@@ -66,7 +66,7 @@ The pages.yaml file should follow this structure:
     agents:
       facilitator:
         persona: prompts/facilitator_persona.md
-        model: gpt-4o
+        model: gpt-5.1-chat
         temperature: 0.7
 
     sections:

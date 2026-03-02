@@ -32,7 +32,7 @@ Creating and using a GraphAgent for intelligent routing:
     ...         {"agent": "business_expert", "condition": "business"},
     ...         {"agent": "general_assistant", "condition": "general"}
     ...     ],
-    ...     "model": "gpt-4o",
+    ...     "model": "gpt-5.1-chat",
     ...     "temperature": 0.5
     ... }
     >>>
@@ -141,7 +141,7 @@ class GraphAgent(Agent):
         agents : List[Dict[str, str]]
             List of agent configurations containing agent keys and their conditions.
         model : str, optional
-            The model to use for this agent. Defaults to "gpt-4o".
+            The model to use for this agent. Defaults to "gpt-5.1-chat".
         temperature : float, optional
             The temperature setting for response generation. Defaults to 0.7.
         """

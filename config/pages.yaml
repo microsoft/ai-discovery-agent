@@ -18,18 +18,18 @@
 agents:
   facilitator:
     persona: prompts/facilitator_persona.md
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 1
   zermatt_national_bank:
     persona: prompts/contoso_zermatt_national_bank_persona.md
     document: prompts/contoso_zermatt_national_bank.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
   andermatt_works:
     persona: prompts/contoso_andermatt_works_persona.md
     document: prompts/contoso_andermatt_works.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
   design_thinking_expert:
     persona: prompts/design_thinking_persona.md
     document: prompts/design_thinking.md
@@ -44,17 +44,17 @@ agents:
     persona: prompts/medical_specialist_clinic_persona.md
     document: prompts/medical_specialist_clinic_use_case.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
   hr_manager_talent_acquisition:
     persona: prompts/hr_manager_talent_acquisition_persona.md
     document: prompts/hr_manager_talent_acquisition_use_case.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
   auto_claims_call_center:
     persona: prompts/auto_claims_customer_persona.md
     document: prompts/auto_claims_damage_report_use_case.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
   multi_agent:
     condition: |
       You are a routing agent. Your task is to analyze the user conversation history and return the most appropriate expert to handle the next message.

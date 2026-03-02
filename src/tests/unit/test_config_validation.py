@@ -261,8 +261,8 @@ class TestConfigurationValidation:
         agents = config_data.get("agents", {})
         # Common Azure OpenAI model patterns
         valid_model_patterns = [
-            "gpt-4o",
-            "gpt-4o-mini",
+            "gpt-5.1-chat",
+            "gpt-4.1-mini",
             "gpt-4",
             "gpt-4-32k",
             "gpt-35-turbo",
