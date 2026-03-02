@@ -6,7 +6,7 @@ if [ -z "$GH_TOKEN" ]; then
     echo "Finding current CLIENT_IP_ADDRESS (for development network permissions)..."
     CLIENT_IP=$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null | tr -d '\r\n')
     if ! echo "$CLIENT_IP" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
-        CLIENT_IP=$(curl -s --max-time 10 ifconfig.me 2>/dev/null | tr -d '\r\n')
+        CLIENT_IP=$(curl -s --max-time 10 https://ifconfig.me 2>/dev/null | tr -d '\r\n')
     fi
     if echo "$CLIENT_IP" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
         azd env set CLIENT_IP_ADDRESS "$CLIENT_IP"
