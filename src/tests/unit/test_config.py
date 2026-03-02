@@ -175,7 +175,7 @@ class TestSetupAuthSecret:
         )
         assert os.environ["CHAINLIT_AUTH_SECRET"] == "random-secret-123"
 
-    @patch.dict(os.environ, {})
+    @patch.dict(os.environ, {}, clear=True)
     @patch("aida.utils.config.dotenv.set_key")
     @patch("aida.utils.config.os.getenv")
     def test_setup_auth_secret_already_set(self, mock_getenv, mock_set_key):
