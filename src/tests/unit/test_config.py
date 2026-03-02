@@ -173,7 +173,7 @@ class TestSetupAuthSecret:
         mock_set_key.assert_called_once_with(
             ".env", "CHAINLIT_AUTH_SECRET", "random-secret-123"
         )
-
+        assert os.environ["CHAINLIT_AUTH_SECRET"] == "random-secret-123"
     @patch.dict(os.environ, {})
     @patch("aida.utils.config.dotenv.set_key")
     @patch("aida.utils.config.os.getenv")
