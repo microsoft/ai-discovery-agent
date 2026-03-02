@@ -62,6 +62,8 @@ jobs:
           AZ_OAI_KEY: ${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }}
           AZ_OAI_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }}
         run: |
+          # Generate a random auth secret for the test container
+          CHAINLIT_AUTH_SECRET=$(openssl rand -base64 32)
           echo "Starting container on port $CONTAINER_PORT..."
           docker run -d \
             --name ai-discovery-agent-test \
@@ -70,6 +72,7 @@ jobs:
             -e AZURE_OPENAI_ENDPOINT="$AZ_OAI_ENDPOINT"\
             -e AZURE_OPENAI_API_KEY="$AZ_OAI_KEY"\
             -e AZURE_OPENAI_API_VERSION="$AZ_OAI_VERSION" \
+            -e CHAINLIT_AUTH_SECRET="$CHAINLIT_AUTH_SECRET" \
             ai-discovery-agent:test
 
       - name: Wait for container to be healthy
