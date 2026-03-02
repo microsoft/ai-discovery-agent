@@ -39,14 +39,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Run Checkov Action
-        id: checkov
-        uses: bridgecrewio/checkov-action@99bb2caf247dfd9f03cf984373bc6043d4e32ebf # v12.3086.0
-        with:
-          directory: .
-          output_format: sarif, junitxml, cli
-          config_file: .tools/.checkov.yml # Use project-specific configuration
-
       # Check if code scanning is enabled in the repository
       - name: Check if Code Scanning is enabled
         id: check-code-scanning
@@ -77,6 +69,24 @@ jobs:
                 console.log(`Status: ${error.status}`);
               }
             }
+
+      - name: Run Checkov Action
+        id: checkov-sarif
+        if: (!cancelled() && steps.check-code-scanning.outputs.enabled == 'true')
+        uses: bridgecrewio/checkov-action@99bb2caf247dfd9f03cf984373bc6043d4e32ebf # v12.3086.0
+        with:
+          directory: .
+          output_format: sarif
+          config_file: .tools/.checkov.yml # Use project-specific configuration
+      
+      - name: Run Checkov Action
+        id: checkov-junit
+        if: (!cancelled() && steps.check-code-scanning.outputs.enabled != 'true')
+        uses: bridgecrewio/checkov-action@99bb2caf247dfd9f03cf984373bc6043d4e32ebf # v12.3086.0
+        with:
+          directory: .
+          output_format: junitxml
+          config_file: .tools/.checkov.yml # Use project-specific configuration
 
       # need code scanning activated to upload SARIF results to security tab
       - name: Upload SARIF Results to GitHub
