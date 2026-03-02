@@ -235,11 +235,9 @@ docs/security/
 ├── SECURITY_REVIEW_CHECKLIST.md   # Review procedures
 └── SECURITY_TESTING.md            # Testing guide
 
-infra/
-└── .checkov.yaml                  # Checkov configuration
-
-src/
-└── .bandit                        # Bandit configuration
+.tools/
+├── .checkov.yml                   # Checkov configuration
+└── .bandit.yml                    # Bandit configuration
 ```
 
 ## Validation & Quality Assurance
