@@ -12,7 +12,7 @@ with the persistence layer.
 from datetime import UTC, datetime
 from typing import Any
 
-from langchain.chat_models.base import BaseChatModel
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from aida.interfaces import ConversationManager
@@ -76,29 +76,19 @@ Context: {context}
 
 Generate a title that captures the main topic or intent. Be specific and informative."""
 
-            response = await self.openai_client.agenerate(
-                messages=[
-                    [
-                        SystemMessage(
-                            content="You are a helpful assistant that generates concise, descriptive conversation titles."
-                        ),
-                        HumanMessage(content=prompt),
-                    ]
+            response = await self.openai_client.ainvoke(
+                [
+                    SystemMessage(
+                        content="You are a helpful assistant that generates concise, descriptive conversation titles."
+                    ),
+                    HumanMessage(content=prompt),
                 ]
             )
 
-            if (
-                not response
-                or not hasattr(response, "generations")
-                or not response.generations
-                or not response.generations[0]
-                or not response.generations[0][0]
-                or not hasattr(response.generations[0][0], "text")
-                or not response.generations[0][0].text
-            ):
+            if not response or not hasattr(response, "content") or not response.content:
                 return f"Conversation {datetime.now(UTC).strftime('%Y-%m-%d %H:%M')}"
 
-            title = response.generations[0][0].text.strip()
+            title = response.content.strip()
             # Clean up the title
             title = title.replace('"', "").replace("'", "")[:50]
             return title
