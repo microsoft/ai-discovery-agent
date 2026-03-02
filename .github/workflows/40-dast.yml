@@ -57,22 +57,23 @@ jobs:
 
       - name: Run container
         env:
-          CONTAINER_PORT: ${{ env.CONTAINER_PORT }}
-          AZ_OAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }}
-          AZ_OAI_KEY: ${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }}
-          AZ_OAI_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }}
+          PORT: ${{ env.CONTAINER_PORT }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT || 'https://mock-endpoint.openai.azure.com' }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY || 'test-key' }}
+          AZURE_OPENAI_API_VERSION: ${{ secrets.AZURE_OPENAI_API_VERSION || '2025-01-01-preview' }}
         run: |
           # Generate a random auth secret for the test container
           CHAINLIT_AUTH_SECRET=$(openssl rand -base64 32)
-          echo "Starting container on port $CONTAINER_PORT..."
+          export CHAINLIT_AUTH_SECRET
+          echo "Starting container on port $PORT..."
           docker run -d \
             --name ai-discovery-agent-test \
-            -p "$CONTAINER_PORT:$CONTAINER_PORT" \
-            -e PORT="$CONTAINER_PORT"\
-            -e AZURE_OPENAI_ENDPOINT="$AZ_OAI_ENDPOINT"\
-            -e AZURE_OPENAI_API_KEY="$AZ_OAI_KEY"\
-            -e AZURE_OPENAI_API_VERSION="$AZ_OAI_VERSION" \
-            -e CHAINLIT_AUTH_SECRET="$CHAINLIT_AUTH_SECRET" \
+            -p "$PORT:$PORT" \
+            -e PORT \
+            -e AZURE_OPENAI_ENDPOINT \
+            -e AZURE_OPENAI_API_KEY \
+            -e AZURE_OPENAI_API_VERSION \
+            -e CHAINLIT_AUTH_SECRET \
             ai-discovery-agent:test
 
       - name: Wait for container to be healthy
