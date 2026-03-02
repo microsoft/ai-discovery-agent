@@ -39,7 +39,7 @@ resource containerRegistry 'Microsoft.ContainerRegistry/registries@2023-11-01-pr
       }
       trustPolicy: {
         type: 'Notary'
-        status: 'disabled'
+        status: 'enabled'
       }
       retentionPolicy: {
         days: 30 // Increased retention for better tracking of container images
