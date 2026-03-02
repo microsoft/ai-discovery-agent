@@ -188,5 +188,3 @@ class TestSetupAuthSecret:
 
         # Assert
         mock_set_key.assert_not_called()
-
-
