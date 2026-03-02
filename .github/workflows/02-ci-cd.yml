@@ -29,7 +29,6 @@ permissions: {}
 jobs:
   build:
     uses: ./.github/workflows/01-ci.yml
-    secrets: inherit
     permissions:
       checks: write
       # only needed unless run with comment_mode: off
