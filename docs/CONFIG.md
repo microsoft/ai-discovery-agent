@@ -42,7 +42,7 @@ A simple agent with just a persona definition:
 agents:
   facilitator:
     persona: prompts/facilitator_persona.md
-    model: gpt-4o              # Optional: defaults to gpt-4o
+    model: gpt-5.1-chat              # Optional: defaults to gpt-5.1-chat
     temperature: 0.7            # Optional: defaults to 1.0
 ```
 
@@ -55,7 +55,7 @@ agents:
   customer_rep:
     persona: prompts/contoso_zermatt_national_bank_persona.md
     document: prompts/contoso_zermatt_national_bank.md
-    model: gpt-4o-mini          # Optional
+    model: gpt-4.1-mini          # Optional
     temperature: 0.5            # Optional
 ```
 
@@ -71,7 +71,7 @@ agents:
       - prompts/domain_knowledge.md
       - prompts/best_practices.md
       - prompts/reference_guide.md
-    model: gpt-4o               # Optional
+    model: gpt-5.1-chat               # Optional
     temperature: 0.8            # Optional
 ```
 
@@ -90,7 +90,7 @@ agents:
         condition: business
       - agent: general_assistant
         condition: general
-    model: gpt-4o               # Optional
+    model: gpt-5.1-chat               # Optional
     temperature: 0.5            # Optional
 ```
 
@@ -103,7 +103,7 @@ agents:
 | `documents` | array of strings | No | Paths to multiple knowledge documents |
 | `condition` | string | Yes (for graph agents) | Routing condition prompt for graph agents |
 | `agents` | array of objects | Yes (for graph agents) | Sub-agent routing configurations |
-| `model` | string | No | Azure OpenAI model deployment name (default: "gpt-4o") |
+| `model` | string | No | Azure OpenAI model deployment name (default: "gpt-5.1-chat") |
 | `temperature` | float | No | Response randomness 0.0-2.0 (default: 1.0) |
 
 ### Section Configuration
@@ -156,14 +156,14 @@ agents:
   # Simple facilitator agent
   facilitator:
     persona: prompts/facilitator_persona.md
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.7
 
   # Agent with single document
   bank_expert:
     persona: prompts/bank_persona.md
     document: prompts/bank_knowledge.md
-    model: gpt-4o-mini
+    model: gpt-4.1-mini
 
   # Multi-document agent
   comprehensive_expert:
@@ -181,7 +181,7 @@ agents:
         condition: banking
       - agent: facilitator
         condition: workshop
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.5
 
 sections:
@@ -323,7 +323,7 @@ AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com/
 AZURE_OPENAI_API_VERSION=2025-01-01-preview
 
 # Model deployment name (optional, can be set per agent)
-AZURE_OPENAI_DEPLOYMENT=gpt-4o
+AZURE_OPENAI_DEPLOYMENT=gpt-5.1-chat
 ```
 
 #### Authentication
@@ -392,7 +392,7 @@ Create a `.env` file in the project root:
 # Azure OpenAI
 AZURE_OPENAI_ENDPOINT=https://my-openai.openai.azure.com/
 AZURE_OPENAI_API_VERSION=2025-01-01-preview
-AZURE_OPENAI_DEPLOYMENT=gpt-4o
+AZURE_OPENAI_DEPLOYMENT=gpt-5.1-chat
 
 # Authentication
 CHAINLIT_AUTH_SECRET=randomly-generated-secret-key
@@ -434,8 +434,8 @@ AZURE_TABLE_STORAGE_ENDPOINT=https://myaccount.table.core.windows.net/
 ### Performance
 
 1. **Model Selection**:
-   - Use `gpt-4o-mini` for simple tasks to reduce costs
-   - Use `gpt-4o` for complex reasoning tasks
+   - Use `gpt-4.1-mini` for simple tasks to reduce costs
+   - Use `gpt-5.1-chat` for complex reasoning tasks
    - Set appropriate temperature values (lower for deterministic responses)
 
 2. **Document Management**:

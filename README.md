@@ -278,7 +278,7 @@ The application uses a unified YAML configuration in `pages.yaml` that defines b
 1. **Agents**: Each agent has:
    - `persona`: Path to the persona prompt file that defines its behavior
    - `document` or `documents`: One or more document files that provide grounding/context
-   - `model`: The AI model to use (e.g., "gpt-4o", "gpt-4o-mini")
+   - `model`: The AI model to use (e.g., "gpt-5.1-chat", "gpt-4.1-mini")
    - `temperature`: Temperature setting for response generation (0.0-2.0)
 2. **Pages**: Each page references an agent and defines:
    - Navigation properties (title, icon, URL path)
@@ -294,7 +294,7 @@ agents:
   my_agent:
     persona: prompts/my_persona.md
     document: prompts/my_document.md # Single document
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.7
 ```
 
@@ -307,7 +307,7 @@ agents:
     documents: # Multiple documents
       - prompts/first_document.md
       - prompts/second_document.md
-    model: gpt-4o-mini
+    model: gpt-4.1-mini
     temperature: 1.0
 ```
 
@@ -322,7 +322,7 @@ agents:
         condition: "expert"
       - agent: "basic_agent"
         condition: "basic"
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.5
 ```
 

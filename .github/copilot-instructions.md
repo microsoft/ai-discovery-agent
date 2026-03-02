@@ -195,7 +195,7 @@ agents:
   facilitator:
     persona: prompts/facilitator_persona.md
     document: prompts/workshop_guide.md # Optional single document
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.7
 ```
 
@@ -208,7 +208,7 @@ agents:
     documents: # Multiple documents for broader knowledge
       - prompts/domain_knowledge.md
       - prompts/best_practices.md
-    model: gpt-4o-mini
+    model: gpt-4.1-mini
     temperature: 1.0
 ```
 
@@ -223,7 +223,7 @@ agents:
         condition: "technical"
       - agent: "business_expert"
         condition: "business"
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.5
 ```
 
@@ -290,7 +290,7 @@ AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
 
 # Support multiple model types from bicep configuration
-SUPPORTED_MODELS = ["gpt-4o", "gpt-4o-mini", "o4-mini", "text-embedding-ada-002"]
+SUPPORTED_MODELS = ["gpt-5.1-chat", "gpt-4.1-mini", "o4-mini", "text-embedding-ada-002"]
 ```
 
 **Error Handling:**
@@ -566,7 +566,7 @@ from aida.utils.cached_llm import create_llm
 llm = create_llm(
     endpoint=AZURE_OPENAI_ENDPOINT,
     api_version=AZURE_OPENAI_API_VERSION,
-    deployment="gpt-4o",
+    deployment="gpt-5.1-chat",
     temperature=0.7,          # Consistent with config
     tag="rate-limited"
 )

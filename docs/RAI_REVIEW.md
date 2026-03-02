@@ -47,11 +47,11 @@ The system demonstrates strong infrastructure security controls and basic guardr
 
 | Component | Type | Model | Purpose | Risk Level |
 |-----------|------|-------|---------|------------|
-| `facilitator` | Single Agent | gpt-4o | Workshop facilitation | Medium |
+| `facilitator` | Single Agent | gpt-5.1-chat | Workshop facilitation | Medium |
 | `multi_agent` | Graph Agent | gpt-4.1-nano (routing) | Dynamic expert routing | Medium |
 | `design_thinking_expert` | Single Agent | o4-mini | Design thinking guidance | Low |
 | `document_generator_expert` | Single Agent | o4-mini | Report generation | Medium |
-| Customer Persona Agents | Single Agents | gpt-4o | Role-playing scenarios | Low |
+| Customer Persona Agents | Single Agents | gpt-5.1-chat | Role-playing scenarios | Low |
 | Conversation Title Generator | LLM Call | gpt-4 | Auto-title generation | Low |
 
 ### 2.2 Data Flow Diagram

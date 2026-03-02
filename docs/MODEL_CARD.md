@@ -20,10 +20,10 @@ The AI Discovery Workshop Facilitator (Aida) is a multi-agent conversational AI 
 | Agent | Base Model | Temperature | Purpose |
 |-------|------------|-------------|----------|
 | Multi-Agent Router | gpt-4.1-nano | 0.5 | Route conversations to appropriate expert |
-| Facilitator | gpt-4o | 1.0 | Primary workshop facilitation guidance |
+| Facilitator | gpt-5.1-chat | 1.0 | Primary workshop facilitation guidance |
 | Design Thinking Expert | o4-mini | 1.0 | Specialized design thinking methodologies |
 | Document Generator | o4-mini | 1.0 | Workshop documentation and report generation |
-| Customer Personas | gpt-4o | 0.5 | Industry-specific role-playing agents |
+| Customer Personas | gpt-5.1-chat | 0.5 | Industry-specific role-playing agents |
 | Title Generator | gpt-4 | 0.3 | Auto-generate conversation titles |
 
 **Framework Stack:**

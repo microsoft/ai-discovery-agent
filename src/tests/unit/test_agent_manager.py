@@ -315,7 +315,7 @@ class TestAgentManagerModule:
         # Assert
         assert result is not None
         assert result["persona"] == "prompts/facilitator_persona.md"
-        assert result["model"] == "gpt-4o"
+        assert result["model"] == "gpt-5.1-chat"
         assert result["temperature"] == 0.7
 
     def test_get_agent_info_nonexistent_agent(self):
