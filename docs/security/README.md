@@ -4,6 +4,25 @@ This directory contains comprehensive security documentation for the AI Discover
 
 ## Documents Overview
 
+### 🚨 [INCIDENT_REPORT_2026_02.md](INCIDENT_REPORT_2026_02.md)
+**Purpose:** Post-incident report for the February 2026 hackerbot-claw GitHub Actions attack
+
+**Contents:**
+- Attack overview and mechanism (branch name injection)
+- Vulnerable workflows identified and removed
+- Complete incident timeline
+- Comprehensive remediation steps taken
+- Current security posture assessment
+- Lessons learned and recommendations
+
+**When to Use:**
+- Understanding the attack that occurred
+- Sharing incident details with colleagues
+- Planning future CI/CD security improvements
+- Security training and awareness
+
+---
+
 ### 📋 [STRIDE_THREAT_MODEL.md](STRIDE_THREAT_MODEL.md)
 **Purpose:** Complete threat modeling using Microsoft STRIDE methodology
 
@@ -341,5 +360,5 @@ To contribute to security documentation:
 
 ---
 
-**Last Updated:** October 2025
-**Next Review:** January 2026
+**Last Updated:** March 2026
+**Next Review:** June 2026

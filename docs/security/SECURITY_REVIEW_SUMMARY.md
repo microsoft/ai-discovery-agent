@@ -229,6 +229,7 @@ Development guide including:
 ```
 docs/security/
 ├── README.md                      # Overview and quick start
+├── INCIDENT_REPORT_2026_02.md     # Feb 2026 hackerbot-claw attack report
 ├── STRIDE_THREAT_MODEL.md         # Complete threat analysis
 ├── SECURITY_BASELINE.md           # Security controls documentation
 ├── DAST_GUIDE.md                  # Dynamic testing guide
