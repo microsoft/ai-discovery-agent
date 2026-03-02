@@ -50,7 +50,7 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' =
 module azureOpenAIPe './modules/privateendpoint.bicep' = {
   name: '${namePrefix}-deployment-openai-pe'
   // depend on the model so we make sure the account is fully provisioned before creating the private endpoint
-  dependsOn: [azureOpenAIModel]
+  dependsOn: azureOpenAIModel
   params: {
     location: location
     name: '${namePrefix}-deployment-openai-pe'
