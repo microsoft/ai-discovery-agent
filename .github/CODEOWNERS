@@ -8,7 +8,7 @@
 # ──────────────────────────────────────────────────────────────────────────────
 # Default owner for everything (fallback)
 # ──────────────────────────────────────────────────────────────────────────────
-*                                       @microsoft/ocp-isv-admins @jmservera @maabrle @f-follonier
+*                                       @microsoft/ocp-isv-admins @jmservera @martinabrle @f-follonier
 
 # ──────────────────────────────────────────────────────────────────────────────
 # CI/CD & GitHub configuration
