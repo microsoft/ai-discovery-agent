@@ -24,9 +24,7 @@ concurrency:
 
 # Set up permissions for deploying with secretless Azure federated credentials
 # https://learn.microsoft.com/en-us/azure/developer/github/connect-from-azure?tabs=azure-portal%2Clinux#set-up-azure-login-with-openid-connect-authentication
-permissions:
-  id-token: write
-  contents: read
+permissions: {}
 
 jobs:
   build:
@@ -44,6 +42,9 @@ jobs:
       security-events: write
   provision:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
     env:
@@ -58,6 +59,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
 
       - name: Install azd
         uses: Azure/setup-azd@c495e71ba59e44bfaaac10a32c8ee90d191ca4a3 # v2.2.1
@@ -99,6 +102,9 @@ jobs:
           AI_CAPACITY: "${{ vars.AZURE_ENV_NAME == 'prod' && '100' || '20' }}"
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
     env:
@@ -118,6 +124,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0
+        with:
+          persist-credentials: false
 
       - name: Log in with Azure (Federated Credentials)
         uses: azure/login@a457da9ea143d694b1b9c7c869ebb04ebe844ef5 # v2.3.0
@@ -139,13 +147,13 @@ jobs:
           # Create auth config and upload to staging slot if AUTH_CONFIG_YAML is non-empty
           if [ -n "${AUTH_CONFIG_YAML}" ]; then
             echo "${AUTH_CONFIG_YAML}" > /tmp/auth-config.yaml
-            az webapp deploy --resource-group ${{ env.RESOURCE_GROUP_NAME }} --name ${{ env.WEB_APP_NAME }} --slot staging --src-path /tmp/auth-config.yaml --type=static --target-path /secrets/auth-config.yaml || { echo "az webapp deploy failed"; exit 1; }
+            az webapp deploy --resource-group "$RESOURCE_GROUP_NAME" --name "$WEB_APP_NAME" --slot staging --src-path /tmp/auth-config.yaml --type=static --target-path /secrets/auth-config.yaml || { echo "az webapp deploy failed"; exit 1; }
           else
             echo "AUTH_CONFIG_YAML is empty, skipping auth-config deployment."
           fi
 
           # Get ACR login server
-          ACR_LOGIN_SERVER=$(az acr show --name ${{ env.ACR_NAME }} --resource-group ${{ env.RESOURCE_GROUP_NAME }} --query loginServer --output tsv)
+          ACR_LOGIN_SERVER=$(az acr show --name "$ACR_NAME" --resource-group "$RESOURCE_GROUP_NAME" --query loginServer --output tsv)
 
           echo "ACR_LOGIN_SERVER=$ACR_LOGIN_SERVER" >> "$GITHUB_OUTPUT"
       - name: Build and push container image to ACR
@@ -153,28 +161,30 @@ jobs:
           echo "Building container image using ACR Build..."
 
           # Set unique image tag with commit SHA for better traceability
-          IMAGE_TAG="${{ env.CONTAINER_IMAGE_NAME }}:${GITHUB_SHA::8}-$(date +%s)"
+          IMAGE_TAG="${CONTAINER_IMAGE_NAME}:${GITHUB_SHA::8}-$(date +%s)"
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
           # Build image using ACR build (works with private ACR endpoints)
           az acr build \
-            --registry ${{ env.ACR_NAME }} \
+            --registry "$ACR_NAME" \
             --image $IMAGE_TAG \
             --file Dockerfile \
             .
 
-          echo "Container image built and pushed: ${{ steps.prepare.outputs.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
+          echo "Container image built and pushed: ${ACR_LOGIN_SERVER}/$IMAGE_TAG"
 
       - name: Update staging slot sidecar container
         id: webapp-deploy
+        env:
+          ACR_LOGIN_SERVER: ${{ steps.prepare.outputs.ACR_LOGIN_SERVER }}
         run: |
           echo "Updating sidecar container in staging slot..."
 
-          FULL_IMAGE_NAME="${{ steps.prepare.outputs.ACR_LOGIN_SERVER }}/$IMAGE_TAG"
+          FULL_IMAGE_NAME="${ACR_LOGIN_SERVER}/$IMAGE_TAG"
 
           # Update the main sidecar container in staging slot
           az rest --method PUT \
-            --url "https://management.azure.com/subscriptions/${{ env.AZURE_SUBSCRIPTION_ID }}/resourceGroups/${{ env.RESOURCE_GROUP_NAME }}/providers/Microsoft.Web/sites/${{ env.WEB_APP_NAME }}/slots/staging/sitecontainers/main?api-version=2024-11-01" \
+            --url "https://management.azure.com/subscriptions/${AZURE_SUBSCRIPTION_ID}/resourceGroups/${RESOURCE_GROUP_NAME}/providers/Microsoft.Web/sites/${WEB_APP_NAME}/slots/staging/sitecontainers/main?api-version=2024-11-01" \
             --body '{
               "properties": {
                 "image": "'$FULL_IMAGE_NAME'",
@@ -191,28 +201,27 @@ jobs:
           # Restart staging slot to apply changes
           echo "Restarting staging slot..."
           az webapp restart \
-            --name ${{ env.WEB_APP_NAME }} \
-            --resource-group ${{ env.RESOURCE_GROUP_NAME }} \
+            --name "$WEB_APP_NAME" \
+            --resource-group "$RESOURCE_GROUP_NAME" \
             --slot staging
 
       - name: Set deployment URLs
         id: deploy-info
         run: |
-          STAGING_URL="https://${{ env.WEB_APP_NAME }}-staging.azurewebsites.net"
-          PROD_URL="https://${{ env.WEB_APP_NAME }}.azurewebsites.net"
+          STAGING_URL="https://${WEB_APP_NAME}-staging.azurewebsites.net"
+          PROD_URL="https://${WEB_APP_NAME}.azurewebsites.net"
 
           echo "STAGING_URL=$STAGING_URL" >> $GITHUB_OUTPUT
           echo "PROD_URL=$PROD_URL" >> $GITHUB_OUTPUT
           echo "webapp-url=$STAGING_URL" >> $GITHUB_OUTPUT
 
       - name: Warmup staging slot
+        env:
+          STAGING_URL: ${{ steps.deploy-info.outputs.STAGING_URL }}
         run: |
           # Wait for deployment to complete
           echo "Waiting for container to start..."
           sleep 60
-
-          # Get staging slot URL
-          STAGING_URL="${{ steps.deploy-info.outputs.STAGING_URL }}"
 
           # Warmup the application with extended timeout for container startup
           echo "Warming up staging slot at $STAGING_URL"
@@ -376,6 +385,9 @@ jobs:
 
   config-settings:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     needs: [provision, deploy]
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
@@ -405,14 +417,20 @@ jobs:
 
       - name: Set environment variables in staging slot
         if: ${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID != '' && env.STAGING_OAUTH_GITHUB_CLIENT_SECRET != '' }}
+        env:
+          WEB_APP_NAME: ${{ needs.provision.outputs.WEB_APP_NAME }}
+          RESOURCE_GROUP_NAME_VAL: ${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}
         run: |
           echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in staging slot"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --slot staging --settings OAUTH_GITHUB_CLIENT_ID="${{ env.STAGING_OAUTH_GITHUB_CLIENT_ID }}"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --slot staging --settings OAUTH_GITHUB_CLIENT_SECRET="${{ env.STAGING_OAUTH_GITHUB_CLIENT_SECRET }}"
+          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --slot staging --settings OAUTH_GITHUB_CLIENT_ID="$STAGING_OAUTH_GITHUB_CLIENT_ID"
+          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --slot staging --settings OAUTH_GITHUB_CLIENT_SECRET="$STAGING_OAUTH_GITHUB_CLIENT_SECRET"
 
       - name: Set environment variables in prod slot
         if: ${{ env.PROD_OAUTH_GITHUB_CLIENT_ID != '' && env.PROD_OAUTH_GITHUB_CLIENT_SECRET != '' }}
+        env:
+          WEB_APP_NAME: ${{ needs.provision.outputs.WEB_APP_NAME }}
+          RESOURCE_GROUP_NAME_VAL: ${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}
         run: |
           echo "Setting OAUTH_GITHUB_CLIENT_ID and OAUTH_GITHUB_CLIENT_SECRET in prod slot"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --settings OAUTH_GITHUB_CLIENT_ID="${{ env.PROD_OAUTH_GITHUB_CLIENT_ID }}"
-          az webapp config appsettings set --name "${{ needs.provision.outputs.WEB_APP_NAME }}" -g "${{ needs.provision.outputs.RESOURCE_GROUP_NAME }}" --settings OAUTH_GITHUB_CLIENT_SECRET="${{ env.PROD_OAUTH_GITHUB_CLIENT_SECRET }}"
+          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --settings OAUTH_GITHUB_CLIENT_ID="$PROD_OAUTH_GITHUB_CLIENT_ID"
+          az webapp config appsettings set --name "$WEB_APP_NAME" -g "$RESOURCE_GROUP_NAME_VAL" --settings OAUTH_GITHUB_CLIENT_SECRET="$PROD_OAUTH_GITHUB_CLIENT_SECRET"
