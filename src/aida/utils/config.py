@@ -12,7 +12,6 @@ from importlib.metadata import PackageNotFoundError, distribution
 import dotenv
 from chainlit.secret import random_secret
 
-from aida.exceptions import ConfigurationError
 from aida.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
@@ -22,28 +21,27 @@ def setup_auth_secret() -> None:
     """
     Setup authentication secret for Chainlit.
 
-    If CHAINLIT_AUTH_SECRET is not set, generates a random secret and saves it to .env file.
-
-    Raises:
-        ConfigurationError: If unable to save the secret to .env file.
+    If CHAINLIT_AUTH_SECRET is not set, generates a random secret and sets it
+    in the environment. Attempts to persist the secret to .env file, but
+    continues gracefully if the file cannot be written (e.g., read-only
+    filesystem or insufficient permissions in a container).
     """
     if not os.getenv("CHAINLIT_AUTH_SECRET"):
         logger.warning(
             "CHAINLIT_AUTH_SECRET is not set. Generating a random secret for authentication."
         )
+        secret = random_secret()
+        os.environ["CHAINLIT_AUTH_SECRET"] = secret
         try:
-            secret = random_secret()
-            os.environ["CHAINLIT_AUTH_SECRET"] = secret
             dotenv.set_key(".env", "CHAINLIT_AUTH_SECRET", secret)
             logger.info("Generated and saved CHAINLIT_AUTH_SECRET to .env file")
-        except OSError as e:
-            error_msg = f"Failed to save CHAINLIT_AUTH_SECRET to .env file: {e}"
-            logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, ".env") from e
-        except Exception as e:
-            error_msg = f"Unexpected error setting up auth secret: {e}"
-            logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, ".env") from e
+        except OSError:
+            logger.warning(
+                "Could not persist CHAINLIT_AUTH_SECRET to .env file "
+                "(read-only filesystem or insufficient permissions). "
+                "The secret is set in memory and will be regenerated on restart. "
+                "Set CHAINLIT_AUTH_SECRET as an environment variable for persistence."
+            )
 
 
 def load_program_info() -> str:
