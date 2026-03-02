@@ -41,8 +41,9 @@ def setup_auth_secret() -> None:
                 "(read-only filesystem or insufficient permissions). "
                 "The secret is set in memory and will be regenerated on restart. "
                 "Set CHAINLIT_AUTH_SECRET as an environment variable for persistence. "
-                f"Underlying error: {e}"
-            , exc_info=True)
+                f"Underlying error: {e}",
+                exc_info=True,
+            )
 
 
 def load_program_info() -> str:
