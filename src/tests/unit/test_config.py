@@ -184,3 +184,26 @@ class TestSetupAuthSecret:
 
         # Assert
         mock_set_key.assert_not_called()
+
+    @patch("aida.utils.config.dotenv.set_key")
+    @patch("aida.utils.config.os.getenv")
+    @patch("aida.utils.config.random_secret")
+    def test_setup_auth_secret_permission_denied(
+        self, mock_random_secret, mock_getenv, mock_set_key
+    ):
+        """Test setup_auth_secret continues when .env file is not writable."""
+        # Arrange
+        mock_getenv.return_value = None
+        mock_random_secret.return_value = "random-secret-456"
+        mock_set_key.side_effect = PermissionError(
+            "[Errno 13] Permission denied: '/app/.tmp_file'"
+        )
+
+        # Act - should not raise
+        setup_auth_secret()
+
+        # Assert - secret should still be set in os.environ
+        mock_random_secret.assert_called_once()
+        mock_set_key.assert_called_once_with(
+            ".env", "CHAINLIT_AUTH_SECRET", "random-secret-456"
+        )
