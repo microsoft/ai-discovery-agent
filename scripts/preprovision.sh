@@ -4,11 +4,16 @@
 # The script is intended for local development environment setup.
 if [ -z "$GH_TOKEN" ]; then
     echo "Finding current CLIENT_IP_ADDRESS (for development network permissions)..."
-    CLIENT_IP=$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null)
-    if [ -z "$CLIENT_IP" ]; then
-        CLIENT_IP=$(curl -s ifconfig.me)
+    CLIENT_IP=$(dig +short myip.opendns.com @resolver1.opendns.com 2>/dev/null | tr -d '\r\n')
+    if ! echo "$CLIENT_IP" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        CLIENT_IP=$(curl -s --max-time 10 ifconfig.me 2>/dev/null | tr -d '\r\n')
     fi
-    azd env set CLIENT_IP_ADDRESS "$(echo "$CLIENT_IP" | tr -d '\r')"
+    if echo "$CLIENT_IP" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$'; then
+        azd env set CLIENT_IP_ADDRESS "$CLIENT_IP"
+    else
+        echo "WARNING: Could not determine public IP address. Setting CLIENT_IP_ADDRESS to empty."
+        azd env set CLIENT_IP_ADDRESS ""
+    fi
 fi
 
 WEB_APP_NAME=$(azd env get-value WEB_APP_NAME 2>/dev/null || echo "")
