@@ -6,10 +6,15 @@ on: workflow_dispatch
 permissions:
   contents: read
 
+concurrency:
+  group: copilot-setup-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
   # See https://docs.github.com/en/copilot/customizing-copilot/customizing-the-development-environment-for-copilot-coding-agent
   copilot-setup-steps:
+    name: Copilot Agent Setup
     runs-on: ubuntu-latest
     # You can define any steps you want, and they will run before the agent starts.
     # If you do not check out your code, Copilot will do this for you.

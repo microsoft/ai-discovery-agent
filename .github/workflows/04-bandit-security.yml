@@ -12,13 +12,18 @@ on:
     - cron: "41 3 * * 1"
 permissions: {}
 
+concurrency:
+  group: bandit-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
+    name: Bandit Security Analysis
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      actions: read
-      security-events: write
+      contents: read # to checkout code
+      actions: read # to read workflow run status
+      security-events: write # to upload SARIF results to security tab
     steps:
       - name: Checkout
         uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3 # v6.0.0

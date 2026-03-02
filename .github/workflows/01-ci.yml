@@ -16,13 +16,14 @@ permissions: {}
 
 jobs:
   build-and-test:
+    name: Build and Test
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      actions: read
-      checks: write
-      pull-requests: write
-      issues: read
+      contents: read # to checkout code
+      actions: read # to read workflow run status
+      checks: write # to publish test results
+      pull-requests: write # to comment on PRs with test results
+      issues: read # required for private repositories
 
     steps:
       - name: Checkout
@@ -260,16 +261,16 @@ jobs:
     needs: [build-and-test]
     runs-on: ubuntu-latest
     permissions:
-      checks: write
+      checks: write # to publish test results
 
       # only needed unless run with comment_mode: off
-      pull-requests: write
+      pull-requests: write # to comment on PRs with test results
 
       # only needed for private repository
-      contents: read
+      contents: read # to read repository contents
 
       # only needed for private repository
-      issues: read
+      issues: read # to read issue information
     if: (!cancelled())
 
     steps:

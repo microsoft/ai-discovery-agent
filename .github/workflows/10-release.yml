@@ -18,11 +18,12 @@ permissions: {}
 
 jobs:
   release:
+    name: Create Release
     permissions:
-      contents: write
-      id-token: write
-      pull-requests: write
-      attestations: write
+      contents: write # to create releases and tags
+      id-token: write # for Azure federated credential login
+      pull-requests: write # to comment on PRs
+      attestations: write # to create artifact attestations
     runs-on: ubuntu-latest
     # run only on pushes to main branch
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -185,10 +186,11 @@ jobs:
           subject-digest: sha256:${{ steps.sign.outputs.artifact-digest }}
 
   validate:
+    name: Validate Release Version
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: write
+      contents: read # to checkout code
+      pull-requests: write # to comment on PRs with version info
     if: github.event_name == 'pull_request' && github.event.pull_request.merged == false
 
     steps:
@@ -386,13 +388,13 @@ jobs:
             }
 
   build-and-push-image:
+    name: Build and Push Container Image
     runs-on: ubuntu-latest
-    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
     permissions:
-      contents: read
-      packages: write
-      attestations: write
-      id-token: write
+      contents: read # to checkout code
+      packages: write # to push container images to GHCR
+      attestations: write # to create artifact attestations
+      id-token: write # for OIDC token used in attestations
     env:
       REGISTRY: ghcr.io
       IMAGE_NAME: ${{ github.repository }}

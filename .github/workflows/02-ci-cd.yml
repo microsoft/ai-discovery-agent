@@ -30,20 +30,21 @@ jobs:
   build:
     uses: ./.github/workflows/01-ci.yml
     permissions:
-      checks: write
+      checks: write # to publish test results
       # only needed unless run with comment_mode: off
-      pull-requests: write
+      pull-requests: write # to comment on PRs with test results
       # only needed for private repository
-      contents: read
+      contents: read # to checkout code
       # only needed for private repository
-      issues: read
-      actions: read
-      security-events: write
+      issues: read # to read issue information
+      actions: read # to read workflow run status
+      security-events: write # to upload SARIF results
   provision:
+    name: Provision Infrastructure
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write # for Azure federated credential login
+      contents: read # to checkout code
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
     env:
@@ -100,10 +101,11 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           AI_CAPACITY: "${{ vars.AZURE_ENV_NAME == 'prod' && '100' || '20' }}"
   deploy:
+    name: Deploy Application
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write # for Azure federated credential login
+      contents: read # to checkout code
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}
     env:
@@ -383,10 +385,11 @@ jobs:
   #         exit 1
 
   config-settings:
+    name: Configure App Settings
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
-      contents: read
+      id-token: write # for Azure federated credential login
+      contents: read # to read repository contents
     needs: [provision, deploy]
     environment:
       name: ${{ github.ref == 'refs/heads/main' && 'prod' || github.ref == 'refs/heads/release' && 'release' || 'dev' }}

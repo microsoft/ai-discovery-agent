@@ -21,6 +21,10 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: codeql-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   analyze:
     name: Analyze (${{ matrix.language }})
@@ -32,14 +36,14 @@ jobs:
     runs-on: ${{ (matrix.language == 'swift' && 'macos-latest') || 'ubuntu-latest' }}
 
     permissions:
-      security-events: write
+      security-events: write # to upload CodeQL SARIF results
 
       # required to fetch internal or private CodeQL packs
-      packages: read
+      packages: read # to fetch CodeQL packs
 
       # only required for workflows in private repositories
-      actions: read
-      contents: read
+      actions: read # to read workflow run status
+      contents: read # to checkout code
 
     strategy:
       fail-fast: false
