@@ -20,7 +20,7 @@ class TestConfigModule:
 
     def test_setup_auth_secret_already_set(self):
         """Test setup_auth_secret when secret is already configured."""
-        with patch.dict(os.environ, {"CHAINLIT_AUTH_SECRET": "existing_secret"}):
+        with patch.dict(os.environ, {"CHAINLIT_AUTH_SECRET": "test_value"}):  # nosec B105
             with patch("aida.utils.config.dotenv.set_key") as mock_set_key:
                 setup_auth_secret()
 
