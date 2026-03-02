@@ -31,19 +31,21 @@ def setup_auth_secret() -> None:
         logger.warning(
             "CHAINLIT_AUTH_SECRET is not set. Generating a random secret for authentication."
         )
+        secret = random_secret()
+        os.environ["CHAINLIT_AUTH_SECRET"] = secret
         try:
-            secret = random_secret()
-            os.environ["CHAINLIT_AUTH_SECRET"] = secret
-            dotenv.set_key(".env", "CHAINLIT_AUTH_SECRET", secret)
+            # Write directly to .env instead of using dotenv.set_key(),
+            # which creates temp files in the same directory and fails
+            # when /app is read-only for the nonroot container user.
+            with open(".env", "a", encoding="utf-8") as f:
+                f.write(f'CHAINLIT_AUTH_SECRET="{secret}"\n')
             logger.info("Generated and saved CHAINLIT_AUTH_SECRET to .env file")
         except OSError as e:
-            error_msg = f"Failed to save CHAINLIT_AUTH_SECRET to .env file: {e}"
-            logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, ".env") from e
-        except Exception as e:
-            error_msg = f"Unexpected error setting up auth secret: {e}"
-            logger.error(error_msg, exc_info=True)
-            raise ConfigurationError(error_msg, ".env") from e
+            logger.warning(
+                "Could not persist CHAINLIT_AUTH_SECRET to .env file: %s. "
+                "The secret is set for this process but will not survive a restart.",
+                e,
+            )
 
 
 def load_program_info() -> str:
