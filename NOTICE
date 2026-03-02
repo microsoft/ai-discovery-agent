@@ -1,6 +1,6 @@
 NOTICE
 
-aida version 0.9.5
+aida version 0.9.6
 Copyright (c) Microsoft Corporation.
 
 This product includes software developed by Microsoft Corporation and third-party libraries.
@@ -108,9 +108,89 @@ RUNTIME DEPENDENCIES:
   Author: Shantanu Jain
   Dependency specification: tiktoken>=0.9.0
 
+DEVELOPMENT DEPENDENCIES:
+
+* bandit-sarif-formatter 1.1.1
+  Homepage: https://github.com/microsoft/bandit-sarif-formatter
+  License: MIT
+  Author: Microsoft Corporation
+  Dependency specification: bandit-sarif-formatter>=1.1.1
+
+* bandit 1.8.6
+  Homepage: https://bandit.readthedocs.io/
+  License: Apache-2.0
+  Author: PyCQA
+  Dependency specification: bandit>=1.8.6
+
+* checkov 3.2.495
+  Homepage: https://github.com/bridgecrewio/checkov
+  License: Apache License 2.0
+  Author: bridgecrew
+  Dependency specification: checkov>=3.2.495
+
+* isort 7.0.0
+  Homepage: https://pycqa.github.io/isort/index.html
+  License: N/A
+  Author: N/A
+  Dependency specification: isort==7.0.0
+
+* mypy 1.18.2
+  Homepage: https://www.mypy-lang.org/
+  License: MIT
+  Author: N/A
+  Dependency specification: mypy>=1.18.2
+
+* pip 25.3
+  Homepage: https://pip.pypa.io/
+  License: N/A
+  Author: N/A
+  Dependency specification: pip>=25.3
+
+* pre_commit 4.4.0
+  Homepage: https://github.com/pre-commit/pre-commit
+  License: MIT
+  Author: Anthony Sottile
+  Dependency specification: pre-commit>=3.8.0
+
+* pytest-asyncio 1.2.0
+  Homepage: https://github.com/pytest-dev/pytest-asyncio
+  License: N/A
+  Author: N/A
+  Dependency specification: pytest-asyncio>=0.23.0
+
+* pytest-cov 7.0.0
+  Homepage: N/A
+  License: N/A
+  Author: N/A
+  Dependency specification: pytest-cov>=4.0.0
+
+* pytest-mock 3.15.1
+  Homepage: https://github.com/pytest-dev/pytest-mock/
+  License: MIT
+  Author: N/A
+  Dependency specification: pytest-mock>=3.12.0
+
+* pytest 8.4.2
+  Homepage: https://docs.pytest.org/en/latest/
+  License: MIT
+  Author: Holger Krekel, Bruno Oliveira, Ronny Pfannschmidt, Floris Bruynooghe, Brianna Laugher, Florian Bruhin, Others (See AUTHORS)
+  Dependency specification: pytest>=8.0.0
+
+* ruff 0.14.2
+  Homepage: https://docs.astral.sh/ruff
+  License: N/A
+  Author: N/A
+  Dependency specification: ruff==0.14.2
+
+* types-PyYAML 6.0.12.20250915
+  Homepage: https://github.com/python/typeshed
+  License: N/A
+  Author: N/A
+  Dependency specification: types-pyyaml>=6.0.12.20250915
+
 ================================================================================
 
-This NOTICE file was generated on 2025-12-03 14:50:25 UTC
+This NOTICE file was generated on 2026-03-02 11:15:21 UTC
 
 For more information about open source licenses, visit:
 - https://opensource.org/licenses/
