@@ -220,18 +220,19 @@ class TestConfigurationValidation:
             + "\n".join(f"  - {r}" for r in invalid_references)
         )
 
-    def test_no_duplicate_agent_keys(self, config_path: Path) -> None:
-        """Test that there are no duplicate agent keys in the YAML file.
+    def test_no_duplicate_mapping_keys(self, config_path: Path) -> None:
+        """Test that the configuration file contains no duplicate mapping keys.
 
-        Uses a custom loader that raises ConstructorError on duplicate mapping
-        keys, since standard YAML parsers silently overwrite duplicates when
+        Checks the entire document (agents, sections, and nested mappings)
+        using a custom loader that raises ConstructorError on any duplicate
+        key, since standard YAML parsers silently overwrite duplicates when
         building a dict.
         """
         try:
             with open(config_path, encoding="utf-8") as file:
                 yaml.load(file, Loader=_UniqueKeyLoader)
         except yaml.YAMLError as e:
-            pytest.fail(f"Duplicate key found in configuration: {e}")
+            pytest.fail(f"Duplicate mapping key found in configuration: {e}")
 
     def test_no_duplicate_url_paths(self, config_data: dict) -> None:
         """Test that there are no duplicate URL paths."""
