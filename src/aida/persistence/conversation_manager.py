@@ -139,9 +139,7 @@ Generate a title that captures the main topic or intent. Be specific and informa
             user_id, agent_key, conversation_id, conversation_data
         )
 
-        logger.info(
-            f"Created new conversation {conversation_id} for user {user_id}"
-        )
+        logger.info(f"Created new conversation {conversation_id} for user {user_id}")
 
         return conversation_id
 
