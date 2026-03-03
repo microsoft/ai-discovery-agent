@@ -220,9 +220,7 @@ class TestStructuredLoggerAdapter:
     def test_process_per_call_extra_overrides_adapter_extra(self):
         """Test that per-call extra takes precedence over adapter-level extra."""
         adapter = self._make_adapter(conversation_id="old-id")
-        msg, kwargs = adapter.process(
-            "msg", {"extra": {"conversation_id": "new-id"}}
-        )
+        msg, kwargs = adapter.process("msg", {"extra": {"conversation_id": "new-id"}})
         assert "conversation_id=new-id" in msg
         assert "old-id" not in msg
         assert kwargs["extra"]["conversation_id"] == "new-id"

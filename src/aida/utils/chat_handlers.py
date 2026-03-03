@@ -676,9 +676,7 @@ async def handle_rename_conversation(
         )
 
         cl.user_session.set("conversation_title", new_title)
-        await cl.Message(
-            content=f"✅ Conversation renamed to: **{new_title}**"
-        ).send()
+        await cl.Message(content=f"✅ Conversation renamed to: **{new_title}**").send()
 
     except Exception as e:
         logger.error(f"Error renaming conversation: {e}")
