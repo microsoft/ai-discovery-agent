@@ -166,6 +166,7 @@ async def password_auth_callback(username: str, password: str) -> cl.User | None
                 f"Cannot read authentication configuration: {e}", str(AUTH_CONFIG_FILE)
             ) from e
 
+        config = config or {}
         credentials = config.get("credentials", {}).get("usernames", {})
 
         if username not in credentials:
