@@ -130,8 +130,9 @@ class AgentRegistry:
 
         Returns:
         --------
-        Agent
-            The agent definition if found.
+        dict | None
+            The raw agent configuration dictionary if the key is found,
+            or ``None`` if the key does not exist in the registry.
         """
         return self._agents.get(agent_key)
 
