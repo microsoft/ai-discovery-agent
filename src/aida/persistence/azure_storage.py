@@ -273,7 +273,6 @@ class AzureStorageManager:
             Conversation data if found, None otherwise
 
         Raises:
-            ConversationNotFoundError: If the conversation doesn't exist.
             StorageAccessError: If storage access fails.
         """
         storage_logger = get_structured_logger(
@@ -306,8 +305,8 @@ class AzureStorageManager:
 
         except ResourceNotFoundError:
             storage_logger.debug("Conversation not found")
-            raise ConversationNotFoundError(user_id, conversation_id) from None
-        except (ConversationNotFoundError, StorageError):
+            return None
+        except StorageError:
             # Re-raise our custom exceptions
             raise
         except ClientAuthenticationError as e:
