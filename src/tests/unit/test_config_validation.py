@@ -10,9 +10,31 @@ errors due to missing files or configuration mismatches.
 """
 
 from pathlib import Path
+from typing import Any
 
 import pytest
 import yaml
+
+
+class _UniqueKeyLoader(yaml.SafeLoader):
+    """YAML SafeLoader that raises ConstructorError on duplicate mapping keys."""
+
+    def construct_mapping(
+        self, node: yaml.MappingNode, deep: bool = False
+    ) -> dict[str, Any]:
+        """Construct mapping while checking for duplicate keys."""
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            if key in seen:
+                raise yaml.constructor.ConstructorError(
+                    "while constructing a mapping",
+                    node.start_mark,
+                    f"found duplicate key: {key}",
+                    key_node.start_mark,
+                )
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
 
 
 class TestConfigurationValidation:
@@ -198,27 +220,19 @@ class TestConfigurationValidation:
             + "\n".join(f"  - {r}" for r in invalid_references)
         )
 
-    def test_no_duplicate_agent_keys(
-        self, config_data: dict, config_path: Path
-    ) -> None:
-        """Test that there are no duplicate agent keys."""
-        agents = config_data.get("agents", {})
-        # In Python dicts, duplicate keys would just overwrite, so we check YAML directly
+    def test_no_duplicate_mapping_keys(self, config_path: Path) -> None:
+        """Test that the configuration file contains no duplicate mapping keys.
 
-        with open(config_path, encoding="utf-8") as file:
-            file.read()
-
-        # Simple check for duplicate agent definitions
-        agent_keys = list(agents.keys())
-        seen = set()
-        duplicates = []
-
-        for key in agent_keys:
-            if key in seen:
-                duplicates.append(key)
-            seen.add(key)
-
-        assert not duplicates, f"Duplicate agent keys found: {', '.join(duplicates)}"
+        Checks the entire document (agents, sections, and nested mappings)
+        using a custom loader that raises ConstructorError on any duplicate
+        key, since standard YAML parsers silently overwrite duplicates when
+        building a dict.
+        """
+        try:
+            with open(config_path, encoding="utf-8") as file:
+                yaml.load(file, Loader=_UniqueKeyLoader)  # nosec B506 - _UniqueKeyLoader extends yaml.SafeLoader
+        except yaml.YAMLError as e:
+            pytest.fail(f"Duplicate mapping key found in configuration: {e}")
 
     def test_no_duplicate_url_paths(self, config_data: dict) -> None:
         """Test that there are no duplicate URL paths."""
