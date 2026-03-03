@@ -135,18 +135,13 @@ Generate a title that captures the main topic or intent. Be specific and informa
             "updated_at": datetime.now(UTC).isoformat(),
         }
 
-        success = await self.storage_manager.save_conversation(
+        await self.storage_manager.save_conversation(
             user_id, agent_key, conversation_id, conversation_data
         )
 
-        if success:
-            logger.info(
-                f"Created new conversation {conversation_id} for user {user_id}"
-            )
-        else:
-            logger.error(
-                f"Failed to create conversation {conversation_id} for user {user_id}"
-            )
+        logger.info(
+            f"Created new conversation {conversation_id} for user {user_id}"
+        )
 
         return conversation_id
 
@@ -157,7 +152,7 @@ Generate a title that captures the main topic or intent. Be specific and informa
         conversation_id: str,
         messages: list[dict[str, str]],
         title: str | None = None,
-    ) -> bool:
+    ) -> None:
         """
         Save conversation with updated messages.
 
@@ -168,8 +163,9 @@ Generate a title that captures the main topic or intent. Be specific and informa
             messages: Updated message list
             title: Optional conversation title
 
-        Returns:
-            True if successful, False otherwise
+        Raises:
+            StorageAccessError: If storage access fails.
+            StorageError: If an unexpected error occurs.
         """
         # Load existing conversation to preserve metadata
         existing_data = await self.storage_manager.load_conversation(
@@ -327,7 +323,7 @@ class DummyConversationManager(ConversationManager):
         conversation_id: str,
         messages: list[dict[str, str]],
         title: str | None = None,
-    ) -> bool:
+    ) -> None:
         """
         Save conversation (dummy implementation).
 
@@ -338,10 +334,9 @@ class DummyConversationManager(ConversationManager):
             messages: Updated message list
             title: Optional conversation title
 
-        Returns:
-            Always returns True
+        Note:
+            This is a no-op implementation that does nothing.
         """
-        return True
 
     async def load_conversation(
         self, user_id: str, agent_key: str, conversation_id: str

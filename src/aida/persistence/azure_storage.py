@@ -176,7 +176,7 @@ class AzureStorageManager:
         agent_key: str,
         conversation_id: str,
         conversation_data: dict[str, Any],
-    ) -> bool:
+    ) -> None:
         """
         Save conversation data to Azure Storage.
 
@@ -186,11 +186,9 @@ class AzureStorageManager:
             conversation_id: Conversation identifier
             conversation_data: Conversation data to store
 
-        Returns:
-            True if successful, False otherwise
-
         Raises:
-            StorageAccessError: If storage access fails.
+            StorageAccessError: If storage access fails (authentication, network, Azure errors).
+            StorageError: If serialization or other unexpected errors occur.
         """
         storage_logger = get_structured_logger(
             __name__,
@@ -236,7 +234,6 @@ class AzureStorageManager:
             )
 
             storage_logger.info("Successfully saved conversation")
-            return True
 
         except (StorageAccessError, StorageError):
             # Re-raise our custom exceptions
