@@ -11,7 +11,13 @@ import os
 from unittest.mock import patch
 
 from aida.utils.config import load_program_info, setup_auth_secret
-from aida.utils.logging_setup import _MAIN_LOGGER_NAME, get_logger, setup_logging
+from aida.utils.logging_setup import (
+    _MAIN_LOGGER_NAME,
+    StructuredLoggerAdapter,
+    get_logger,
+    get_structured_logger,
+    setup_logging,
+)
 from aida.utils.mermaid import extract_mermaid
 
 
@@ -188,8 +194,66 @@ class TestLoggingModule:
             assert logger.level == 30
 
 
+class TestStructuredLoggerAdapter:
+    """Test StructuredLoggerAdapter functionality."""
+
+    def _make_adapter(self, **extra) -> StructuredLoggerAdapter:
+        logger = get_logger("test_structured")
+        return StructuredLoggerAdapter(logger, extra)
+
+    def test_process_uses_adapter_extra(self):
+        """Test that adapter-level extra is included in the message prefix."""
+        adapter = self._make_adapter(user_id="u1", session_id="s1")
+        msg, _ = adapter.process("hello", {})
+        assert "[user_id=u1 | session_id=s1] hello" == msg
+
+    def test_process_merges_per_call_extra(self):
+        """Test that per-call extra is merged with adapter-level extra."""
+        adapter = self._make_adapter(user_id="u1", session_id="s1")
+        msg, kwargs = adapter.process(
+            "saved", {"extra": {"conversation_id": "conv-42"}}
+        )
+        assert "conversation_id=conv-42" in msg
+        assert "user_id=u1" in msg
+        assert kwargs["extra"]["conversation_id"] == "conv-42"
+
+    def test_process_per_call_extra_overrides_adapter_extra(self):
+        """Test that per-call extra takes precedence over adapter-level extra."""
+        adapter = self._make_adapter(conversation_id="old-id")
+        msg, kwargs = adapter.process(
+            "msg", {"extra": {"conversation_id": "new-id"}}
+        )
+        assert "conversation_id=new-id" in msg
+        assert "old-id" not in msg
+        assert kwargs["extra"]["conversation_id"] == "new-id"
+
+    def test_process_no_extra(self):
+        """Test that process works when no extra is provided at either level."""
+        adapter = self._make_adapter()
+        msg, kwargs = adapter.process("plain message", {})
+        assert msg == "plain message"
+        assert kwargs.get("extra") == {}
+
+    def test_process_propagates_merged_extra_in_kwargs(self):
+        """Test that merged extra is set in kwargs for downstream handlers."""
+        adapter = self._make_adapter(user_id="u1")
+        _, kwargs = adapter.process("msg", {"extra": {"agent_key": "facilitator"}})
+        assert kwargs["extra"]["user_id"] == "u1"
+        assert kwargs["extra"]["agent_key"] == "facilitator"
+
+    def test_get_structured_logger_returns_adapter(self):
+        """Test that get_structured_logger returns a StructuredLoggerAdapter."""
+        adapter = get_structured_logger(
+            "test_module", user_id="u1", session_id="s1", agent_key="agent"
+        )
+        assert isinstance(adapter, StructuredLoggerAdapter)
+        msg, _ = adapter.process("hi", {})
+        assert "user_id=u1" in msg
+        assert "session_id=s1" in msg
+        assert "agent_key=agent" in msg
+
+
 class TestMermaidModule:
-    """Test mermaid diagram extraction functionality."""
 
     def test_extract_mermaid_with_valid_diagram(self):
         """Test extracting valid mermaid diagram from text."""

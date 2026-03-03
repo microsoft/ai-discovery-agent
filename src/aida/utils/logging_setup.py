@@ -31,6 +31,12 @@ class StructuredLoggerAdapter(LoggerAdapter):
         """
         Process log message to add context.
 
+        Merges per-call ``extra`` kwargs with the adapter-level ``self.extra``
+        so that callers can supply additional context (e.g.
+        ``logger.debug("msg", extra={"conversation_id": cid})``) without it
+        being silently dropped.  Per-call values take precedence over
+        adapter-level values.
+
         Args:
             msg: Log message
             kwargs: Additional keyword arguments
@@ -38,17 +44,22 @@ class StructuredLoggerAdapter(LoggerAdapter):
         Returns:
             Tuple of processed message and kwargs
         """
-        # Build context string from extra data
+        # Merge adapter-level extra with per-call extra (per-call takes precedence)
+        call_extra = kwargs.get("extra") or {}
+        merged_extra = {**(self.extra or {}), **call_extra}
+
+        # Build context string from merged extra data
         context_parts = []
-        if self.extra:
-            for key in ["user_id", "session_id", "agent_key", "conversation_id"]:
-                if key in self.extra and self.extra[key]:
-                    context_parts.append(f"{key}={self.extra[key]}")
+        for key in ["user_id", "session_id", "agent_key", "conversation_id"]:
+            if key in merged_extra and merged_extra[key]:
+                context_parts.append(f"{key}={merged_extra[key]}")
 
         if context_parts:
             context_str = " | ".join(context_parts)
             msg = f"[{context_str}] {msg}"
 
+        # Propagate merged extra so downstream handlers also see it
+        kwargs["extra"] = merged_extra
         return msg, kwargs
 
 
