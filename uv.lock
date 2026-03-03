@@ -51,7 +51,7 @@ dev = [
 requires-dist = [
     { name = "azure-data-tables", specifier = ">=12.7.0" },
     { name = "azure-identity", specifier = ">=1.23.0" },
-    { name = "azure-monitor-opentelemetry", specifier = ">=1.8.2" },
+    { name = "azure-monitor-opentelemetry", specifier = ">=1.8.6" },
     { name = "azure-storage-blob", specifier = ">=12.26.0" },
     { name = "chainlit", specifier = ">=2.9.4" },
     { name = "langchain", specifier = ">=1.2.10,<2.0" },
