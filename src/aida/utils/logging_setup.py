@@ -44,9 +44,9 @@ class StructuredLoggerAdapter(LoggerAdapter):
         Returns:
             Tuple of processed message and kwargs
         """
-        # Merge adapter-level extra with per-call extra (per-call takes precedence)
-        call_extra = kwargs.get("extra") or {}
-        merged_extra = {**(self.extra or {}), **call_extra}
+        # Merge adapter-level extra with any per-call extra (per-call takes precedence)
+        merged_extra = {**(self.extra or {}), **kwargs.get("extra", {})}
+        kwargs["extra"] = merged_extra
 
         # Build context string from merged extra data
         context_parts = []

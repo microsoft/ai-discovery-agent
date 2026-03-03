@@ -863,7 +863,6 @@ async def process_with_agent(
                 )
 
             await cl.Message(content=error_message).send()
-            process_logger.error("Public access error", exc_info=True)
         else:
             raise MessageProcessingError(
                 f"HTTP request error: {e}", user.identifier, agent_key
