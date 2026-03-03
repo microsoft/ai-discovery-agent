@@ -36,7 +36,7 @@ RUNTIME DEPENDENCIES:
   Author: N/A
   Dependency specification: azure-identity>=1.23.0
 
-* azure-monitor-opentelemetry 1.8.2
+* azure-monitor-opentelemetry 1.8.6
   Homepage: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/monitor/azure-monitor-opentelemetry
   License: MIT License
   Author: Microsoft Corporation
@@ -90,17 +90,17 @@ RUNTIME DEPENDENCIES:
   Author: N/A
   Dependency specification: openai>=1.104.2
 
-* opentelemetry-instrumentation-fastapi 0.58b0
+* opentelemetry-instrumentation-fastapi 0.60b0
   Homepage: https://github.com/open-telemetry/opentelemetry-python-contrib/tree/main/instrumentation/opentelemetry-instrumentation-fastapi
   License: N/A
   Author: N/A
   Dependency specification: opentelemetry-instrumentation-fastapi>=0.47b0
 
-* opentelemetry-sdk 1.37.0
+* opentelemetry-sdk 1.39.0
   Homepage: https://github.com/open-telemetry/opentelemetry-python/tree/main/opentelemetry-sdk
   License: N/A
   Author: N/A
-  Dependency specification: opentelemetry-sdk>=1.27.0,<1.38.0
+  Dependency specification: opentelemetry-sdk>=1.27.0,<1.40.0
 
 * python-dotenv 1.2.1
   Homepage: N/A
@@ -196,7 +196,7 @@ DEVELOPMENT DEPENDENCIES:
 
 ================================================================================
 
-This NOTICE file was generated on 2026-03-03 08:51:35 UTC
+This NOTICE file was generated on 2026-03-03 09:15:30 UTC
 
 For more information about open source licenses, visit:
 - https://opensource.org/licenses/
