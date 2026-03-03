@@ -185,6 +185,33 @@ class TestCachedLoader:
 
     @patch("aida.utils.cached_loader.Path.exists", return_value=True)
     @patch("aida.utils.cached_loader.open")
+    def test_load_prompt_files_guardrails_read_error(
+        self, mock_file_open, mock_exists
+    ):
+        """Test that a guardrails file read error raises PromptLoadError."""
+        mock_file_open.side_effect = [
+            mock_open(read_data="Persona content").return_value,  # persona
+            PermissionError("Permission denied"),  # guardrails read error
+        ]
+
+        with pytest.raises(PromptLoadError, match="guardrails"):
+            load_prompt_files("prompts/persona_guardrails_read_error.md")
+
+    @patch(
+        "aida.utils.cached_loader.Path.exists", side_effect=[True, False]
+    )
+    @patch("aida.utils.cached_loader.open", new_callable=mock_open)
+    def test_load_prompt_files_guardrails_not_found(
+        self, mock_file_open, mock_exists
+    ):
+        """Test that a missing guardrails file raises PromptLoadError."""
+        mock_file_open.return_value = mock_open(read_data="Persona content").return_value
+
+        with pytest.raises(PromptLoadError, match="guardrails"):
+            load_prompt_files("prompts/persona_guardrails_not_found.md")
+
+    @patch("aida.utils.cached_loader.Path.exists", return_value=True)
+    @patch("aida.utils.cached_loader.open")
     def test_load_prompt_files_document_load_error_handling(
         self, mock_file_open, mock_exists
     ):
