@@ -59,7 +59,8 @@ def load_prompt_files(
     Raises:
     -------
     PromptLoadError
-        If the persona file or any content file cannot be found or loaded.
+        If the persona file, guardrails file, or any content file cannot be
+        found or loaded.
     """
     logger.debug("Loading system messages from persona file: %s", persona_file_path)
 
@@ -96,13 +97,16 @@ def load_prompt_files(
     guardrails_path = BASE_PATH / "prompts/guardrails.md"
     try:
         if not guardrails_path.exists():
-            logger.warning("Guardrails file not found, skipping")
-        else:
-            with open(guardrails_path, encoding="utf-8") as f:
-                system_prompt += f.read()
+            error_msg = "Guardrails file not found: prompts/guardrails.md"
+            logger.error(error_msg)
+            raise PromptLoadError("prompts/guardrails.md", "file not found")
+        with open(guardrails_path, encoding="utf-8") as f:
+            system_prompt += f.read()
+    except PromptLoadError:
+        raise
     except (FileNotFoundError, PermissionError, UnicodeDecodeError, OSError) as e:
-        # Guardrails are important but not critical - log warning and continue
-        logger.warning(f"Failed to load guardrails file: {e}")
+        logger.error(f"Failed to load guardrails file: {e}")
+        raise PromptLoadError("prompts/guardrails.md", str(e)) from e
 
     messages = [system_prompt]
 
