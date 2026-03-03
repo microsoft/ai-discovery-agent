@@ -30,7 +30,7 @@ RUNTIME DEPENDENCIES:
   Author: Microsoft Corporation
   Dependency specification: azure-data-tables>=12.7.0
 
-* azure-identity 1.25.1
+* azure-identity 1.25.2
   Homepage: N/A
   License: N/A
   Author: N/A
@@ -42,43 +42,49 @@ RUNTIME DEPENDENCIES:
   Author: Microsoft Corporation
   Dependency specification: azure-monitor-opentelemetry>=1.8.2
 
-* azure-storage-blob 12.27.1
+* azure-storage-blob 12.28.0
   Homepage: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob
   License: MIT License
   Author: Microsoft Corporation
   Dependency specification: azure-storage-blob>=12.26.0
 
-* chainlit 2.9.0
+* chainlit 2.9.6
   Homepage: https://chainlit.io/
   License: Apache-2.0
   Author: Willy Douhard, Dan Andre Constantini
-  Dependency specification: chainlit>=2.8.0
+  Dependency specification: chainlit>=2.9.4
 
-* langchain-community 0.3.31
+* langchain-community 0.4.1
   Homepage: N/A
   License: MIT
   Author: N/A
-  Dependency specification: langchain-community>=0.3.27
+  Dependency specification: langchain-community>=0.4.1,<2.0
 
-* langchain-openai 0.3.35
-  Homepage: N/A
+* langchain-core 1.2.16
+  Homepage: https://docs.langchain.com/
   License: MIT
   Author: N/A
-  Dependency specification: langchain-openai>=0.3.33
+  Dependency specification: langchain-core>=1.2.11,<2.0
 
-* langchain 0.3.27
-  Homepage: N/A
+* langchain-openai 1.1.10
+  Homepage: https://docs.langchain.com/oss/python/integrations/providers/openai
   License: MIT
   Author: N/A
-  Dependency specification: langchain>=0.3.27,<0.4
+  Dependency specification: langchain-openai>=1.1.10,<2.0
 
-* langgraph 1.0.1
-  Homepage: N/A
+* langchain 1.2.10
+  Homepage: https://docs.langchain.com/
+  License: MIT
+  Author: N/A
+  Dependency specification: langchain>=1.2.10,<2.0
+
+* langgraph 1.0.10
+  Homepage: https://docs.langchain.com/oss/python/langgraph/overview
   License: N/A
   Author: N/A
-  Dependency specification: langgraph>=0.6.7
+  Dependency specification: langgraph>=1.0.1
 
-* openai 2.7.1
+* openai 2.24.0
   Homepage: https://github.com/openai/openai-python
   License: Apache-2.0
   Author: N/A
@@ -116,13 +122,13 @@ DEVELOPMENT DEPENDENCIES:
   Author: Microsoft Corporation
   Dependency specification: bandit-sarif-formatter>=1.1.1
 
-* bandit 1.8.6
+* bandit 1.9.3
   Homepage: https://bandit.readthedocs.io/
   License: Apache-2.0
   Author: PyCQA
   Dependency specification: bandit>=1.8.6
 
-* checkov 3.2.495
+* checkov 3.2.506
   Homepage: https://github.com/bridgecrewio/checkov
   License: Apache License 2.0
   Author: bridgecrew
@@ -134,25 +140,25 @@ DEVELOPMENT DEPENDENCIES:
   Author: N/A
   Dependency specification: isort==7.0.0
 
-* mypy 1.18.2
+* mypy 1.19.1
   Homepage: https://www.mypy-lang.org/
   License: MIT
   Author: N/A
   Dependency specification: mypy>=1.18.2
 
-* pip 25.3
+* pip 26.0.1
   Homepage: https://pip.pypa.io/
   License: N/A
   Author: N/A
-  Dependency specification: pip>=25.3
+  Dependency specification: pip>=26.0
 
-* pre_commit 4.4.0
+* pre_commit 4.5.1
   Homepage: https://github.com/pre-commit/pre-commit
   License: MIT
   Author: Anthony Sottile
   Dependency specification: pre-commit>=3.8.0
 
-* pytest-asyncio 1.2.0
+* pytest-asyncio 1.3.0
   Homepage: https://github.com/pytest-dev/pytest-asyncio
   License: N/A
   Author: N/A
@@ -170,17 +176,17 @@ DEVELOPMENT DEPENDENCIES:
   Author: N/A
   Dependency specification: pytest-mock>=3.12.0
 
-* pytest 8.4.2
+* pytest 9.0.2
   Homepage: https://docs.pytest.org/en/latest/
-  License: MIT
+  License: N/A
   Author: Holger Krekel, Bruno Oliveira, Ronny Pfannschmidt, Floris Bruynooghe, Brianna Laugher, Florian Bruhin, Others (See AUTHORS)
   Dependency specification: pytest>=8.0.0
 
-* ruff 0.14.2
+* ruff 0.15.2
   Homepage: https://docs.astral.sh/ruff
   License: N/A
   Author: N/A
-  Dependency specification: ruff==0.14.2
+  Dependency specification: ruff==0.15.2
 
 * types-PyYAML 6.0.12.20250915
   Homepage: https://github.com/python/typeshed
@@ -190,7 +196,7 @@ DEVELOPMENT DEPENDENCIES:
 
 ================================================================================
 
-This NOTICE file was generated on 2026-03-02 11:15:21 UTC
+This NOTICE file was generated on 2026-03-03 08:51:35 UTC
 
 For more information about open source licenses, visit:
 - https://opensource.org/licenses/
