@@ -671,17 +671,14 @@ async def handle_rename_conversation(
         if not current_history:
             current_history = []
 
-        success = await conversation_manager.save_conversation(
+        await conversation_manager.save_conversation(
             user_id, agent_key, current_conv_id, current_history, new_title
         )
 
-        if success:
-            cl.user_session.set("conversation_title", new_title)
-            await cl.Message(
-                content=f"✅ Conversation renamed to: **{new_title}**"
-            ).send()
-        else:
-            await cl.Message(content="❌ Failed to rename conversation.").send()
+        cl.user_session.set("conversation_title", new_title)
+        await cl.Message(
+            content=f"✅ Conversation renamed to: **{new_title}**"
+        ).send()
 
     except Exception as e:
         logger.error(f"Error renaming conversation: {e}")
