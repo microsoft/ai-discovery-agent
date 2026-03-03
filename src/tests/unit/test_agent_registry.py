@@ -30,7 +30,7 @@ class TestAgentRegistry:
         sample_config = {
             "persona": "prompts/facilitator_persona.md",
             "document": "prompts/workshop_guide.md",
-            "model": "gpt-4o",
+            "model": "gpt-5.1-chat",
             "temperature": 0.7,
         }
 
@@ -44,7 +44,7 @@ class TestAgentRegistry:
                 mock_single_agent.assert_called_once_with(
                     agent_key="facilitator",
                     persona="prompts/facilitator_persona.md",
-                    model="gpt-4o",
+                    model="gpt-5.1-chat",
                     temperature=0.7,
                     documents="prompts/workshop_guide.md",
                 )
@@ -55,7 +55,7 @@ class TestAgentRegistry:
         sample_config = {
             "persona": "prompts/expert_persona.md",
             "documents": ["prompts/doc1.md", "prompts/doc2.md"],
-            "model": "gpt-4o-mini",
+            "model": "gpt-4.1-mini",
             "temperature": 1.0,
         }
 
@@ -69,7 +69,7 @@ class TestAgentRegistry:
                 mock_single_agent.assert_called_once_with(
                     agent_key="expert",
                     persona="prompts/expert_persona.md",
-                    model="gpt-4o-mini",
+                    model="gpt-4.1-mini",
                     temperature=1.0,
                     documents=frozenset(["prompts/doc1.md", "prompts/doc2.md"]),
                 )
@@ -83,7 +83,7 @@ class TestAgentRegistry:
                 {"agent": "technical_expert", "condition": "technical"},
                 {"agent": "business_expert", "condition": "business"},
             ],
-            "model": "gpt-4o",
+            "model": "gpt-5.1-chat",
             "temperature": 0.5,
         }
 
@@ -101,32 +101,41 @@ class TestAgentRegistry:
                         {"agent": "technical_expert", "condition": "technical"},
                         {"agent": "business_expert", "condition": "business"},
                     ],
-                    model="gpt-4o",
+                    model="gpt-5.1-chat",
                     temperature=0.5,
                 )
                 assert result == mock_instance
 
     def test_get_agent_invalid_config(self, registry):
         """Test handling of invalid agent configuration."""
+        from aida.exceptions import AgentConfigurationError
+
         invalid_config = {"invalid": "config"}
 
         with patch.object(registry, "get", return_value=invalid_config):
-            with pytest.raises(ValueError, match="Invalid agent configuration"):
+            with pytest.raises(
+                AgentConfigurationError,
+                match="missing 'persona' or 'condition' field",
+            ):
                 registry.get_agent("invalid")
 
     def test_get_agent_empty_config(self, registry):
         """Test handling of empty agent configuration."""
-        empty_config = {}
+        from aida.exceptions import AgentNotFoundError
 
-        with patch.object(registry, "get", return_value=empty_config):
-            result = registry.get_agent("empty")
-            assert result is None
+        with patch.object(registry, "get", return_value=None):
+            with pytest.raises(AgentNotFoundError, match="Agent 'empty' not found"):
+                registry.get_agent("empty")
 
     def test_get_agent_not_found(self, registry):
         """Test handling when agent key is not found."""
+        from aida.exceptions import AgentNotFoundError
+
         with patch.object(registry, "get", return_value=None):
-            result = registry.get_agent("nonexistent")
-            assert result is None
+            with pytest.raises(
+                AgentNotFoundError, match="Agent 'nonexistent' not found"
+            ):
+                registry.get_agent("nonexistent")
 
     def test_all_method_returns_available_agents(self, registry):
         """Test the all() method returns agent configurations."""
@@ -141,7 +150,7 @@ class TestAgentRegistry:
 
     def test_get_method_basic_functionality(self, registry):
         """Test the basic get method functionality."""
-        sample_config = {"persona": "test.md", "model": "gpt-4o"}
+        sample_config = {"persona": "test.md", "model": "gpt-5.1-chat"}
 
         with patch.object(registry, "_agents", {"test_agent": sample_config}):
             result = registry.get("test_agent")
@@ -160,6 +169,6 @@ class TestAgentRegistry:
 
                 registry.get_agent("test")
 
-                # Should use default model "gpt-4o"
+                # Should use default model "gpt-5.1-chat"
                 call_kwargs = mock_single.call_args.kwargs
-                assert call_kwargs["model"] == "gpt-4o"
+                assert call_kwargs["model"] == "gpt-5.1-chat"

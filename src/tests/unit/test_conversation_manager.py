@@ -6,6 +6,9 @@
 from datetime import UTC, datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
+import pytest
+
+from aida.exceptions import StorageError
 from aida.persistence.conversation_manager import (
     AzureStorageConversationManager,
     DummyConversationManager,
@@ -71,31 +74,25 @@ class TestAzureStorageConversationManager:
             {"role": "assistant", "content": "I'd be happy to help!"},
         ]
 
-        # Mock OpenAI response
-        mock_generation = MagicMock()
-        mock_generation.text = "Python Data Structures Help"
-
+        # Mock OpenAI response (ainvoke returns an AIMessage)
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = "Python Data Structures Help"
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
         assert title == "Python Data Structures Help"
-        self.mock_openai_client.agenerate.assert_called_once()
+        self.mock_openai_client.ainvoke.assert_called_once()
 
     async def test_generate_conversation_title_with_quotes(self):
         """Test title generation removes quotes from title."""
         messages = [{"role": "user", "content": "Help with 'Python' programming"}]
 
-        mock_generation = MagicMock()
-        mock_generation.text = '"Python Programming Help"'
-
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = '"Python Programming Help"'
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -105,15 +102,12 @@ class TestAzureStorageConversationManager:
         """Test title generation truncates titles longer than 50 characters."""
         messages = [{"role": "user", "content": "Help with complex topic"}]
 
-        mock_generation = MagicMock()
-        mock_generation.text = (
+        mock_response = MagicMock()
+        mock_response.content = (
             "This is a very long conversation title that exceeds fifty characters"
         )
 
-        mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
-
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -124,7 +118,7 @@ class TestAzureStorageConversationManager:
         """Test title generation handles OpenAI errors gracefully."""
         messages = [{"role": "user", "content": "Test message"}]
 
-        self.mock_openai_client.agenerate.side_effect = Exception("OpenAI API error")
+        self.mock_openai_client.ainvoke.side_effect = Exception("OpenAI API error")
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -135,11 +129,11 @@ class TestAzureStorageConversationManager:
         """Test title generation handles invalid OpenAI response."""
         messages = [{"role": "user", "content": "Test message"}]
 
-        # Mock invalid response
+        # Mock invalid response (no content)
         mock_response = MagicMock()
-        mock_response.generations = []
+        mock_response.content = ""
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
@@ -147,8 +141,6 @@ class TestAzureStorageConversationManager:
 
     async def test_create_conversation_success(self):
         """Test successful conversation creation."""
-        self.mock_storage.save_conversation.return_value = True
-
         with patch.object(
             self.manager, "generate_conversation_id", return_value="test-conv-id"
         ):
@@ -169,8 +161,6 @@ class TestAzureStorageConversationManager:
 
     async def test_create_conversation_without_initial_messages(self):
         """Test conversation creation without initial messages."""
-        self.mock_storage.save_conversation.return_value = True
-
         with patch.object(
             self.manager, "generate_conversation_id", return_value="test-conv-id"
         ):
@@ -185,29 +175,29 @@ class TestAzureStorageConversationManager:
         assert conversation_data["messages"] == []
 
     async def test_create_conversation_storage_failure(self):
-        """Test conversation creation when storage fails."""
-        self.mock_storage.save_conversation.return_value = False
+        """Test conversation creation when storage raises an exception."""
+        self.mock_storage.save_conversation.side_effect = StorageError(
+            "Storage failed", "user123", "conv123"
+        )
 
         with patch.object(
             self.manager, "generate_conversation_id", return_value="test-conv-id"
         ):
-            conversation_id = await self.manager.create_conversation(
-                user_id="user123", agent_key="test_agent"
-            )
-
-        assert conversation_id == "test-conv-id"  # ID returned even if save fails
+            with pytest.raises(StorageError):
+                await self.manager.create_conversation(
+                    user_id="user123", agent_key="test_agent"
+                )
 
     async def test_save_conversation_new(self):
         """Test saving a new conversation."""
         self.mock_storage.load_conversation.return_value = None
-        self.mock_storage.save_conversation.return_value = True
 
         messages = [
             {"role": "user", "content": "Hello"},
             {"role": "assistant", "content": "Hi there!"},
         ]
 
-        result = await self.manager.save_conversation(
+        await self.manager.save_conversation(
             user_id="user123",
             agent_key="test_agent",
             conversation_id="conv123",
@@ -215,7 +205,6 @@ class TestAzureStorageConversationManager:
             title="Custom Title",
         )
 
-        assert result is True
         self.mock_storage.save_conversation.assert_called_once()
         call_args = self.mock_storage.save_conversation.call_args
         conversation_data = call_args[0][3]
@@ -231,7 +220,6 @@ class TestAzureStorageConversationManager:
             "updated_at": "2024-01-01T10:00:00Z",
         }
         self.mock_storage.load_conversation.return_value = existing_data
-        self.mock_storage.save_conversation.return_value = True
 
         new_messages = [
             {"role": "user", "content": "Hello"},
@@ -242,7 +230,7 @@ class TestAzureStorageConversationManager:
         with patch.object(
             self.manager, "generate_conversation_title", return_value="Generated Title"
         ) as mock_generate_title:
-            result = await self.manager.save_conversation(
+            await self.manager.save_conversation(
                 user_id="user123",
                 agent_key="test_agent",
                 conversation_id="conv123",
@@ -252,7 +240,6 @@ class TestAzureStorageConversationManager:
             # Should generate new title since no title parameter provided and messages >= 2
             mock_generate_title.assert_called_once_with(new_messages)
 
-        assert result is True
         call_args = self.mock_storage.save_conversation.call_args
         conversation_data = call_args[0][3]
         assert conversation_data["title"] == "Generated Title"  # New generated title
@@ -268,7 +255,6 @@ class TestAzureStorageConversationManager:
             "updated_at": "2024-01-01T10:00:00Z",
         }
         self.mock_storage.load_conversation.return_value = existing_data
-        self.mock_storage.save_conversation.return_value = True
 
         new_messages = [
             {"role": "user", "content": "Hello"},
@@ -279,7 +265,7 @@ class TestAzureStorageConversationManager:
         with patch.object(
             self.manager, "generate_conversation_title"
         ) as mock_generate_title:
-            result = await self.manager.save_conversation(
+            await self.manager.save_conversation(
                 user_id="user123",
                 agent_key="test_agent",
                 conversation_id="conv123",
@@ -290,7 +276,6 @@ class TestAzureStorageConversationManager:
             # Should not generate title when explicit title is provided
             mock_generate_title.assert_not_called()
 
-        assert result is True
         call_args = self.mock_storage.save_conversation.call_args
         conversation_data = call_args[0][3]
         assert conversation_data["title"] == "Explicit Title"  # Explicit title used
@@ -300,7 +285,6 @@ class TestAzureStorageConversationManager:
     async def test_save_conversation_auto_title_generation(self):
         """Test automatic title generation when saving conversation with enough messages."""
         self.mock_storage.load_conversation.return_value = None
-        self.mock_storage.save_conversation.return_value = True
 
         with patch.object(
             self.manager,
@@ -455,14 +439,13 @@ class TestDummyConversationManager:
 
     async def test_save_conversation(self):
         """Test dummy conversation saving."""
-        result = await self.manager.save_conversation(
+        await self.manager.save_conversation(
             user_id="user123",
             agent_key="test_agent",
             conversation_id="conv123",
             messages=[{"role": "user", "content": "Hello"}],
             title="Test Title",
         )
-        assert result is True
 
     async def test_load_conversation(self):
         """Test dummy conversation loading."""
@@ -502,19 +485,16 @@ class TestConversationManagerEdgeCases:
         long_content = "This is a very long message " * 50  # > 200 chars
         messages = [{"role": "user", "content": long_content}]
 
-        mock_generation = MagicMock()
-        mock_generation.text = "Long Message Title"
-
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = "Long Message Title"
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
         assert title == "Long Message Title"
-        # Verify that the agenerate method was called
-        self.mock_openai_client.agenerate.assert_called_once()
+        # Verify that the ainvoke method was called
+        self.mock_openai_client.ainvoke.assert_called_once()
         # Verify that content was truncated to 200 chars
         assert len(long_content[:200]) == 200
 
@@ -530,24 +510,20 @@ class TestConversationManagerEdgeCases:
             {"role": "user", "content": "Sixth message"},  # Should be ignored (> 5)
         ]
 
-        mock_generation = MagicMock()
-        mock_generation.text = "Multi-Message Conversation"
-
         mock_response = MagicMock()
-        mock_response.generations = [[mock_generation]]
+        mock_response.content = "Multi-Message Conversation"
 
-        self.mock_openai_client.agenerate.return_value = mock_response
+        self.mock_openai_client.ainvoke.return_value = mock_response
 
         title = await self.manager.generate_conversation_title(messages)
 
         assert title == "Multi-Message Conversation"
         # Verify the method was called with appropriate messages
-        self.mock_openai_client.agenerate.assert_called_once()
+        self.mock_openai_client.ainvoke.assert_called_once()
 
     async def test_save_conversation_storage_error(self):
         """Test save conversation when storage operations fail."""
         self.mock_storage.load_conversation.side_effect = Exception("Storage error")
-        self.mock_storage.save_conversation.return_value = False
 
         # The function should propagate the storage error
         with patch.object(self.manager, "generate_conversation_title"):
@@ -566,7 +542,7 @@ class TestConversationManagerEdgeCases:
 
     async def test_openai_client_model_name_attribute_error(self):
         """Test error handling when OpenAI client doesn't have model_name attribute."""
-        self.mock_openai_client.agenerate.side_effect = Exception("API Error")
+        self.mock_openai_client.ainvoke.side_effect = Exception("API Error")
 
         messages = [{"role": "user", "content": "Test message"}]
 

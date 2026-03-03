@@ -20,7 +20,7 @@ agents:
     persona: prompts/example_persona.md
     document: prompts/example_knowledge.md
     temperature: 0.5
-    model: gpt-4o
+    model: gpt-5.1-chat
   example_expert2:
     persona: prompts/example_persona.md
     document: prompts/example_knowledge.md

@@ -18,7 +18,7 @@ class TestSingleAgent:
         agent = SingleAgent(
             agent_key="test_agent",
             persona="prompts/facilitator_persona.md",
-            model="gpt-4o",
+            model="gpt-5.1-chat",
             temperature=0.7,
             documents="prompts/workshop_guide.md",
         )
@@ -26,7 +26,7 @@ class TestSingleAgent:
         assert agent.agent_key == "test_agent"
         assert agent.persona == "prompts/facilitator_persona.md"
         assert agent.documents == "prompts/workshop_guide.md"
-        assert agent.model == "gpt-4o"
+        assert agent.model == "gpt-5.1-chat"
         assert agent.temperature == 0.7
 
     def test_init_with_multiple_documents(self):
@@ -35,7 +35,7 @@ class TestSingleAgent:
         agent = SingleAgent(
             agent_key="multi_agent",
             persona="prompts/expert_persona.md",
-            model="gpt-4o-mini",
+            model="gpt-4.1-mini",
             temperature=1.0,
             documents=documents,
         )
@@ -43,7 +43,7 @@ class TestSingleAgent:
         assert agent.agent_key == "multi_agent"
         assert agent.persona == "prompts/expert_persona.md"
         assert agent.documents == documents
-        assert agent.model == "gpt-4o-mini"
+        assert agent.model == "gpt-4.1-mini"
         assert agent.temperature == 1.0
 
     def test_init_with_minimal_config(self):
@@ -64,7 +64,7 @@ class TestSingleAgent:
         agent = SingleAgent(
             agent_key="default_agent",
             persona="prompts/persona.md",
-            model="gpt-4o",
+            model="gpt-5.1-chat",
         )
 
         assert agent.documents is None
@@ -161,7 +161,7 @@ class TestSingleAgent:
         agent = SingleAgent(
             agent_key="test_agent",
             persona="prompts/persona.md",
-            model="gpt-4o",
+            model="gpt-5.1-chat",
             temperature=0.7,
         )
 
@@ -224,7 +224,7 @@ class TestSingleAgent:
         agent = SingleAgent(
             agent_key="inheritance_test",
             persona="prompts/persona.md",
-            model="gpt-4o",
+            model="gpt-5.1-chat",
             temperature=0.5,
         )
 

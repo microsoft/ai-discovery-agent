@@ -238,3 +238,4 @@ src/prompts/
 src/config/
 
 .chainlit/translations
+node_modules

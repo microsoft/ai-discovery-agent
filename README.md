@@ -10,17 +10,17 @@ Aida is a set of AI agents designed to support the AI Discovery Workshop—a col
 ## Prerequisites
 
 - WSL or Linux machine
-- VSCode
-- Python 3.12
-- Azure account
+- [Visual Studio Code](https://code.visualstudio.com/)
+- [Python 3.12](https://www.python.org/downloads/release/python-31210/)
+- [Azure account](https://azure.microsoft.com)
 - Additional tools:
-  - (az cli)[https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt]
-  - (azd cli)[https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-linux]
-  - curl
-  - uv
-  - git
-  - jq
-  - dig (from bind9-dnsutils)
+  - [az cli](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli-linux?view=azure-cli-latest&pivots=apt)
+  - [azd cli](https://learn.microsoft.com/en-us/azure/developer/azure-developer-cli/install-azd?tabs=winget-windows%2Cbrew-mac%2Cscript-linux&pivots=os-linux)
+  - [curl](https://curl.se/docs/manpage.html)
+  - [uv](https://docs.astral.sh/uv/)
+  - [git](https://git-scm.com/)
+  - [jq](https://jqlang.org/)
+  - [dig (from bind9-dnsutils)](https://man.freebsd.org/cgi/man.cgi?query=dig&apropos=0&sektion=0&manpath=4.4BSD+Lite2&arch=default&format=html)
 
 ## Installation
 
@@ -208,6 +208,63 @@ This README intentionally stays concise—`ARCHITECTURE.md` covers:
 - Verification & troubleshooting checklists
 - Extensibility patterns for adding new Azure services
 
+## Responsible AI
+
+This project is committed to responsible AI development and deployment. We follow [Microsoft's Responsible AI Principles](https://www.microsoft.com/ai/responsible-ai) across six key dimensions:
+
+- **Fairness:** No discrimination; inclusive design; regular fairness audits
+- **Reliability & Safety:** Content safety filters; prompt injection protection; abuse monitoring
+- **Privacy & Security:** Data encryption; minimal data collection; 90-day auto-deletion
+- **Inclusiveness:** Accessible design; support for diverse users and industries
+- **Transparency:** Clear AI disclosure; documented limitations; user-facing transparency guide
+- **Accountability:** RAI governance process; human oversight; comprehensive monitoring
+
+### RAI Documentation
+
+📋 **[RAI Review](docs/RAI_REVIEW.md)** - Comprehensive responsible AI assessment including:
+- Risk summary and mitigation strategies
+- Detailed findings across all RAI dimensions
+- Implementation recommendations with code examples
+- Evaluation plans and monitoring strategies
+
+📊 **[Model Card](docs/MODEL_CARD.md)** - Technical documentation of AI models:
+- Model architecture and components
+- Intended uses and limitations
+- Performance metrics and known failure modes
+- Ethical considerations
+
+🎯 **[RAI Principles](docs/RESPONSIBLE_AI_PRINCIPLES.md)** - Governance framework:
+- Core principles and commitments
+- Roles and responsibilities
+- Change control process
+- Incident response procedures
+
+🤝 **[AI Transparency Guide](docs/AI_TRANSPARENCY_GUIDE.md)** - User-facing documentation:
+- What the AI can and cannot do
+- Privacy protections explained
+- When to seek human help
+- Tips for best results
+
+### Quick Start: RAI Best Practices
+
+**For Users:**
+- ✅ Verify AI suggestions with human experts
+- ✅ Don't share sensitive or confidential information
+- ✅ Provide feedback using thumbs up/down buttons
+- ✅ Escalate to human facilitators for complex issues
+
+**For Developers:**
+- ✅ Review [RAI Review](docs/RAI_REVIEW.md) before making AI-related changes
+- ✅ Follow security checklist in [docs/security/SECURITY_REVIEW_CHECKLIST.md](docs/security/SECURITY_REVIEW_CHECKLIST.md)
+- ✅ Test with diverse personas and scenarios
+- ✅ Update RAI documentation when adding new features
+
+**For Facilitators:**
+- ✅ Read [AI Transparency Guide](docs/AI_TRANSPARENCY_GUIDE.md) to understand capabilities
+- ✅ Maintain human oversight during workshops
+- ✅ Validate AI suggestions against workshop methodologies
+- ✅ Report concerning AI behavior
+
 ## Configuration
 
 ### Authentication
@@ -221,7 +278,7 @@ The application uses a unified YAML configuration in `pages.yaml` that defines b
 1. **Agents**: Each agent has:
    - `persona`: Path to the persona prompt file that defines its behavior
    - `document` or `documents`: One or more document files that provide grounding/context
-   - `model`: The AI model to use (e.g., "gpt-4o", "gpt-4o-mini")
+   - `model`: The AI model to use (e.g., "gpt-5.1-chat", "gpt-4.1-mini")
    - `temperature`: Temperature setting for response generation (0.0-2.0)
 2. **Pages**: Each page references an agent and defines:
    - Navigation properties (title, icon, URL path)
@@ -237,7 +294,7 @@ agents:
   my_agent:
     persona: prompts/my_persona.md
     document: prompts/my_document.md # Single document
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.7
 ```
 
@@ -250,7 +307,7 @@ agents:
     documents: # Multiple documents
       - prompts/first_document.md
       - prompts/second_document.md
-    model: gpt-4o-mini
+    model: gpt-4.1-mini
     temperature: 1.0
 ```
 
@@ -265,7 +322,7 @@ agents:
         condition: "expert"
       - agent: "basic_agent"
         condition: "basic"
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.5
 ```
 
@@ -325,16 +382,6 @@ The GitHub Actions workflow (`.github/workflows/02-ci-cd.yml`) runs automaticall
 3. **Deploy**: Uses Azure Web App Deploy action to deploy application code to the **staging slot** (not production)
 
 **Important**: The workflow deploys to the staging slot (`staging`) to provide a safe deployment process. You can test your changes at `https://your-app-name-staging.azurewebsites.net` and manually swap slots when ready for production.
-
-### Code Formatting Action
-
-The repository includes a `format-pr.yml` GitHub Action that automatically formats code in pull requests using Black and Ruff. To trigger this action:
-
-1. Comment `/format` on any pull request
-2. The action will run pre-commit hooks to format the code
-3. Formatted changes will be automatically committed and pushed back to the PR branch
-
-**Required Configuration**: This action requires a `PUSH_PAT` secret to be configured in your repository settings. The PAT (Personal Access Token) must have **Contents write** permissions to allow the action to push the formatted changes back to the pull request branch.
 
 ### Managed Identity Federation Setup
 

@@ -1,0 +1,30 @@
+env:
+  contexts:
+  - name: baseline
+    urls:
+    - ${TARGET_URL}
+    # includePaths:
+    # excludePaths:
+    # authentication:
+        # method:  # String, one of 'manual', 'http', 'form', 'json' or 'script'
+  parameters:
+    failOnError: true
+    progressToStdout: false
+jobs:
+- type: passiveScan-config
+  parameters:
+    enableTags: false
+    maxAlertsPerRule: 10
+- type: spider
+  parameters:
+    maxDuration: 5
+- type: passiveScan-wait  # Passive scan wait for the passive scanner to finish
+  parameters:
+    maxDuration: 5
+- type: report
+  parameters:
+    reportDescription: ''
+    reportDir: /zap/wrk/
+    reportFile: dast.sarif
+    reportTitle: ZAP Scanning Report
+    template: sarif-json

@@ -16,14 +16,63 @@ AgentState : TypedDict
 GraphAgent : Agent
     Implements a graph-based agent with conditional routing to sub-agents.
 
+Usage Example:
+--------------
+Creating and using a GraphAgent for intelligent routing:
+
+    >>> from aida.agents.graph_agent import GraphAgent
+    >>> from langchain_core.runnables import RunnableConfig
+    >>>
+    >>> # Define routing configuration
+    >>> routing_config = {
+    ...     "agent_key": "smart_router",
+    ...     "condition": "Analyze the user query and determine if it's technical, business, or general",
+    ...     "agents": [
+    ...         {"agent": "technical_expert", "condition": "technical"},
+    ...         {"agent": "business_expert", "condition": "business"},
+    ...         {"agent": "general_assistant", "condition": "general"}
+    ...     ],
+    ...     "model": "gpt-5.1-chat",
+    ...     "temperature": 0.5
+    ... }
+    >>>
+    >>> # Create the graph agent
+    >>> router = GraphAgent(
+    ...     agent_key=routing_config["agent_key"],
+    ...     condition=routing_config["condition"],
+    ...     agents=routing_config["agents"],
+    ...     model=routing_config["model"],
+    ...     temperature=routing_config["temperature"]
+    ... )
+    >>>
+    >>> # Use the agent - it will automatically route to the appropriate sub-agent
+    >>> messages = [{"role": "user", "content": "How do I optimize database queries?"}]
+    >>> config = RunnableConfig()
+    >>> async for chunk in router.astream(messages, config):
+    ...     # The router will direct this to the technical_expert
+    ...     print(chunk)
+
+Workflow:
+---------
+1. The GraphAgent evaluates the input using the condition prompt
+2. Based on the evaluation, it selects the appropriate sub-agent
+3. The selected sub-agent processes the request
+4. The response is returned to the user
+
+Note:
+-----
+- All sub-agents must be registered in the agent_registry before use
+- The condition prompt should guide the LLM to output one of the condition values
+- GraphAgent itself doesn't have system prompts - it delegates to sub-agents
+
 Dependencies:
 -------------
 - langchain_core: For message handling and prompt templates
 - langgraph: For state graph workflow construction
 """
 
-from collections.abc import Sequence
-from typing import Annotated, Any, TypedDict
+from collections.abc import Hashable, Sequence
+from typing import Annotated, Any, TypedDict, cast
 
 from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.prompts import ChatPromptTemplate
@@ -92,7 +141,7 @@ class GraphAgent(Agent):
         agents : List[Dict[str, str]]
             List of agent configurations containing agent keys and their conditions.
         model : str, optional
-            The model to use for this agent. Defaults to "gpt-4o".
+            The model to use for this agent. Defaults to "gpt-5.1-chat".
         temperature : float, optional
             The temperature setting for response generation. Defaults to 0.7.
         """
@@ -220,7 +269,7 @@ class GraphAgent(Agent):
                 workflow = StateGraph(AgentState)
                 # Add the nodes (start_agent, stock_agent, rag_agent)
                 workflow.add_node("start", self._start_agent)
-                decisions = {}
+                decisions: dict[str, str] = {}
                 for agent in self.agents:
                     workflow.add_node(
                         agent["agent"],
@@ -232,10 +281,11 @@ class GraphAgent(Agent):
                     decisions[agent["agent"]] = agent["condition"]
 
                 # Add the conditional edge from start -> lamba (decision) -> defined agents
+                # Cast to dict[Hashable, str] to satisfy mypy type checking
                 workflow.add_conditional_edges(
                     "start",
                     lambda x: x["decision"],
-                    decisions,
+                    cast(dict[Hashable, str], decisions),
                 )
                 # Set the workflow entry point
                 workflow.set_entry_point("start")

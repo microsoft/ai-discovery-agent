@@ -11,6 +11,55 @@ optional document context, and to retrieve system messages based on these parame
 
 Classes:
 - SingleAgent: Implements a single agent with persona and document-based system message loading.
+- ChatState: TypedDict defining the state structure for chat workflows.
+
+Usage Example:
+--------------
+Creating and using a SingleAgent:
+
+    >>> from aida.agents.single_agent import SingleAgent
+    >>> from langchain_core.runnables import RunnableConfig
+    >>>
+    >>> # Create a simple agent with just a persona
+    >>> agent = SingleAgent(
+    ...     agent_key="facilitator",
+    ...     persona="prompts/facilitator_persona.md",
+    ...     model="gpt-5.1-chat",
+    ...     temperature=0.7
+    ... )
+    >>>
+    >>> # Create an agent with a persona and a single document
+    >>> customer_agent = SingleAgent(
+    ...     agent_key="customer_rep",
+    ...     persona="prompts/bank_persona.md",
+    ...     documents="prompts/bank_knowledge.md",
+    ...     model="gpt-4.1-mini",
+    ...     temperature=0.5
+    ... )
+    >>>
+    >>> # Create an agent with multiple documents
+    >>> expert_agent = SingleAgent(
+    ...     agent_key="multi_doc_expert",
+    ...     persona="prompts/expert_persona.md",
+    ...     documents=frozenset([
+    ...         "prompts/domain_knowledge.md",
+    ...         "prompts/best_practices.md"
+    ...     ]),
+    ...     model="gpt-5.1-chat"
+    ... )
+    >>>
+    >>> # Use the agent to process messages
+    >>> messages = [{"role": "user", "content": "Help me understand AI."}]
+    >>> config = RunnableConfig()
+    >>> async for chunk in agent.astream(messages, config):
+    ...     # Process streaming response
+    ...     print(chunk)
+
+Note:
+-----
+- Persona files should be in Markdown format
+- Document files are automatically wrapped in <documents> tags
+- Using frozenset for multiple documents ensures proper caching behavior
 """
 
 from typing import Annotated
@@ -65,7 +114,7 @@ class SingleAgent(Agent):
         persona : str
             Path to the persona prompt file.
         model : str, optional
-            The model to use for this agent. Defaults to "gpt-4o".
+            The model to use for this agent. Defaults to "gpt-5.1-chat".
         documents : Optional[Union[str, List[str]]], optional
             Path(s) to document context file(s). Defaults to None.
         temperature : float, optional

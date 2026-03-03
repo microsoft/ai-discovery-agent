@@ -11,6 +11,7 @@ param repository string
 param clientIpAddress string
 param environment string = 'prod'
 param containerImageName string
+param aiCapacity int
 
 var publicNetworkAccess = environment == 'prod' ? 'Disabled' : 'Enabled'
 
@@ -48,6 +49,8 @@ resource azureOpenAI 'Microsoft.CognitiveServices/accounts@2024-04-01-preview' =
 
 module azureOpenAIPe './modules/privateendpoint.bicep' = {
   name: '${namePrefix}-deployment-openai-pe'
+  // depends on the model so we make sure the account is fully provisioned before creating the private endpoint
+  dependsOn: azureOpenAIModel
   params: {
     location: location
     name: '${namePrefix}-deployment-openai-pe'
@@ -60,9 +63,9 @@ module azureOpenAIPe './modules/privateendpoint.bicep' = {
 
 var deployments = [
   {
-    name: 'gpt-4o'
+    name: 'gpt-5.1-chat'
     skuName: 'GlobalStandard'
-    modelVersion: '2024-08-06'
+    modelVersion: '2025-11-13'
   }
   {
     name: 'text-embedding-ada-002'
@@ -88,7 +91,7 @@ resource azureOpenAIModel 'Microsoft.CognitiveServices/accounts/deployments@2024
     parent: azureOpenAI
     sku: {
       name: deployment.skuName
-      capacity: 100
+      capacity: aiCapacity
     }
     properties: {
       model: {

@@ -12,7 +12,7 @@ with the persistence layer.
 from datetime import UTC, datetime
 from typing import Any
 
-from langchain.chat_models.base import BaseChatModel
+from langchain_core.language_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
 
 from aida.interfaces import ConversationManager
@@ -76,37 +76,31 @@ Context: {context}
 
 Generate a title that captures the main topic or intent. Be specific and informative."""
 
-            response = await self.openai_client.agenerate(
-                messages=[
-                    [
-                        SystemMessage(
-                            content="You are a helpful assistant that generates concise, descriptive conversation titles."
-                        ),
-                        HumanMessage(content=prompt),
-                    ]
+            response = await self.openai_client.ainvoke(
+                [
+                    SystemMessage(
+                        content="You are a helpful assistant that generates concise, descriptive conversation titles."
+                    ),
+                    HumanMessage(content=prompt),
                 ]
             )
 
-            if (
-                not response
-                or not hasattr(response, "generations")
-                or not response.generations
-                or not response.generations[0]
-                or not response.generations[0][0]
-                or not hasattr(response.generations[0][0], "text")
-                or not response.generations[0][0].text
-            ):
+            if not response or not hasattr(response, "content") or not response.content:
                 return f"Conversation {datetime.now(UTC).strftime('%Y-%m-%d %H:%M')}"
 
-            title = response.generations[0][0].text.strip()
+            title = response.content.strip()
             # Clean up the title
             title = title.replace('"', "").replace("'", "")[:50]
             return title
 
         except Exception as e:
+            # Get model deployment name safely
+            model_name = getattr(self.openai_client, "model_name", None) or getattr(
+                self.openai_client, "deployment_name", "unknown"
+            )
             logger.error(
                 f"Error generating conversation title via Azure OpenAI deployment "
-                f"'{self.openai_client.model_name}': {e}"
+                f"'{model_name}': {e}"
             )
             return f"Conversation {datetime.now(UTC).strftime('%Y-%m-%d %H:%M')}"
 
@@ -141,18 +135,11 @@ Generate a title that captures the main topic or intent. Be specific and informa
             "updated_at": datetime.now(UTC).isoformat(),
         }
 
-        success = await self.storage_manager.save_conversation(
+        await self.storage_manager.save_conversation(
             user_id, agent_key, conversation_id, conversation_data
         )
 
-        if success:
-            logger.info(
-                f"Created new conversation {conversation_id} for user {user_id}"
-            )
-        else:
-            logger.error(
-                f"Failed to create conversation {conversation_id} for user {user_id}"
-            )
+        logger.info(f"Created new conversation {conversation_id} for user {user_id}")
 
         return conversation_id
 
@@ -163,7 +150,7 @@ Generate a title that captures the main topic or intent. Be specific and informa
         conversation_id: str,
         messages: list[dict[str, str]],
         title: str | None = None,
-    ) -> bool:
+    ) -> None:
         """
         Save conversation with updated messages.
 
@@ -174,8 +161,9 @@ Generate a title that captures the main topic or intent. Be specific and informa
             messages: Updated message list
             title: Optional conversation title
 
-        Returns:
-            True if successful, False otherwise
+        Raises:
+            StorageAccessError: If storage access fails.
+            StorageError: If an unexpected error occurs.
         """
         # Load existing conversation to preserve metadata
         existing_data = await self.storage_manager.load_conversation(
@@ -333,7 +321,7 @@ class DummyConversationManager(ConversationManager):
         conversation_id: str,
         messages: list[dict[str, str]],
         title: str | None = None,
-    ) -> bool:
+    ) -> None:
         """
         Save conversation (dummy implementation).
 
@@ -344,10 +332,9 @@ class DummyConversationManager(ConversationManager):
             messages: Updated message list
             title: Optional conversation title
 
-        Returns:
-            Always returns True
+        Note:
+            This is a no-op implementation that does nothing.
         """
-        return True
 
     async def load_conversation(
         self, user_id: str, agent_key: str, conversation_id: str

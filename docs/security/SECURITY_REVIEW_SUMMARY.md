@@ -83,7 +83,7 @@ Development guide including:
 ### 6. Enhanced Security Scanning
 
 **Checkov Configuration (Bicep):**
-- Created `infra/.checkov.yaml`
+- Created `.tools/.checkov.yml`
 - Documented all check suppressions with justifications
 - Configured severity thresholds
 - Enabled secret scanning
@@ -235,11 +235,9 @@ docs/security/
 ├── SECURITY_REVIEW_CHECKLIST.md   # Review procedures
 └── SECURITY_TESTING.md            # Testing guide
 
-infra/
-└── .checkov.yaml                  # Checkov configuration
-
-src/
-└── .bandit                        # Bandit configuration
+.tools/
+├── .checkov.yml                   # Checkov configuration
+└── .bandit.yml                    # Bandit configuration
 ```
 
 ## Validation & Quality Assurance

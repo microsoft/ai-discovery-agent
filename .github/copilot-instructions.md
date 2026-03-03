@@ -101,7 +101,7 @@ The app needs to be better and faster.
 All function arguments and return values must be explicitly typed using Python's type
 hints. Use the built-in generic types (`dict`, `list`, `tuple`, etc.) instead of the
 deprecated `typing.Dict`, `typing.List`, and similar aliases. This aligns with the
-project's Black and Ruff configuration:
+project's Ruff configuration:
 
 ```python
 from typing import Any, Optional
@@ -156,9 +156,9 @@ class ChainlitAgentManager:
         """
 ```
 
-### 4. **Black Linter Compliance**
+### 4. **Ruff Linter Compliance**
 
-Format all code according to [Black](https://black.readthedocs.io/en/stable/) guidelines. Use line length of 88 characters and ensure proper spacing.
+Format all code according to [Ruff](https://ruff.rs/) guidelines. Use line length of 88 characters and ensure proper spacing.
 
 ### 5. **General Linting Rules**
 
@@ -195,7 +195,7 @@ agents:
   facilitator:
     persona: prompts/facilitator_persona.md
     document: prompts/workshop_guide.md # Optional single document
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.7
 ```
 
@@ -208,7 +208,7 @@ agents:
     documents: # Multiple documents for broader knowledge
       - prompts/domain_knowledge.md
       - prompts/best_practices.md
-    model: gpt-4o-mini
+    model: gpt-4.1-mini
     temperature: 1.0
 ```
 
@@ -223,7 +223,7 @@ agents:
         condition: "technical"
       - agent: "business_expert"
         condition: "business"
-    model: gpt-4o
+    model: gpt-5.1-chat
     temperature: 0.5
 ```
 
@@ -290,7 +290,7 @@ AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
 AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2025-01-01-preview")
 
 # Support multiple model types from bicep configuration
-SUPPORTED_MODELS = ["gpt-4o", "gpt-4o-mini", "o4-mini", "text-embedding-ada-002"]
+SUPPORTED_MODELS = ["gpt-5.1-chat", "gpt-4.1-mini", "o4-mini", "text-embedding-ada-002"]
 ```
 
 **Error Handling:**
@@ -450,7 +450,7 @@ uv run pre-commit install -c .tools/.pre-commit-config.yaml         # Install pr
 **Before Committing Changes:**
 
 ```bash
-# 1. Run pre-commit hooks (Black, Ruff, file checks)
+# 1. Run pre-commit hooks (Ruff, file checks)
 uv run pre-commit run --all-files -c .tools/.pre-commit-config.yaml
 
 # 2. Run linting
@@ -472,7 +472,7 @@ cd src && uv run bandit -r aida/
 uv run ruff check --fix .
 
 # Auto-format code
-uv run black .
+uv run ruff format .
 
 # Check for missing copyright headers
 ./scripts/check-copyright-headers.sh
@@ -483,7 +483,7 @@ uv run black .
 **Continuous Integration (`.github/workflows/01-ci.yml`):**
 - Runs on all PRs and pushes (except to `main`)
 - Steps:
-  1. Pre-commit hooks (Black, Ruff, YAML checks)
+  1. Pre-commit hooks (Ruff, YAML checks)
   2. Copyright header validation
   3. Python compilation check
   4. Full test suite (pytest)
@@ -566,7 +566,7 @@ from aida.utils.cached_llm import create_llm
 llm = create_llm(
     endpoint=AZURE_OPENAI_ENDPOINT,
     api_version=AZURE_OPENAI_API_VERSION,
-    deployment="gpt-4o",
+    deployment="gpt-5.1-chat",
     temperature=0.7,          # Consistent with config
     tag="rate-limited"
 )
@@ -697,7 +697,7 @@ async def test_async_function():
 uv run -m chainlit run -dhw chainlit_app.py    # Run app locally
 uv run pytest tests/ -v                        # Run all tests
 uv run ruff check --fix .                      # Lint and fix
-uv run black .                                 # Format code
+uv run ruff format .                           # Format code
 ```
 
 **Testing:**

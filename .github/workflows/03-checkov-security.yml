@@ -13,32 +13,38 @@ on:
   workflow_dispatch:
 permissions: {}
 
+concurrency:
+  group: checkov-${{ github.workflow }}-${{ github.ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   checkov-scan:
     runs-on: ubuntu-latest
     name: Checkov Analysis
     permissions:
-      contents: read # Allows actions/checkout to fetch the code
-      security-events: write # Allows github/codeql-action/upload-sarif to upload SARIF results
-      checks: write
+      contents: read # to checkout code
+      security-events: write # to upload SARIF results to security tab
+      checks: write # to publish test results
       # only needed unless run with comment_mode: off
-      pull-requests: write
+      pull-requests: write # to comment on PRs with test results
       # only needed for private repository
-      issues: read
+      issues: read # to read issue information
       # needed to upload SARIF results to the security tab (https://github.com/github/codeql-action/issues/2117)
-      actions: read
+      actions: read # to read workflow run status
     outputs:
       code-scanning-enabled: ${{ steps.check-code-scanning.outputs.enabled }}
     steps:
       - name: Checkout
-        uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Run Checkov Action
         id: checkov
-        uses: bridgecrewio/checkov-action@2b3c20ea200d530ec8d3d6a21cad1d01c1f5413a # v12.1347.0
+        uses: bridgecrewio/checkov-action@f99709f8ccc3496220c987b7d8729653237c23dc # v12.0.0
         with:
           directory: .
-          output_format: sarif, junitxml, cli
+          output_format: sarif,junitxml,cli
           config_file: .tools/.checkov.yml # Use project-specific configuration
 
       # Check if code scanning is enabled in the repository
@@ -93,25 +99,25 @@ jobs:
     needs: checkov-scan
     runs-on: ubuntu-latest
     permissions:
-      checks: write
+      checks: write # to publish test results
 
       # only needed unless run with comment_mode: off
-      pull-requests: write
+      pull-requests: write # to comment on PRs with test results
 
       # Required for actions/checkout to fetch code in any repository type (public or private)
-      contents: read
+      contents: read # to read repository contents
 
       # needed when the workflow needs to read issue information, regardless of repository visibility
-      issues: read
+      issues: read # to read issue information
     if: (!cancelled() && needs.checkov-scan.outputs.code-scanning-enabled != 'true')
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.1.0
+        uses: actions/download-artifact@70fc10c6e5e1ce46ad2ea6f2b72d43f7d47b13c3 # v6.1.0
         with:
           path: artifacts
 
       - name: Publish Infra Test Results
-        uses: EnricoMi/publish-unit-test-result-action@34d7c956a59aed1bfebf31df77b8de55db9bbaaf # v2.18.0
+        uses: EnricoMi/publish-unit-test-result-action@c950f6fb443cb5af20a377fd0dfaa78838901040 # v2.23.0
         with:
           files: "artifacts/**/*.xml"

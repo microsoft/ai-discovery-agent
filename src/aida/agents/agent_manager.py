@@ -30,11 +30,63 @@ get_available_agents(user_roles: list[str] | None = None) -> dict[str, dict[str,
 get_agent_info(agent_key: str) -> dict[str, Any] | None
     Retrieve configuration information for a specific agent
 
+Usage Example:
+--------------
+Loading and accessing agent configurations:
+
+    >>> from aida.agents import agent_manager
+    >>>
+    >>> # Load configurations (called automatically at module import)
+    >>> agent_manager.load_configurations()
+    >>>
+    >>> # Get all available agents for a user with standard role
+    >>> user_agents = agent_manager.get_available_agents(user_roles=["user"])
+    >>> for agent_key, agent_info in user_agents.items():
+    ...     print(f"{agent_key}: {agent_info['title']}")
+    facilitator: Workshop Facilitator
+    customer_rep: Bank Representative
+    >>>
+    >>> # Get all available agents for admin user (includes admin-only agents)
+    >>> admin_agents = agent_manager.get_available_agents(user_roles=["admin", "user"])
+    >>> for agent_key, agent_info in admin_agents.items():
+    ...     print(f"{agent_key}: {agent_info['title']}")
+    facilitator: Workshop Facilitator
+    customer_rep: Bank Representative
+    admin_agent: Admin Tools  # Only visible to admins
+    >>>
+    >>> # Get specific agent configuration
+    >>> facilitator_config = agent_manager.get_agent_info("facilitator")
+    >>> print(facilitator_config)
+    {'persona': 'prompts/facilitator_persona.md', 'model': 'gpt-5.1-chat', 'temperature': 0.7}
+
+Configuration Structure:
+------------------------
+The pages.yaml file should follow this structure:
+
+    agents:
+      facilitator:
+        persona: prompts/facilitator_persona.md
+        model: gpt-5.1-chat
+        temperature: 0.7
+
+    sections:
+      Coach:
+        - type: agent
+          agent: facilitator
+          title: Facilitator
+          icon: 🧑‍🏫
+          url_path: Facilitator
+          header: 🧑‍🏫 AI Discovery Workshop Facilitator
+          subtitle: Guide through the workshop process
+          admin_only: false
+          default: true
+
 Notes:
 ------
 - The module uses LRU caching to optimize repeated agent queries
 - Admin users have access to all agents including admin-only ones
 - Configuration is loaded at module initialization
+- Cache is automatically cleared when configurations are reloaded
 """
 
 import functools
@@ -43,6 +95,7 @@ from typing import Any
 
 import yaml
 
+from aida.exceptions import ConfigurationError
 from aida.utils.logging_setup import get_logger
 
 PAGES_CONFIG_FILE = Path.cwd() / "config/pages.yaml"
@@ -61,24 +114,57 @@ def load_configurations() -> None:
 
     try:
         logger.info(f"Loading pages configuration from {PAGES_CONFIG_FILE}")
-        with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
-            pages_config = yaml.load(file, Loader=yaml.SafeLoader)
+
+        if not PAGES_CONFIG_FILE.exists():
+            error_msg = f"Configuration file not found: {PAGES_CONFIG_FILE}"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE))
+
+        try:
+            with open(PAGES_CONFIG_FILE, encoding="utf-8") as file:
+                pages_config = yaml.load(file, Loader=yaml.SafeLoader)
+        except yaml.YAMLError as e:
+            error_msg = f"Invalid YAML in configuration file: {e}"
+            logger.error(error_msg, exc_info=True)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
+        except OSError as e:
+            error_msg = f"Failed to read configuration file: {e}"
+            logger.error(error_msg, exc_info=True)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
+
+        if not pages_config:
+            error_msg = "Configuration file is empty"
+            logger.error(error_msg)
+            raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from None
+
         agents_config = pages_config.get("agents", {})
+
+        if not agents_config:
+            logger.warning("No agents defined in configuration")
 
         # Store in global variables
         _agents_config = agents_config
         _pages_config = pages_config
 
-    except (yaml.YAMLError, FileNotFoundError) as e:
-        logger.error(
-            f"Error loading pages configuration: {e}", exc_info=e, stack_info=True
+        logger.info(
+            f"Successfully loaded configuration: {len(agents_config)} agents, "
+            f"{len(pages_config.get('sections', {}))} sections"
         )
-        # Store empty configs in global variables
+
+    except ConfigurationError:
+        # Re-raise our custom exception
+        raise
+    except Exception as e:
+        error_msg = f"Unexpected error loading configuration: {e}"
+        logger.error(error_msg, exc_info=True)
+        # Store empty configs in global variables as fallback
         _agents_config = {}
         _pages_config = {}
+        raise ConfigurationError(error_msg, str(PAGES_CONFIG_FILE)) from e
 
     # Clear the cache since the configuration data has changed
     _extract_agents_from_sections.cache_clear()
+    logger.debug("Cache cleared for agent extraction")
 
 
 def get_available_agents(

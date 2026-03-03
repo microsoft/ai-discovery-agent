@@ -1,10 +1,10 @@
 [build-system]
-requires = ["uv_build>=0.8.18,<0.9.0"]
+requires = ["uv_build>=0.8.18,<0.11.0"]
 build-backend = "uv_build"
 
 [project]
 name = "aida"
-version = "0.9.4"
+version = "0.9.6"
 description = "AI Discovery Agent"
 authors = [{ name = "jmservera" }]
 readme = "README.md"
@@ -20,20 +20,22 @@ classifiers = [
 license = "MIT"
 
 dependencies = [
-    "chainlit>=2.8.0",
+    "chainlit>=2.9.4",
     "python-dotenv>=1.1.0",
     "openai>=1.104.2",
     "azure-identity>=1.23.0",
     "tiktoken>=0.9.0",
-    "langgraph>=0.6.7",
-    "langchain>=0.3.27,<0.4",
-    "langchain-community>=0.3.27",
-    "langchain-openai>=0.3.33",
+    "langgraph>=1.0.1",
+    "langchain>=1.2.10,<2.0",
+    "langchain-core>=1.2.11,<2.0",
+    "langchain-community>=0.4.1,<2.0",
+    "langchain-openai>=1.1.10,<2.0",
     "PyYAML>=6.0.2",
     "azure-storage-blob>=12.26.0",
     "azure-data-tables>=12.7.0",
-    "azure-monitor-opentelemetry>=1.8.1",
-    "opentelemetry-instrumentation-fastapi>=0.58b0",
+    "azure-monitor-opentelemetry>=1.8.6",
+    "opentelemetry-instrumentation-fastapi>=0.47b0",
+    "opentelemetry-sdk>=1.27.0,<1.40.0",
 ]
 
 [project.scripts]
@@ -42,18 +44,17 @@ aida = "aida.__main__:main"
 [dependency-groups]
 # Development / tooling dependencies (not included in runtime requirements compilation)
 dev = [
-    "black==25.9.0",
     "pre-commit>=3.8.0",
-    "ruff==0.14.2",
+    "ruff==0.15.2",
     "pytest>=8.0.0",
     "pytest-mock>=3.12.0",
     "pytest-asyncio>=0.23.0",
     "pytest-cov>=4.0.0",
     "bandit>=1.8.6",
-    "checkov>=3.2.473",
+    "checkov>=3.2.495",
     "isort==7.0.0",
     "bandit-sarif-formatter>=1.1.1",
-    "pip>=25.3",
+    "pip>=26.0",
     "types-pyyaml>=6.0.12.20250915",
     "mypy>=1.18.2",
 ]

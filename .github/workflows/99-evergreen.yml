@@ -4,18 +4,22 @@ on:
   schedule:
     - cron: "3 2 1 * *"
 
-permissions:
-  issues: write
-  contents: read
+permissions: {}
 
 jobs:
   evergreen:
-    name: evergreen
+    name: Evergreen Dependency Checks
     runs-on: ubuntu-latest
+    permissions:
+      issues: write # to create issues for outdated dependencies
+      contents: read # to read repository contents
+    concurrency:
+      group: evergreen-${{ github.workflow }}-${{ github.ref || github.run_id }}
+      cancel-in-progress: true
 
     steps:
       - name: Run evergreen action
-        uses: github/evergreen@a1db228c4f7eed5e04d5e9e6f79392f8dfca9b3b # v1.24.6
+        uses: github/evergreen@f20e4ccfb95ff18c8668834d930cfcbb799668e3 # v1.24.9
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPOSITORY: ${{ github.repository }}

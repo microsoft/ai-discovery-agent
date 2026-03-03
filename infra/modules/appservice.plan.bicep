@@ -2,8 +2,8 @@ param resourceToken string
 param location string = resourceGroup().location
 param kind string = 'linux'
 param sku object = {
-    name: 'S1'
-    tier: 'Standard'
+    name: 'P0V3'
+    tier: 'Premium0V3'
     capacity: 1
   }
 param tags object = {}

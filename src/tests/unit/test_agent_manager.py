@@ -55,35 +55,36 @@ class TestAgentManagerModule:
         assert agent_manager._agents_config == SAMPLE_AGENT_CONFIG["agents"]
         mock_yaml_load.assert_called_once()
 
-    @patch("builtins.open", side_effect=FileNotFoundError)
-    @patch("aida.agents.agent_manager.logger.error")
-    def test_load_configurations_file_not_found(self, mock_logger, mock_file):
+    @patch("aida.agents.agent_manager.PAGES_CONFIG_FILE")
+    def test_load_configurations_file_not_found(self, mock_config_path):
         """Test configuration loading when file is missing."""
-        # Act
-        agent_manager.load_configurations()
+        # Arrange
+        from aida.exceptions import ConfigurationError
 
-        # Assert
-        assert agent_manager._pages_config == {}
-        assert agent_manager._agents_config == {}
-        mock_logger.assert_called_once()
+        mock_config_path.exists.return_value = False
+
+        # Act & Assert
+        with pytest.raises(ConfigurationError, match="Configuration file not found"):
+            agent_manager.load_configurations()
 
     @patch("builtins.open", new_callable=mock_open, read_data="invalid: yaml: content")
     @patch(
         "aida.agents.agent_manager.yaml.load",
         side_effect=yaml.YAMLError("Invalid YAML"),
     )
-    @patch("aida.agents.agent_manager.logger.error")
+    @patch("aida.agents.agent_manager.PAGES_CONFIG_FILE")
     def test_load_configurations_yaml_error(
-        self, mock_logger, mock_yaml_load, mock_file
+        self, mock_config_path, mock_yaml_load, mock_file
     ):
         """Test configuration loading with invalid YAML."""
-        # Act
-        agent_manager.load_configurations()
+        # Arrange
+        from aida.exceptions import ConfigurationError
 
-        # Assert
-        assert agent_manager._pages_config == {}
-        assert agent_manager._agents_config == {}
-        mock_logger.assert_called_once()
+        mock_config_path.exists.return_value = True
+
+        # Act & Assert
+        with pytest.raises(ConfigurationError, match="Invalid YAML"):
+            agent_manager.load_configurations()
 
     def test_get_available_agents_regular_user(self):
         """Test getting available agents for regular user."""
@@ -314,7 +315,7 @@ class TestAgentManagerModule:
         # Assert
         assert result is not None
         assert result["persona"] == "prompts/facilitator_persona.md"
-        assert result["model"] == "gpt-4o"
+        assert result["model"] == "gpt-5.1-chat"
         assert result["temperature"] == 0.7
 
     def test_get_agent_info_nonexistent_agent(self):

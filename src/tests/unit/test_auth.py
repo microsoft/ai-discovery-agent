@@ -27,7 +27,10 @@ class TestPasswordAuthentication:
 
     @patch("builtins.open", new_callable=mock_open)
     @patch("aida.utils.auth.yaml.load")
-    async def test_password_auth_callback_success(self, mock_yaml_load, mock_file):
+    @patch("aida.utils.auth.AUTH_CONFIG_FILE")
+    async def test_password_auth_callback_success(
+        self, mock_config_path, mock_yaml_load, mock_file
+    ):
         """Test successful password authentication."""
         # Arrange
         password = "testpass"  # nosec B105
@@ -52,6 +55,7 @@ class TestPasswordAuthentication:
             }
         }
 
+        mock_config_path.exists.return_value = True
         mock_yaml_load.return_value = test_config
         username = "testuser"
 
@@ -67,26 +71,33 @@ class TestPasswordAuthentication:
 
     @patch("builtins.open", new_callable=mock_open)
     @patch("aida.utils.auth.yaml.load")
-    async def test_password_auth_callback_invalid_user(self, mock_yaml_load, mock_file):
+    @patch("aida.utils.auth.AUTH_CONFIG_FILE")
+    async def test_password_auth_callback_invalid_user(
+        self, mock_config_path, mock_yaml_load, mock_file
+    ):
         """Test authentication with non-existent user."""
         # Arrange
+        from aida.exceptions import AuthenticationError
+
+        mock_config_path.exists.return_value = True
         mock_yaml_load.return_value = SAMPLE_AUTH_CONFIG
         username = "nonexistentuser"
         password = "testpass"  # nosec B105
 
-        # Act
-        result = await password_auth_callback(username, password)
-
-        # Assert
-        assert result is None
+        # Act & Assert
+        with pytest.raises(AuthenticationError, match="Invalid username or password"):
+            await password_auth_callback(username, password)
 
     @patch("builtins.open", new_callable=mock_open)
     @patch("aida.utils.auth.yaml.load")
+    @patch("aida.utils.auth.AUTH_CONFIG_FILE")
     async def test_password_auth_callback_wrong_password(
-        self, mock_yaml_load, mock_file
+        self, mock_config_path, mock_yaml_load, mock_file
     ):
         """Test authentication with wrong password."""
         # Arrange
+        from aida.exceptions import AuthenticationError
+
         correct_password = "testpass"  # nosec B105
         wrong_password = "wrongpass"  # nosec B105
 
@@ -110,41 +121,67 @@ class TestPasswordAuthentication:
             }
         }
 
+        mock_config_path.exists.return_value = True
         mock_yaml_load.return_value = test_config
         username = "testuser"
 
-        # Act - try to authenticate with wrong password
-        result = await password_auth_callback(username, wrong_password)
+        # Act & Assert - try to authenticate with wrong password
+        with pytest.raises(AuthenticationError, match="Invalid username or password"):
+            await password_auth_callback(username, wrong_password)
 
-        # Assert
-        assert result is None
-
-    @patch("builtins.open", side_effect=FileNotFoundError)
-    async def test_password_auth_callback_config_not_found(self, mock_file):
+    @patch("aida.utils.auth.AUTH_CONFIG_FILE")
+    async def test_password_auth_callback_config_not_found(self, mock_config_path):
         """Test authentication when config file is missing."""
         # Arrange
+        from aida.exceptions import ConfigurationError
+
+        mock_config_path.exists.return_value = False
         username = "testuser"
         password = "testpass"  # nosec B105
 
-        # Act
-        result = await password_auth_callback(username, password)
-
-        # Assert
-        assert result is None
+        # Act & Assert
+        with pytest.raises(
+            ConfigurationError, match="Authentication configuration missing"
+        ):
+            await password_auth_callback(username, password)
 
     @patch("builtins.open", new_callable=mock_open, read_data="invalid: yaml: content")
     @patch("aida.utils.auth.yaml.load", side_effect=yaml.YAMLError("Invalid YAML"))
-    async def test_password_auth_callback_invalid_yaml(self, mock_yaml_load, mock_file):
+    @patch("aida.utils.auth.AUTH_CONFIG_FILE")
+    async def test_password_auth_callback_invalid_yaml(
+        self, mock_config_path, mock_yaml_load, mock_file
+    ):
         """Test authentication with invalid YAML config."""
         # Arrange
+        from aida.exceptions import ConfigurationError
+
+        mock_config_path.exists.return_value = True
         username = "testuser"
         password = "testpass"  # nosec B105
 
-        # Act
-        result = await password_auth_callback(username, password)
+        # Act & Assert
+        with pytest.raises(
+            ConfigurationError, match="Invalid authentication configuration"
+        ):
+            await password_auth_callback(username, password)
 
-        # Assert
-        assert result is None
+    @patch("builtins.open", new_callable=mock_open, read_data="")
+    @patch("aida.utils.auth.yaml.load", return_value=None)
+    @patch("aida.utils.auth.AUTH_CONFIG_FILE")
+    async def test_password_auth_callback_empty_config(
+        self, mock_config_path, mock_yaml_load, mock_file
+    ):
+        """Test authentication with empty YAML config (yaml.load returns None)."""
+        # Arrange
+        from aida.exceptions import AuthenticationError
+
+        mock_config_path.exists.return_value = True
+        username = "testuser"
+        password = "testpass"  # nosec B105
+
+        # Act & Assert
+        with pytest.raises(AuthenticationError, match="Invalid username or password"):
+            await password_auth_callback(username, password)
 
 
 class TestOAuthAuthentication:

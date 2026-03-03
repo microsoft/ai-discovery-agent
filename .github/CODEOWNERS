@@ -1,0 +1,54 @@
+# CODEOWNERS - Mandatory maintainer review for critical project files
+# https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+#
+# These owners will be automatically requested for review when a PR modifies
+# matching files. Requires branch protection rules with "Require review from
+# Code Owners" enabled.
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Default owner for everything (fallback)
+# ──────────────────────────────────────────────────────────────────────────────
+*                                       @microsoft/ocp-isv-admins @jmservera @martinabrle @f-follonier
+
+# ──────────────────────────────────────────────────────────────────────────────
+# CI/CD & GitHub configuration
+# ──────────────────────────────────────────────────────────────────────────────
+.github/                                @microsoft/ocp-isv-admins
+.github/workflows/                      @microsoft/ocp-isv-admins
+.github/CODEOWNERS                      @microsoft/ocp-isv-admins
+.github/dependabot.yml                  @microsoft/ocp-isv-admins
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Infrastructure as Code
+# ──────────────────────────────────────────────────────────────────────────────
+infra/                                  @microsoft/ocp-isv-admins
+azure.yaml                             @microsoft/ocp-isv-admins
+bicepconfig.json                        @microsoft/ocp-isv-admins
+Dockerfile                              @microsoft/ocp-isv-admins
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Project configuration & dependency management
+# ──────────────────────────────────────────────────────────────────────────────
+pyproject.toml                          @microsoft/ocp-isv-admins
+uv.lock                                @microsoft/ocp-isv-admins
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Application configuration
+# ──────────────────────────────────────────────────────────────────────────────
+config/                                 @microsoft/ocp-isv-admins
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Tooling & linter configuration
+# ──────────────────────────────────────────────────────────────────────────────
+.tools/                                 @microsoft/ocp-isv-admins
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Deployment & operational scripts
+# ──────────────────────────────────────────────────────────────────────────────
+scripts/                                @microsoft/ocp-isv-admins
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Security & compliance documentation
+# ──────────────────────────────────────────────────────────────────────────────
+SECURITY.md                             @microsoft/ocp-isv-admins
+docs/security/                          @microsoft/ocp-isv-admins

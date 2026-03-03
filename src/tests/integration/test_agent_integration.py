@@ -114,31 +114,24 @@ class TestAgentManagerErrorHandling:
 
     def test_missing_config_file(self):
         """Test behavior when config file is missing."""
+        from aida.exceptions import ConfigurationError
+
         with patch(
             "aida.agents.agent_manager.PAGES_CONFIG_FILE",
             Path("/nonexistent/config.yaml"),
         ):
             import aida.agents.agent_manager as agent_manager
 
-            # Load configuration (should handle missing file gracefully)
-            agent_manager.load_configurations()
-
-            # Should have empty configs
-            assert agent_manager._pages_config == {}
-            assert agent_manager._agents_config == {}
-
-            # Clear cache to ensure fresh lookup
-            agent_manager._extract_agents_from_sections.cache_clear()
-
-            # Operations should handle empty config gracefully
-            agents = agent_manager.get_available_agents(["user"])
-            assert agents == {}
-
-            agent_info = agent_manager.get_agent_info("any_agent")
-            assert agent_info is None
+            # Load configuration should raise ConfigurationError
+            with pytest.raises(
+                ConfigurationError, match="Configuration file not found"
+            ):
+                agent_manager.load_configurations()
 
     def test_malformed_config_file(self):
         """Test behavior with malformed YAML config."""
+        from aida.exceptions import ConfigurationError
+
         with NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("invalid: yaml: content: [")  # Invalid YAML
             f.flush()
@@ -147,12 +140,9 @@ class TestAgentManagerErrorHandling:
                 with patch("aida.agents.agent_manager.PAGES_CONFIG_FILE", Path(f.name)):
                     import aida.agents.agent_manager as agent_manager
 
-                    # Load configuration (should handle parsing error gracefully)
-                    agent_manager.load_configurations()
-
-                    # Should have empty configs due to parsing error
-                    assert agent_manager._pages_config == {}
-                    assert agent_manager._agents_config == {}
+                    # Load configuration should raise ConfigurationError
+                    with pytest.raises(ConfigurationError, match="Invalid YAML"):
+                        agent_manager.load_configurations()
             finally:
                 # Cleanup
                 os.unlink(f.name)
@@ -162,7 +152,7 @@ class TestAgentManagerErrorHandling:
         incomplete_config = {
             "agents": {
                 "incomplete_agent": {
-                    "model": "gpt-4o",
+                    "model": "gpt-5.1-chat",
                     # Missing persona, temperature, etc.
                 }
             },
@@ -195,7 +185,7 @@ class TestAgentManagerErrorHandling:
                     # But may have None/missing values for incomplete fields
                     agent_info = agent_manager.get_agent_info("incomplete_agent")
                     assert agent_info is not None
-                    assert agent_info["model"] == "gpt-4o"
+                    assert agent_info["model"] == "gpt-5.1-chat"
                     assert "persona" not in agent_info or agent_info["persona"] is None
             finally:
                 # Cleanup
@@ -227,7 +217,7 @@ class TestAgentConfigurationValidation:
                 "single_doc_agent": {
                     "persona": "prompts/persona.md",
                     "document": "prompts/single_doc.md",
-                    "model": "gpt-4o",
+                    "model": "gpt-5.1-chat",
                     "temperature": 0.5,
                 }
             },
@@ -258,7 +248,7 @@ class TestAgentConfigurationValidation:
                     agent_info = agent_manager.get_agent_info("single_doc_agent")
                     assert agent_info is not None
                     assert agent_info["document"] == "prompts/single_doc.md"
-                    assert agent_info["model"] == "gpt-4o"
+                    assert agent_info["model"] == "gpt-5.1-chat"
             finally:
                 # Cleanup
                 os.unlink(f.name)
@@ -273,7 +263,7 @@ class TestAgentConfigurationValidation:
                         "prompts/doc1.md",
                         "prompts/doc2.md",
                     ],
-                    "model": "gpt-4o-mini",
+                    "model": "gpt-4.1-mini",
                     "temperature": 1.0,
                 }
             },
@@ -307,7 +297,7 @@ class TestAgentConfigurationValidation:
                         "prompts/doc1.md",
                         "prompts/doc2.md",
                     ]
-                    assert agent_info["model"] == "gpt-4o-mini"
+                    assert agent_info["model"] == "gpt-4.1-mini"
                     assert agent_info["temperature"] == 1.0
             finally:
                 # Cleanup

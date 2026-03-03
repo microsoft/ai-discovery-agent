@@ -160,7 +160,7 @@ class ConversationManager(ABC):
         conversation_id: str,
         messages: list[dict[str, str]],
         title: str | None = None,
-    ) -> bool:
+    ) -> None:
         """
         Save conversation with updated messages.
 
@@ -171,8 +171,9 @@ class ConversationManager(ABC):
             messages: Updated message list
             title: Optional conversation title
 
-        Returns:
-            True if successful, False otherwise
+        Raises:
+            StorageAccessError: If storage access fails.
+            StorageError: If an unexpected error occurs.
         """
         pass
 
