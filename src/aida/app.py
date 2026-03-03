@@ -159,9 +159,19 @@ def create_app() -> FastAPI:
 
     # Configure CORS for Chainlit WebSocket support
     # Default to localhost for development; production should set ALLOWED_ORIGINS env var
-    allowed_origins = os.getenv(
-        "ALLOWED_ORIGINS", "http://localhost:8000,http://localhost:3000"
-    ).split(",")
+    _default_origins = "http://localhost:8000,http://localhost:3000"
+    _raw_origins = os.getenv("ALLOWED_ORIGINS", _default_origins).split(",")
+    # Normalize: strip whitespace and drop empty strings produced by trailing commas
+    allowed_origins = [o.strip() for o in _raw_origins if o.strip()]
+    # '*' combined with allow_credentials=True is rejected by browsers and
+    # violates the CORS spec.  Fall back to the safe defaults and warn.
+    if "*" in allowed_origins:
+        logger.warning(
+            "ALLOWED_ORIGINS contains '*' which is incompatible with "
+            "allow_credentials=True; falling back to default origins: %s",
+            _default_origins,
+        )
+        allowed_origins = _default_origins.split(",")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=allowed_origins,
