@@ -230,7 +230,7 @@ class TestConfigurationValidation:
         """
         try:
             with open(config_path, encoding="utf-8") as file:
-                yaml.load(file, Loader=_UniqueKeyLoader)
+                yaml.load(file, Loader=_UniqueKeyLoader)  # nosec B506 - _UniqueKeyLoader extends yaml.SafeLoader
         except yaml.YAMLError as e:
             pytest.fail(f"Duplicate mapping key found in configuration: {e}")
 
