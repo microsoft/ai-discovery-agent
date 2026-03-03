@@ -254,6 +254,7 @@ class TestStructuredLoggerAdapter:
 
 
 class TestMermaidModule:
+    """Tests for the mermaid diagram extraction utilities."""
 
     def test_extract_mermaid_with_valid_diagram(self):
         """Test extracting valid mermaid diagram from text."""
