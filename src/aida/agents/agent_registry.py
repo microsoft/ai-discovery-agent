@@ -147,9 +147,8 @@ class AgentRegistry:
 
         Returns:
         --------
-        Agent or None
-            An instance of the appropriate Agent subclass if the key is found,
-            otherwise None.
+        Agent
+            An instance of the appropriate Agent subclass for the given key.
 
         Raises:
         -------
