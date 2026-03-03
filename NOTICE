@@ -40,7 +40,7 @@ RUNTIME DEPENDENCIES:
   Homepage: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/monitor/azure-monitor-opentelemetry
   License: MIT License
   Author: Microsoft Corporation
-  Dependency specification: azure-monitor-opentelemetry>=1.8.2
+  Dependency specification: azure-monitor-opentelemetry>=1.8.6
 
 * azure-storage-blob 12.28.0
   Homepage: https://github.com/Azure/azure-sdk-for-python/tree/main/sdk/storage/azure-storage-blob
@@ -196,7 +196,7 @@ DEVELOPMENT DEPENDENCIES:
 
 ================================================================================
 
-This NOTICE file was generated on 2026-03-04 00:39:27 UTC
+This NOTICE file was generated on 2026-03-04 00:40:54 UTC
 
 For more information about open source licenses, visit:
 - https://opensource.org/licenses/
