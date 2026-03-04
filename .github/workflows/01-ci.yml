@@ -125,7 +125,7 @@ jobs:
 
       - name: Upload Test Results
         if: (!cancelled())
-        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5.0.2
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v5.0.2
         with:
           name: CI Test Results
           path: |
